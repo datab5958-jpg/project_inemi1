@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kebijakan Privasi - INEMI AI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            --secondary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --accent-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --dark-bg: #0a0a0a;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --text-muted: rgba(255, 255, 255, 0.6);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow-primary: 0 20px 40px rgba(0, 0, 0, 0.3);
+            --shadow-glow: 0 0 30px rgba(102, 126, 234, 0.3);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--dark-bg);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            color: var(--text-primary);
+            line-height: 1.7;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(240, 147, 251, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
+            animation: backgroundShift 20s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Grid Overlay */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 2;
+            animation: gridMove 30s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .navbar.scrolled {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(30px);
+            box-shadow: var(--shadow-primary);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: var(--text-primary);
+            font-size: 1.8rem;
+            font-weight: 800;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: var(--primary-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.4rem;
+            font-weight: 900;
+            box-shadow: var(--shadow-glow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-icon::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+        }
+
+        .logo:hover .logo-icon::before {
+            animation: shimmer 0.6s ease;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2.5rem;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            position: relative;
+            transition: all 0.3s ease;
+            padding: 0.5rem 0;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .launch-btn {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 0.9rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .launch-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .launch-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .launch-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Mobile Navigation */
+        .mobile-menu-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 0.5rem;
+            z-index: 1001;
+        }
+
+        .mobile-menu-toggle span {
+            width: 25px;
+            height: 3px;
+            background: var(--text-primary);
+            margin: 3px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+
+        .mobile-menu-toggle.active span:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+
+        .mobile-menu-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-menu-toggle.active span:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
+        }
+
+        .mobile-nav {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            height: 100vh;
+            background: rgba(10, 10, 10, 0.98);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .mobile-nav.active {
+            right: 0;
+        }
+
+        .mobile-nav-links {
+            list-style: none;
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .mobile-nav-links li {
+            margin: 2rem 0;
+        }
+
+        .mobile-nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: block;
+            padding: 1rem;
+        }
+
+        .mobile-nav-links a:hover {
+            color: var(--primary-gradient);
+            transform: scale(1.1);
+        }
+
+        .mobile-nav .launch-btn {
+            margin-top: 2rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            position: relative;
+            z-index: 3;
+            padding-top: 100px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            text-align: center;
+            padding: 4rem 0 6rem;
+            position: relative;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 6vw, 4rem);
+            font-weight: 900;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            line-height: 1.2;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            0% { filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.3)); }
+            100% { filter: drop-shadow(0 0 40px rgba(240, 147, 251, 0.5)); }
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+            color: var(--text-secondary);
+            margin-bottom: 3rem;
+            line-height: 1.7;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: 400;
+        }
+
+        .last-updated {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(20px);
+            display: inline-block;
+            margin-bottom: 4rem;
+        }
+
+        .last-updated-text {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .last-updated-date {
+            color: var(--text-primary);
+            font-weight: 700;
+            margin-left: 0.5rem;
+        }
+
+        /* Content Sections */
+        .content-section {
+            margin-bottom: 4rem;
+        }
+
+        .section-title {
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            line-height: 1.3;
+            position: relative;
+            padding-left: 1rem;
+        }
+
+        .section-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--primary-gradient);
+            border-radius: 2px;
+        }
+
+        .section-content {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2.5rem;
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--primary-gradient);
+            opacity: 0.02;
+            z-index: 1;
+        }
+
+        .section-content > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-content p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-content ul, .section-content ol {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            padding-left: 2rem;
+        }
+
+        .section-content li {
+            margin-bottom: 0.8rem;
+        }
+
+        .section-content strong {
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .section-content a {
+            color: var(--primary-gradient);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .section-content a:hover {
+            text-decoration: underline;
+            filter: brightness(1.2);
+        }
+
+        .highlight-box {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 16px;
+            padding: 2rem;
+            margin: 2rem 0;
+            position: relative;
+        }
+
+        .highlight-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--primary-gradient);
+            opacity: 0.05;
+            border-radius: 16px;
+            z-index: 1;
+        }
+
+        .highlight-box > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .highlight-box h4 {
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .highlight-box h4 i {
+            color: var(--primary-gradient);
+            font-size: 1.5rem;
+        }
+
+        .contact-info {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2.5rem;
+            backdrop-filter: blur(20px);
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .contact-info h3 {
+            color: var(--text-primary);
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .contact-info p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .contact-info a {
+            color: var(--primary-gradient);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .contact-info a:hover {
+            text-decoration: underline;
+            filter: brightness(1.2);
+        }
+
+        /* Footer */
+        .footer-section {
+            background: var(--dark-bg);
+            padding: 4rem 0 2rem;
+            border-top: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            margin-top: 6rem;
+        }
+
+        .footer-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(102, 126, 234, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(240, 147, 251, 0.03) 0%, transparent 50%);
+            z-index: 1;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .footer-logo-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-gradient);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 900;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .footer-logo-text {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            position: relative;
+            z-index: 2;
+        }
+
+        .footer-bottom p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* Scroll Animations */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .mobile-menu-toggle {
+                display: flex;
+            }
+            
+            .navbar {
+                padding: 1rem;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .hero-section {
+                padding: 3rem 0 4rem;
+            }
+            
+            .section-content {
+                padding: 2rem;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                gap: 2rem;
+                text-align: center;
+            }
+            
+            .footer-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .navbar {
+                padding: 0.8rem 1rem;
+            }
+            
+            .logo {
+                font-size: 1.5rem;
+            }
+            
+            .logo-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1.2rem;
+            }
+            
+            .hero-section {
+                padding: 2rem 0 3rem;
+            }
+            
+            .section-content {
+                padding: 1.5rem;
+            }
+            
+            .highlight-box {
+                padding: 1.5rem;
+            }
+            
+            .contact-info {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <a href="/" class="logo">
+            <div class="logo-icon">I</div>
+            <span>Inemi</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="/">Beranda</a></li>
+            <li><a href="/upgrade_akun">Harga</a></li>
+        </ul>
+        <a href="/login" class="launch-btn">Mulai Sekarang</a>
+        
+        <!-- Mobile Menu Toggle -->
+        <div class="mobile-menu-toggle" id="mobileMenuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation -->
+    <div class="mobile-nav" id="mobileNav">
+        <ul class="mobile-nav-links">
+            <li><a href="/">Beranda</a></li>
+            <li><a href="/upgrade_akun">Harga</a></li>
+        </ul>
+        <a href="/login" class="launch-btn">Mulai Sekarang</a>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <h1 class="hero-title fade-in">Kebijakan Privasi</h1>
+                <p class="hero-subtitle fade-in">
+                    Kami berkomitmen melindungi privasi dan keamanan data pribadi Anda. 
+                    Kebijakan ini menjelaskan bagaimana INEMI AI mengumpulkan, menggunakan, dan melindungi informasi Anda.
+                </p>
+                <div class="last-updated fade-in">
+                    <span class="last-updated-text">Terakhir diperbarui:</span>
+                    <span class="last-updated-date">15 Januari 2025</span>
+                </div>
+            </section>
+
+            <!-- Content Sections -->
+            <section class="content-section fade-in">
+                <h2 class="section-title">1. Informasi yang Kami Kumpulkan</h2>
+                <div class="section-content">
+                    <p>
+                        Kami mengumpulkan informasi yang Anda berikan secara langsung dan informasi yang dikumpulkan secara otomatis saat Anda menggunakan layanan INEMI AI.
+                    </p>
+                    
+                    <h4 style="color: var(--text-primary); font-size: 1.3rem; font-weight: 700; margin: 2rem 0 1rem;">Informasi yang Anda Berikan:</h4>
+                    <ul>
+                        <li><strong>Data Akun:</strong> Nama, alamat email, kata sandi, dan informasi profil lainnya</li>
+                        <li><strong>Informasi Bisnis:</strong> Nama perusahaan, industri, ukuran tim, dan tujuan marketing</li>
+                        <li><strong>Konten yang Dibuat:</strong> Teks, gambar, dan konten lainnya yang Anda buat menggunakan platform kami</li>
+                        <li><strong>Komunikasi:</strong> Pesan, pertanyaan, dan umpan balik yang Anda kirimkan kepada kami</li>
+                    </ul>
+
+                    <h4 style="color: var(--text-primary); font-size: 1.3rem; font-weight: 700; margin: 2rem 0 1rem;">Informasi yang Dikumpulkan Otomatis:</h4>
+                    <ul>
+                        <li><strong>Data Penggunaan:</strong> Cara Anda menggunakan platform, fitur yang diakses, dan waktu penggunaan</li>
+                        <li><strong>Data Teknis:</strong> Alamat IP, jenis browser, sistem operasi, dan informasi perangkat</li>
+                        <li><strong>Cookies dan Teknologi Serupa:</strong> Untuk meningkatkan pengalaman pengguna dan menganalisis penggunaan</li>
+                        <li><strong>Data Analitik:</strong> Statistik penggunaan, performa konten, dan metrik engagement</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="content-section fade-in">
+                <h2 class="section-title">2. Bagaimana Kami Menggunakan Informasi</h2>
+                <div class="section-content">
+                    <p>
+                        Kami menggunakan informasi yang dikumpulkan untuk menyediakan, memelihara, dan meningkatkan layanan INEMI AI serta untuk berkomunikasi dengan Anda.
+                    </p>
+                    
+                    <div class="highlight-box">
+                        <h4><i class="fas fa-shield-alt"></i> Tujuan Penggunaan Data</h4>
+                        <ul>
+                            <li><strong>Penyediaan Layanan:</strong> Memberikan akses ke fitur AI untuk iklan dan copywriting</li>
+                            <li><strong>Personalisasi:</strong> Menyesuaikan pengalaman pengguna berdasarkan preferensi dan kebutuhan</li>
+                            <li><strong>Komunikasi:</strong> Mengirim notifikasi, update, dan dukungan pelanggan</li>
+                            <li><strong>Peningkatan Layanan:</strong> Menganalisis penggunaan untuk mengembangkan fitur baru</li>
+                            <li><strong>Keamanan:</strong> Melindungi platform dari penyalahgunaan dan aktivitas berbahaya</li>
+                            <li><strong>Kepatuhan Hukum:</strong> Memenuhi kewajiban hukum dan regulasi yang berlaku</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section fade-in">
+                <h2 class="section-title">3. Berbagi Informasi</h2>
+                <div class="section-content">
+                    <p>
+                        Kami tidak menjual, menyewakan, atau membagikan informasi pribadi Anda kepada pihak ketiga, kecuali dalam situasi berikut:
+                    </p>
+                    
+                    <ul>
+                        <li><strong>Penyedia Layanan:</strong> Dengan vendor tepercaya yang membantu operasional platform (hosting, analitik, dukungan)</li>
+                        <li><strong>Kepatuhan Hukum:</strong> Ketika diwajibkan oleh hukum atau untuk melindungi hak dan keamanan</li>
+                        <li><strong>Persetujuan:</strong> Dengan persetujuan eksplisit dari Anda</li>
+                        <li><strong>Transfer Bisnis:</strong> Dalam hal merger, akuisisi, atau penjualan aset perusahaan</li>
+                    </ul>
+
+                    <div class="highlight-box">
+                        <h4><i class="fas fa-lock"></i> Perlindungan Data</h4>
+                        <p>
+                            Semua pihak ketiga yang memiliki akses ke data Anda diwajibkan untuk menjaga kerahasiaan 
+                            dan menggunakan informasi tersebut hanya untuk tujuan yang telah disepakati.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section fade-in">
+                <h2 class="section-title">4. Keamanan Data</h2>
+                <div class="section-content">
+                    <p>
+                        Kami menerapkan langkah-langkah keamanan teknis dan organisasi yang sesuai untuk melindungi informasi pribadi Anda dari akses, penggunaan, atau pengungkapan yang tidak sah.
+                    </p>
+                    
+                    <div class="highlight-box">
+                        <h4><i class="fas fa-shield-virus"></i> Langkah Keamanan Kami</h4>
+                        <ul>
+                            <li><strong>Enkripsi:</strong> Data dienkripsi saat transit dan saat disimpan</li>
+                            <li><strong>Kontrol Akses:</strong> Pembatasan akses data berdasarkan prinsip "need-to-know"</li>
+                            <li><strong>Monitoring:</strong> Pemantauan berkelanjutan terhadap aktivitas mencurigakan</li>
+                            <li><strong>Backup:</strong> Sistem backup dan recovery yang aman</li>
+                            <li><strong>Audit:</strong> Audit keamanan berkala dan penilaian kerentanan</li>
+                            <li><strong>Pelatihan:</strong> Pelatihan keamanan untuk semua tim yang menangani data</li>
+                        </ul>
+                    </div>
+
+                    <p>
+                        Meskipun kami berusaha melindungi informasi Anda, tidak ada metode transmisi internet atau penyimpanan elektronik yang 100% aman. 
+                        Kami tidak dapat menjamin keamanan mutlak, tetapi kami berkomitmen untuk terus meningkatkan langkah-langkah keamanan kami.
+                    </p>
+                </div>
+            </section>
+
+            <section class="content-section fade-in">
+                <h2 class="section-title">5. Hak Anda</h2>
+                <div class="section-content">
+                    <p>
+                        Anda memiliki hak-hak tertentu terkait informasi pribadi Anda. Kami menghormati dan memfasilitasi pelaksanaan hak-hak tersebut sesuai dengan hukum yang berlaku.
+                    </p>
+                    
+                    <div class="highlight-box">
+                        <h4><i class="fas fa-user-shield"></i> Hak-Hak Anda</h4>
+                        <ul>
+                            <li><strong>Akses:</strong> Meminta salinan informasi pribadi yang kami miliki tentang Anda</li>
+                            <li><strong>Koreksi:</strong> Meminta perbaikan informasi yang tidak akurat atau tidak lengkap</li>
+                            <li><strong>Penghapusan:</strong> Meminta penghapusan informasi pribadi dalam kondisi tertentu</li>
+                            <li><strong>Pembatasan:</strong> Meminta pembatasan pemrosesan informasi pribadi Anda</li>
+                            <li><strong>Portabilitas:</strong> Meminta transfer data Anda ke penyedia layanan lain</li>
+                            <li><strong>Keberatan:</strong> Menolak pemrosesan informasi untuk tujuan tertentu</li>
+                            <li><strong>Penarikan Persetujuan:</strong> Menarik persetujuan yang telah diberikan sebelumnya</li>
+                        </ul>
+                    </div>
+
+                    <p>
+                        Untuk menggunakan hak-hak ini, silakan hubungi kami melalui informasi kontak yang tersedia di bagian bawah halaman ini. 
+                        Kami akan merespons permintaan Anda dalam waktu yang wajar sesuai dengan hukum yang berlaku.
+                    </p>
+                </div>
+            </section>
+
+            <section class="content-section fade-in">
+                <h2 class="section-title">6. Cookies dan Teknologi Pelacakan</h2>
+                <div class="section-content">
+                    <p>
+                        Kami menggunakan cookies dan teknologi pelacakan serupa untuk meningkatkan pengalaman pengguna, menganalisis penggunaan platform, dan memberikan konten yang relevan.
+                    </p>
+                    
+                    <h4 style="color: var(--text-primary); font-size: 1.3rem; font-weight: 700; margin: 2rem 0 1rem;">Jenis Cookies yang Kami Gunakan:</h4>
+                    <ul>
+                        <li><strong>Cookies Esensial:</strong> Diperlukan untuk fungsi dasar platform</li>
+                        <li><strong>Cookies Analitik:</strong> Membantu kami memahami bagaimana platform digunakan</li>
+                        <li><strong>Cookies Fungsional:</strong> Mengingat preferensi dan pengaturan Anda</li>
+                        <li><strong>Cookies Marketing:</strong> Digunakan untuk menampilkan iklan yang relevan</li>
+                    </ul>
+
+                    <p>
+                        Anda dapat mengontrol penggunaan cookies melalui pengaturan browser Anda. Namun, menonaktifkan cookies tertentu dapat mempengaruhi fungsionalitas platform.
+                    </p>
+                </div>
+            </section>
+
+            <section class="content-section fade-in">
+                <h2 class="section-title">7. Retensi Data</h2>
+                <div class="section-content">
+                    <p>
+                        Kami menyimpan informasi pribadi Anda selama diperlukan untuk memenuhi tujuan yang dijelaskan dalam kebijakan ini, kecuali jika periode penyimpanan yang lebih lama diperlukan atau diizinkan oleh hukum.
+                    </p>
+                    
+                    <ul>
+                        <li><strong>Data Akun:</strong> Disimpan selama akun Anda aktif dan untuk periode yang wajar setelahnya</li>
+                        <li><strong>Data Penggunaan:</strong> Disimpan untuk analisis dan peningkatan layanan</li>
+                        <li><strong>Data Hukum:</strong> Dapat disimpan lebih lama jika diperlukan untuk kepatuhan hukum</li>
+                        <li><strong>Data Backup:</strong> Dapat disimpan dalam sistem backup untuk periode tertentu</li>
+                    </ul>
+
+                    <p>
+                        Setelah periode retensi berakhir, kami akan menghapus atau menganonimkan informasi pribadi Anda secara aman, 
+                        kecuali jika diperlukan untuk tujuan hukum atau keamanan.
+                    </p>
+                </div>
+            </section>
+
+            <section class="content-section fade-in">
+                <h2 class="section-title">8. Transfer Data Internasional</h2>
+                <div class="section-content">
+                    <p>
+                        Informasi pribadi Anda mungkin ditransfer ke dan diproses di negara lain selain negara tempat Anda tinggal. 
+                        Kami memastikan bahwa transfer tersebut dilakukan dengan perlindungan yang sesuai.
+                    </p>
+                    
+                    <div class="highlight-box">
+                        <h4><i class="fas fa-globe"></i> Perlindungan Transfer Internasional</h4>
+                        <ul>
+                            <li><strong>Kontrak Perlindungan:</strong> Menggunakan klausul kontraktual standar yang disetujui</li>
+                            <li><strong>Adequacy Decision:</strong> Transfer ke negara dengan tingkat perlindungan yang memadai</li>
+                            <li><strong>Certification:</strong> Mengandalkan sertifikasi keamanan internasional</li>
+                            <li><strong>Consent:</strong> Dengan persetujuan eksplisit dari Anda</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="content-section fade-in">
+                <h2 class="section-title">9. Perubahan Kebijakan</h2>
+                <div class="section-content">
+                    <p>
+                        Kami dapat memperbarui kebijakan privasi ini dari waktu ke waktu untuk mencerminkan perubahan dalam praktik kami atau untuk alasan operasional, hukum, atau regulasi lainnya.
+                    </p>
+                    
+                    <div class="highlight-box">
+                        <h4><i class="fas fa-bell"></i> Pemberitahuan Perubahan</h4>
+                        <p>
+                            Jika kami membuat perubahan material pada kebijakan ini, kami akan:
+                        </p>
+                        <ul>
+                            <li>Mengirimkan pemberitahuan melalui email atau platform</li>
+                            <li>Menampilkan pemberitahuan yang mencolok di platform</li>
+                            <li>Memperbarui tanggal "Terakhir diperbarui" di bagian atas kebijakan</li>
+                            <li>Memberikan waktu yang wajar untuk meninjau perubahan</li>
+                        </ul>
+                    </div>
+
+                    <p>
+                        Penggunaan berkelanjutan platform setelah perubahan kebijakan dianggap sebagai persetujuan Anda terhadap perubahan tersebut.
+                    </p>
+                </div>
+            </section>
+
+            <section class="content-section fade-in">
+                <h2 class="section-title">10. Kontak dan Pertanyaan</h2>
+                <div class="section-content">
+                    <p>
+                        Jika Anda memiliki pertanyaan, kekhawatiran, atau permintaan terkait kebijakan privasi ini atau praktik privasi kami, 
+                        jangan ragu untuk menghubungi kami.
+                    </p>
+                    
+                    <div class="contact-info">
+                        <h3>Hubungi Tim Privasi Kami</h3>
+                        <p><strong>Email:</strong> <a href="mailto:questmd24@gmail.com">questmd24@gmail.com</a></p>
+                        <p><strong>Alamat:</strong> Lampung, Indonesia</p>
+                        <p><strong>Waktu Respon:</strong> Kami akan merespons dalam 72 jam kerja</p>
+                        <p style="margin-top: 1.5rem; font-size: 1rem; color: var(--text-muted);">
+                            Tim privasi kami siap membantu menjawab pertanyaan Anda dan memproses permintaan terkait data pribadi.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-section">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <div class="footer-logo-icon">I</div>
+                    <span class="footer-logo-text">Inemi.Ai</span>
+                </div>
+                <ul class="footer-links">
+                    <li><a href="/">Beranda</a></li>
+                    <li><a href="/upgrade_akun">Harga</a></li>
+                    <li><a href="/privacy-policy">Kebijakan Privasi</a></li>
+                    <li><a href="/terms-of-service">Syarat Layanan</a></li>
+                    <li><a href="/cookie-policy">Kebijakan Cookie</a></li>
+                </ul>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2025 All Rights Reserved, INEMI AI Indonesia®</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile Navigation
+        function toggleMobileMenu() {
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const mobileNav = document.getElementById('mobileNav');
+            
+            mobileMenuToggle.classList.toggle('active');
+            mobileNav.classList.toggle('active');
+        }
+
+        // Scroll animations
+        function handleScrollAnimations() {
+            const elements = document.querySelectorAll('.fade-in');
+            
+            elements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const elementVisible = 150;
+                
+                if (elementTop < window.innerHeight - elementVisible) {
+                    element.classList.add('visible');
+                }
+            });
+        }
+
+        // Navbar scroll effect
+        function handleNavbarScroll() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize animations
+            handleScrollAnimations();
+            
+            // Mobile menu toggle
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            if (mobileMenuToggle) {
+                mobileMenuToggle.addEventListener('click', toggleMobileMenu);
+            }
+            
+            // Close mobile menu when clicking on links
+            document.querySelectorAll('.mobile-nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    const mobileNav = document.getElementById('mobileNav');
+                    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+                    mobileNav.classList.remove('active');
+                    mobileMenuToggle.classList.remove('active');
+                });
+            });
+            
+            // Add scroll event listeners
+            window.addEventListener('scroll', () => {
+                handleScrollAnimations();
+                handleNavbarScroll();
+            });
+
+            // Add intersection observer for better performance
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all animation elements
+            document.querySelectorAll('.fade-in').forEach(el => {
+                observer.observe(el);
+            });
+        });
+    </script>
+</body>
+</html>

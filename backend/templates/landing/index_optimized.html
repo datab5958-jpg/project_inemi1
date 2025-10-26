@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INEMI – Creative AI Hub untuk Generasi Digital</title>
+  <meta name="description" content="Platform inovasi foto, video, dan musik berbasis AI. Ciptakan, bagikan, dan jelajahi dunia baru bersama teknologi kecerdasan buatan.">
+  
+  <!-- Preload critical fonts -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap"></noscript>
+  
+  <!-- GSAP CDN - Performance optimized -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  
+  <!-- Performance monitoring -->
+  <script>
+    // Real-time FPS monitoring for performance validation
+    let fps = 0;
+    let lastTime = performance.now();
+    let frameCount = 0;
+    
+    function measureFPS() {
+      frameCount++;
+      const currentTime = performance.now();
+      if (currentTime - lastTime >= 1000) {
+        fps = Math.round((frameCount * 1000) / (currentTime - lastTime));
+        frameCount = 0;
+        lastTime = currentTime;
+        
+        // Update FPS indicator
+        const fpsElement = document.getElementById('fpsValue');
+        const fpsIndicator = document.getElementById('fpsIndicator');
+        if (fpsElement && fpsIndicator) {
+          fpsElement.textContent = fps;
+          fpsIndicator.className = 'fps-indicator';
+          if (fps >= 50) fpsIndicator.classList.add('fps-excellent');
+          else if (fps >= 30) fpsIndicator.classList.add('fps-good');
+          else fpsIndicator.classList.add('fps-poor');
+        }
+        
+        // Performance warnings
+        if (fps < 30) console.warn(`Performance Alert: ${fps}fps - Consider reducing effects`);
+      }
+      requestAnimationFrame(measureFPS);
+    }
+    
+    // Start FPS monitoring
+    requestAnimationFrame(measureFPS);
+    
+    // Check for reduced motion preference
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    
+    // GPU layer promotion utility
+    function promoteToGPU(element) {
+      if (element) {
+        element.style.willChange = 'transform, opacity';
+        element.style.transform = 'translate3d(0,0,0)';
+        element.style.backfaceVisibility = 'hidden';
+        element.style.perspective = '1000px';
+      }
+    }
+    
+    // Performance-based animation scaling
+    function getPerformanceScale() {
+      if (fps < 20) return 0.1;  // Very low performance
+      if (fps < 30) return 0.3;  // Low performance
+      if (fps < 45) return 0.6;  // Medium performance
+      return 1;                  // Good performance
+    }
+  </script>
+
+  <style>
+    /* ===== PERFORMANCE-OPTIMIZED CSS VARIABLES ===== */
+    :root {
+      /* Dark Futuristic Color Palette - Optimized for performance */
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #1a1a2e;
+      --bg-tertiary: #16213e;
+      
+      /* Neon Accent Colors */
+      --accent-cyan: #00d4ff;
+      --accent-purple: #7c3aed;
+      --accent-blue: #4f46e5;
+      --accent-green: #10b981;
+      
+      /* Text Colors */
+      --text-primary: #ffffff;
+      --text-secondary: #e5e7eb;
+      --text-muted: #9ca3af;
+      
+      /* Performance-optimized glassmorphism (light blur for 60fps) */
+      --glass-bg: rgba(79, 70, 229, 0.05);
+      --glass-border: rgba(79, 70, 229, 0.1);
+      --glass-blur: blur(6px);  /* Reduced from 20px for performance */
+      --glass-blur-mobile: blur(3px);  /* Even lighter on mobile */
+      
+      /* Optimized shadows (reduced spread for performance) */
+      --shadow-glow: 0 0 20px rgba(0, 212, 255, 0.3);
+      --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.3);
+      --shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.4);
+      
+      /* Performance-optimized gradients */
+      --gradient-primary: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+      --gradient-cyber: linear-gradient(135deg, #00d4ff 0%, #4f46e5 100%);
+      --gradient-bg: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+      
+      /* GPU-optimized transitions */
+      --transition-fast: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-smooth: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ===== RESET & BASE STYLES ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--gradient-bg);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      /* GPU optimization */
+      transform: translate3d(0,0,0);
+      backface-visibility: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ===== PERFORMANCE-OPTIMIZED COMPONENTS ===== */
+    
+    /* FPS Indicator - Real-time performance monitoring */
+    .fps-indicator {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-family: 'Space Grotesk', monospace;
+      z-index: 1000;
+      transition: var(--transition-fast);
+    }
+    
+    .fps-excellent { color: var(--accent-green); }
+    .fps-good { color: var(--accent-cyan); }
+    .fps-poor { color: #ef4444; }
+
+    /* Glassmorphism Cards - Optimized for 60fps */
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      box-shadow: var(--shadow-card);
+      /* GPU optimization */
+      will-change: transform, opacity;
+      transform: translate3d(0,0,0);
+      backface-visibility: hidden;
+      transition: var(--transition-smooth);
+    }
+
+    .glass-card:hover {
+      transform: translate3d(0, -4px, 0);
+      box-shadow: var(--shadow-hover);
+    }
+
+    /* Hero Section - Performance optimized */
+    .hero-section {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-content {
+      text-align: center;
+      max-width: 800px;
+      padding: 0 20px;
+      /* GPU optimization */
+      will-change: transform, opacity;
+      transform: translate3d(0,0,0);
+    }
+
+    .hero-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      font-weight: 800;
+      background: var(--gradient-cyber);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+      /* GPU optimization */
+      will-change: transform, opacity;
+      transform: translate3d(0,0,0);
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1.1rem, 2vw, 1.3rem);
+      color: var(--text-secondary);
+      margin-bottom: 2rem;
+      /* GPU optimization */
+      will-change: transform, opacity;
+      transform: translate3d(0,0,0);
+    }
+
+    /* Feature Grid - Optimized layout */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      padding: 4rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .feature-card {
+      padding: 2rem;
+      text-align: center;
+      /* GPU optimization */
+      will-change: transform, opacity;
+      transform: translate3d(0,0,0);
+    }
+
+    .feature-icon {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 1rem;
+      background: var(--gradient-primary);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      /* GPU optimization */
+      will-change: transform, opacity;
+      transform: translate3d(0,0,0);
+    }
+
+    .feature-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text-primary);
+    }
+
+    .feature-description {
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* CTA Buttons - Performance optimized */
+    .cta-button {
+      display: inline-block;
+      padding: 12px 24px;
+      background: var(--gradient-primary);
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: var(--transition-fast);
+      /* GPU optimization */
+      will-change: transform, opacity;
+      transform: translate3d(0,0,0);
+    }
+
+    .cta-button:hover {
+      transform: translate3d(0, -2px, 0);
+      box-shadow: var(--shadow-glow);
+    }
+
+    /* Navigation - Optimized */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 1rem 2rem;
+      z-index: 100;
+      /* GPU optimization */
+      will-change: transform, opacity;
+      transform: translate3d(0,0,0);
+    }
+
+    .nav-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      background: var(--gradient-cyber);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      list-style: none;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: var(--transition-fast);
+      /* GPU optimization */
+      will-change: transform, opacity;
+      transform: translate3d(0,0,0);
+    }
+
+    .nav-link:hover {
+      color: var(--accent-cyan);
+      transform: translate3d(0, -1px, 0);
+    }
+
+    /* ===== PERFORMANCE-OPTIMIZED ANIMATIONS ===== */
+    
+    /* GPU-friendly keyframes using only transform and opacity */
+    @keyframes float {
+      0%, 100% { 
+        transform: translate3d(0, 0, 0); 
+      }
+      50% { 
+        transform: translate3d(0, -10px, 0); 
+      }
+    }
+
+    @keyframes glow {
+      0%, 100% { 
+        transform: scale(1) translate3d(0,0,0);
+        opacity: 0.8;
+      }
+      50% { 
+        transform: scale(1.05) translate3d(0,0,0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translate3d(0, 30px, 0);
+      }
+      to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    /* Animation classes - GPU optimized */
+    .animate-float {
+      animation: float 6s ease-in-out infinite;
+      will-change: transform;
+      transform: translate3d(0,0,0);
+    }
+
+    .animate-glow {
+      animation: glow 3s ease-in-out infinite;
+      will-change: transform, opacity;
+      transform: translate3d(0,0,0);
+    }
+
+    .animate-slide-up {
+      animation: slideInUp 0.6s ease-out forwards;
+      will-change: transform, opacity;
+      transform: translate3d(0,0,0);
+    }
+
+    /* ===== RESPONSIVE OPTIMIZATIONS ===== */
+    
+    /* Mobile optimizations for better performance */
+    @media (max-width: 768px) {
+      .glass-card {
+        backdrop-filter: var(--glass-blur-mobile);
+        -webkit-backdrop-filter: var(--glass-blur-mobile);
+      }
+      
+      .nav {
+        padding: 1rem;
+      }
+      
+      .nav-links {
+        gap: 1rem;
+      }
+      
+      .features-grid {
+        grid-template-columns: 1fr;
+        padding: 2rem 1rem;
+      }
+      
+      /* Reduce animations on mobile for better performance */
+      .animate-float,
+      .animate-glow {
+        animation-duration: 8s;
+      }
+    }
+
+    /* Very low-end device optimizations */
+    @media (max-width: 480px) {
+      .glass-card {
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        background: rgba(79, 70, 229, 0.1);
+      }
+      
+      /* Disable heavy animations on very low-end devices */
+      .animate-float,
+      .animate-glow {
+        animation: none;
+      }
+    }
+
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+      .animate-float,
+      .animate-glow,
+      .animate-slide-up,
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ===== PERFORMANCE MONITORING STYLES ===== */
+    .performance-indicator {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 11px;
+      font-family: 'Space Grotesk', monospace;
+      color: var(--text-muted);
+      z-index: 1000;
+    }
+
+    /* ===== LAYOUT CONTAINERS ===== */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .section {
+      padding: 4rem 0;
+    }
+
+    /* ===== UTILITY CLASSES ===== */
+    .text-center { text-align: center; }
+    .mb-1 { margin-bottom: 0.5rem; }
+    .mb-2 { margin-bottom: 1rem; }
+    .mb-3 { margin-bottom: 1.5rem; }
+    .mb-4 { margin-bottom: 2rem; }
+  </style>
+</head>
+
+<body>
+  <!-- FPS Performance Indicator -->
+  <div class="fps-indicator" id="fpsIndicator">
+    <span id="fpsValue">60</span> FPS
+  </div>
+
+  <!-- Performance Indicator -->
+  <div class="performance-indicator">
+    GPU Optimized | Hardware Accelerated
+  </div>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-content">
+      <div class="logo">INEMI</div>
+      <ul class="nav-links">
+        <li><a href="#home" class="nav-link">Home</a></li>
+        <li><a href="#features" class="nav-link">Features</a></li>
+        <li><a href="#about" class="nav-link">About</a></li>
+        <li><a href="#contact" class="nav-link">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero-section" id="home">
+    <div class="hero-content">
+      <h1 class="hero-title animate-slide-up">Creative AI Hub</h1>
+      <p class="hero-subtitle animate-slide-up">Platform inovasi foto, video, dan musik berbasis AI untuk generasi digital</p>
+      <div class="animate-slide-up">
+        <a href="#features" class="cta-button">Jelajahi Sekarang</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="text-center mb-4">
+        <h2 class="hero-title" style="font-size: 2.5rem;">Fitur Unggulan</h2>
+        <p class="hero-subtitle">Teknologi AI terdepan untuk kreativitas tanpa batas</p>
+      </div>
+      
+      <div class="features-grid">
+        <div class="glass-card feature-card animate-float">
+          <div class="feature-icon animate-glow">🎨</div>
+          <h3 class="feature-title">AI Photo Generator</h3>
+          <p class="feature-description">Ciptakan foto menakjubkan dengan teknologi AI terdepan. Dari potret hingga landscape, semuanya dalam hitungan detik.</p>
+        </div>
+        
+        <div class="glass-card feature-card animate-float" style="animation-delay: 0.5s;">
+          <div class="feature-icon animate-glow">🎬</div>
+          <h3 class="feature-title">Video AI Creator</h3>
+          <p class="feature-description">Transformasikan ide menjadi video berkualitas tinggi dengan AI. Efek visual, transisi, dan animasi profesional.</p>
+        </div>
+        
+        <div class="glass-card feature-card animate-float" style="animation-delay: 1s;">
+          <div class="feature-icon animate-glow">🎵</div>
+          <h3 class="feature-title">Music AI Composer</h3>
+          <p class="feature-description">Komposisi musik unik dengan AI. Dari beat elektronik hingga orkestra klasik, sesuai mood dan genre favorit.</p>
+        </div>
+        
+        <div class="glass-card feature-card animate-float" style="animation-delay: 1.5s;">
+          <div class="feature-icon animate-glow">🚀</div>
+          <h3 class="feature-title">Real-time Processing</h3>
+          <p class="feature-description">Proses AI super cepat dengan teknologi cloud terdepan. Hasil instan tanpa menunggu lama.</p>
+        </div>
+        
+        <div class="glass-card feature-card animate-float" style="animation-delay: 2s;">
+          <div class="feature-icon animate-glow">🎯</div>
+          <h3 class="feature-title">Smart Customization</h3>
+          <p class="feature-description">Personalisasi konten sesuai preferensi. AI belajar dari gaya dan selera Anda untuk hasil yang lebih akurat.</p>
+        </div>
+        
+        <div class="glass-card feature-card animate-float" style="animation-delay: 2.5s;">
+          <div class="feature-icon animate-glow">💎</div>
+          <h3 class="feature-title">Premium Quality</h3>
+          <p class="feature-description">Output berkualitas tinggi hingga 4K. Cocok untuk profesional dan kebutuhan komersial.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="section" id="about">
+    <div class="container">
+      <div class="glass-card" style="padding: 3rem; text-align: center;">
+        <h2 class="hero-title mb-3" style="font-size: 2.5rem;">Tentang INEMI</h2>
+        <p class="hero-subtitle mb-4" style="max-width: 600px; margin: 0 auto 2rem;">
+          INEMI adalah platform AI kreatif yang menghadirkan masa depan teknologi untuk generasi digital. 
+          Dengan teknologi machine learning terdepan, kami memungkinkan setiap orang menjadi kreator profesional.
+        </p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+          <a href="#contact" class="cta-button">Mulai Sekarang</a>
+          <a href="#features" class="cta-button" style="background: transparent; border: 1px solid var(--accent-cyan); color: var(--accent-cyan);">Pelajari Lebih</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section class="section" id="contact">
+    <div class="container">
+      <div class="text-center mb-4">
+        <h2 class="hero-title" style="font-size: 2.5rem;">Hubungi Kami</h2>
+        <p class="hero-subtitle">Siap memulai perjalanan kreatif Anda?</p>
+      </div>
+      
+      <div class="features-grid">
+        <div class="glass-card feature-card">
+          <div class="feature-icon">📧</div>
+          <h3 class="feature-title">Email</h3>
+          <p class="feature-description">hello@inemi.ai</p>
+        </div>
+        
+        <div class="glass-card feature-card">
+          <div class="feature-icon">💬</div>
+          <h3 class="feature-title">Discord</h3>
+          <p class="feature-description">Join komunitas kreator</p>
+        </div>
+        
+        <div class="glass-card feature-card">
+          <div class="feature-icon">🐦</div>
+          <h3 class="feature-title">Twitter</h3>
+          <p class="feature-description">@inemi_ai</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer style="background: var(--bg-secondary); padding: 2rem 0; text-align: center; border-top: 1px solid var(--glass-border);">
+    <div class="container">
+      <p style="color: var(--text-muted);">&copy; 2024 INEMI. All rights reserved. | GPU Optimized for 60fps Performance</p>
+    </div>
+  </footer>
+
+  <!-- ===== PERFORMANCE-OPTIMIZED JAVASCRIPT ===== -->
+  <script>
+    // GSAP Performance Setup
+    gsap.registerPlugin(ScrollTrigger);
+    
+    // Set GSAP defaults for maximum performance
+    gsap.defaults({
+      ease: "power2.out",
+      duration: 0.4,
+      force3D: true,  // Force hardware acceleration
+      lazy: false
+    });
+
+    // Performance-optimized animations
+    function initOptimizedAnimations() {
+      if (prefersReducedMotion) return;
+
+      const performanceScale = getPerformanceScale();
+      
+      // Hero section animations - GPU optimized
+      gsap.timeline()
+        .from('.hero-title', {
+          y: 30,
+          opacity: 0,
+          duration: 0.6 * performanceScale,
+          ease: "power3.out",
+          force3D: true
+        })
+        .from('.hero-subtitle', {
+          y: 20,
+          opacity: 0,
+          duration: 0.4 * performanceScale,
+          ease: "power2.out",
+          force3D: true
+        }, "-=0.3")
+        .from('.cta-button', {
+          y: 20,
+          opacity: 0,
+          duration: 0.4 * performanceScale,
+          ease: "power2.out",
+          force3D: true
+        }, "-=0.2");
+
+      // Scroll-triggered animations - Only if performance is good
+      if (performanceScale > 0.5) {
+        gsap.utils.toArray('.feature-card').forEach((card, index) => {
+          gsap.fromTo(card, 
+            { 
+              y: 30, 
+              opacity: 0 
+            },
+            {
+              y: 0,
+              opacity: 1,
+              duration: 0.5 * performanceScale,
+              ease: "power2.out",
+              force3D: true,
+              scrollTrigger: {
+                trigger: card,
+                start: "top 85%",
+                end: "bottom 15%",
+                toggleActions: "play none none reverse",
+                fastScrollEnd: true  // Optimize for fast scrolling
+              }
+            }
+          );
+        });
+      }
+
+      // Smooth scroll for navigation links
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) {
+            gsap.to(window, {
+              duration: 1,
+              scrollTo: { y: target, offsetY: 80 },
+              ease: "power2.inOut"
+            });
+          }
+        });
+      });
+    }
+
+    // Adaptive performance scaling
+    function adaptPerformance() {
+      const scale = getPerformanceScale();
+      
+      // Scale GSAP timeline speed based on performance
+      gsap.globalTimeline.timeScale(scale);
+      
+      // Adjust blur effects based on performance
+      const blurIntensity = scale > 0.7 ? 'var(--glass-blur)' : 
+                           scale > 0.4 ? 'var(--glass-blur-mobile)' : 'none';
+      
+      document.querySelectorAll('.glass-card').forEach(card => {
+        card.style.backdropFilter = blurIntensity;
+        card.style.webkitBackdropFilter = blurIntensity;
+      });
+      
+      // Add performance classes to body
+      document.body.className = document.body.className.replace(/performance-\w+/g, '');
+      if (scale < 0.3) {
+        document.body.classList.add('performance-low');
+        gsap.killTweensOf("*"); // Kill all animations on very low performance
+      } else if (scale < 0.6) {
+        document.body.classList.add('performance-medium');
+      } else {
+        document.body.classList.add('performance-high');
+      }
+    }
+
+    // Initialize everything when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      // Wait for performance to stabilize
+      setTimeout(() => {
+        initOptimizedAnimations();
+        adaptPerformance();
+      }, 100);
+      
+      // Promote all animated elements to GPU layers
+      document.querySelectorAll('.glass-card, .hero-title, .hero-subtitle, .feature-icon, .cta-button').forEach(promoteToGPU);
+      
+      // Adaptive performance scaling every 2 seconds
+      setInterval(adaptPerformance, 2000);
+    });
+
+    // Optimize scroll performance
+    let ticking = false;
+    function updateScrollEffects() {
+      // Add any scroll-based effects here
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        requestAnimationFrame(updateScrollEffects);
+        ticking = true;
+      }
+    }, { passive: true });
+
+    // Memory cleanup
+    window.addEventListener('beforeunload', () => {
+      gsap.killTweensOf("*");
+    });
+  </script>
+</body>
+</html>

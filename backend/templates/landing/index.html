@@ -1,0 +1,2936 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INEMI - AI Creative Platform</title>
+    
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'dark-navy': '#0f172a',
+                        'neon-cyan': '#06b6d4',
+                        'neon-purple': '#8b5cf6',
+                        'light-blue': '#38bdf8',
+                        'dark-gray': '#1e293b',
+                        'glass': 'rgba(255, 255, 255, 0.1)',
+                    },
+                    fontFamily: {
+                        'orbitron': ['Orbitron', 'monospace'],
+                        'poppins': ['Poppins', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'slide-up': 'slideUp 0.8s ease-out',
+                        'fade-in': 'fadeIn 1s ease-out',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        glow: {
+                            '0%': { textShadow: '0 0 20px #06b6d4, 0 0 30px #06b6d4, 0 0 40px #06b6d4' },
+                            '100%': { textShadow: '0 0 30px #8b5cf6, 0 0 40px #8b5cf6, 0 0 50px #8b5cf6' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(50px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Custom CSS untuk optimasi performa dan efek khusus */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+        
+      body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        /* GPU Acceleration untuk elemen animasi */
+        .gpu-accelerated {
+            will-change: transform, opacity;
+            transform: translate3d(0, 0, 0);
+        }
+        
+        /* Glassmorphism effect */
+        .glass {
+      background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Neon glow effect */
+        .neon-glow {
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+        }
+        
+        /* Floating particles */
+        .floating-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, rgba(56, 189, 248, 0.8) 0%, rgba(167, 139, 250, 0.4) 50%, transparent 100%);
+            border-radius: 50%;
+            animation: float-particle 8s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes float-particle {
+            0%, 100% {
+                transform: translateY(0px) translateX(0px) scale(1);
+                opacity: 0.6;
+            }
+            25% {
+                transform: translateY(-20px) translateX(10px) scale(1.2);
+                opacity: 0.8;
+            }
+            50% {
+                transform: translateY(-10px) translateX(-15px) scale(0.8);
+                opacity: 0.4;
+            }
+            75% {
+                transform: translateY(-30px) translateX(5px) scale(1.1);
+                opacity: 0.7;
+            }
+        }
+        
+        /* Volumetric light effect */
+        .volumetric-light {
+            background: radial-gradient(ellipse at center, rgba(56, 189, 248, 0.1) 0%, rgba(167, 139, 250, 0.05) 50%, transparent 100%);
+            animation: breathe 4s ease-in-out infinite;
+        }
+        
+        @keyframes breathe {
+            0%, 100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.6;
+                transform: scale(1.1);
+            }
+        }
+        
+        .neon-glow:hover {
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.5);
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #06b6d4, #8b5cf6);
+      border-radius: 4px;
+        }
+        
+        /* Three.js canvas styling */
+        #three-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.8;
+    }
+
+        
+        #image-3d-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+            z-index: 1;
+            opacity: 0.3;
+      pointer-events: none;
+    }
+
+        /* 3D Gallery Container */
+        .gallery-3d-container {
+      position: relative;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.5), rgba(30, 41, 59, 0.5));
+            border-radius: 1rem;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Glow effect for 3D elements */
+        .glow-3d {
+            filter: drop-shadow(0 0 20px rgba(6, 182, 212, 0.3));
+        }
+        
+        .glow-3d:hover {
+            filter: drop-shadow(0 0 30px rgba(139, 92, 246, 0.5));
+        }
+        
+        /* Performance optimized animations */
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+            will-change: transform;
+        }
+        
+        .animate-glow {
+            animation: glow 2s ease-in-out infinite alternate;
+            will-change: text-shadow;
+        }
+        
+        /* Responsive optimizations */
+    @media (max-width: 768px) {
+            .glass {
+        backdrop-filter: blur(10px);
+            }
+            
+            .neon-glow {
+                box-shadow: 0 0 15px rgba(6, 182, 212, 0.2);
+            }
+        }
+        
+        /* Fallback untuk browser yang tidak support WebGL */
+        .no-webgl {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+        }
+
+        /* Music Card Styles - Modern & Clean Design */
+        .music-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 20px;
+            padding: 0;
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+      overflow: hidden;
+      cursor: pointer;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.12),
+                0 2px 8px rgba(0, 0, 0, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .music-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(251, 194, 235, 0.15) 0%, 
+                rgba(166, 193, 238, 0.15) 50%,
+                rgba(185, 251, 192, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            z-index: 1;
+            border-radius: 20px;
+        }
+
+        .music-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.2),
+                0 8px 16px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(251, 194, 235, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            border-color: rgba(251, 194, 235, 0.3);
+        }
+
+        .music-card:hover::before {
+      opacity: 1;
+    }
+
+        /* Artwork section with enhanced styling */
+        .music-cover {
+            width: 100%;
+            height: 75%;
+            object-fit: cover;
+            border-radius: 20px 20px 0 0;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      position: relative;
+      z-index: 2;
+            filter: brightness(0.95) contrast(1.05);
+        }
+
+        .music-card:hover .music-cover {
+            transform: scale(1.05);
+            filter: brightness(1.1) contrast(1.1);
+        }
+
+        /* Info section with modern glassmorphism */
+        .music-info {
+            height: 25%;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background: linear-gradient(180deg, 
+                rgba(0, 0, 0, 0.4) 0%, 
+                rgba(0, 0, 0, 0.6) 100%);
+            backdrop-filter: blur(15px);
+      position: relative;
+      z-index: 2;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .music-info::before {
+      content: '';
+      position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 255, 0.2) 50%, 
+                transparent 100%);
+        }
+
+        .music-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 6px;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.02em;
+        }
+
+        .music-artist {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.72rem;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+        }
+
+        .music-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: auto;
+        }
+
+        .play-button {
+            width: 2.2rem;
+            height: 2.2rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FBC2EB 0%, #A6C1EE 100%);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: 
+                0 4px 12px rgba(251, 194, 235, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .play-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .play-button:hover {
+            transform: scale(1.15);
+            box-shadow: 
+                0 6px 20px rgba(251, 194, 235, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        .play-button:hover::before {
+      opacity: 1;
+        }
+
+        .play-button.playing {
+            background: linear-gradient(135deg, #B9FBC0 0%, #A7F3D0 100%);
+            box-shadow: 
+                0 4px 12px rgba(185, 251, 192, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .play-button.playing:hover {
+            box-shadow: 
+                0 6px 20px rgba(185, 251, 192, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        .music-duration {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.68rem;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 8px;
+      border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Progress bar for playing music */
+        .music-progress-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 0 0 20px 20px;
+      overflow: hidden;
+        }
+
+        .music-progress {
+      height: 100%;
+            background: linear-gradient(90deg, #FBC2EB 0%, #A6C1EE 100%);
+            width: 0%;
+            transition: width 0.1s ease;
+            border-radius: 0 0 20px 20px;
+        }
+
+        /* Playing state indicator */
+        .music-card.playing {
+            border-color: rgba(251, 194, 235, 0.4);
+        box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.12),
+                0 2px 8px rgba(0, 0, 0, 0.08),
+                0 0 0 2px rgba(251, 194, 235, 0.3),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .music-card.playing .music-cover {
+            filter: brightness(1.1) contrast(1.1) saturate(1.2);
+        }
+
+        /* Enhanced hover overlay effect */
+        .music-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, 
+                transparent 30%, 
+                rgba(255, 255, 255, 0.08) 50%, 
+                transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+            z-index: 3;
+            pointer-events: none;
+            border-radius: 20px;
+        }
+
+        .music-card:hover::after {
+            transform: translateX(100%);
+        }
+
+        /* Floating play button on hover */
+        .music-card:hover .play-button {
+      position: absolute;
+            top: 50%;
+      left: 50%;
+            transform: translate(-50%, -50%) scale(1.3);
+            z-index: 4;
+      box-shadow: 
+                0 8px 25px rgba(251, 194, 235, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+        }
+
+        /* Subtle pulse animation for playing state */
+        .play-button.playing {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 4px 12px rgba(185, 251, 192, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3); }
+            50% { box-shadow: 0 6px 20px rgba(185, 251, 192, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.4); }
+            100% { box-shadow: 0 4px 12px rgba(185, 251, 192, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3); }
+        }
+
+        /* Music Loading Animation */
+        .music-loading {
+        display: flex;
+        justify-content: center;
+            align-items: center;
+            padding: 5rem 0;
+        }
+
+        .music-spinner {
+            width: 3rem;
+            height: 3rem;
+            border: 3px solid rgba(251, 194, 235, 0.3);
+            border-top: 3px solid #FBC2EB;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Music Grid - Enhanced Design */
+        @media (max-width: 640px) {
+            .music-card {
+                border-radius: 16px;
+            }
+            
+            .music-cover {
+                border-radius: 16px 16px 0 0;
+            }
+            
+            .music-info {
+                padding: 12px;
+                border-radius: 0 0 16px 16px;
+            }
+            
+            .play-button {
+                width: 1.8rem;
+                height: 1.8rem;
+                font-size: 0.75rem;
+                border-width: 1px;
+      }
+      
+      .music-title {
+                font-size: 0.8rem;
+        font-weight: 600;
+      }
+      
+      .music-artist {
+                font-size: 0.7rem;
+            }
+            
+            .music-duration {
+                font-size: 0.65rem;
+                padding: 3px 6px;
+            }
+        }
+
+        @media (min-width: 641px) and (max-width: 768px) {
+            .music-info {
+                padding: 14px;
+            }
+            
+            .play-button {
+                width: 2rem;
+                height: 2rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .music-info {
+                padding: 16px;
+            }
+            
+            .play-button {
+                width: 2.2rem;
+                height: 2.2rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (min-width: 1025px) {
+            .music-info {
+                padding: 16px;
+            }
+            
+            .play-button {
+                width: 2.2rem;
+                height: 2.2rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        /* Enhanced mobile hover effects */
+        @media (hover: none) and (pointer: coarse) {
+            .music-card:hover {
+                transform: none;
+            }
+            
+            .music-card:hover .play-button {
+                position: static;
+                transform: scale(1.1);
+            }
+            
+            .music-card:hover .music-cover {
+                transform: none;
+            }
+        }
+
+        /* Login/Register Button Styles */
+        .nav-login-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .nav-login-btn::before {
+      content: '';
+            position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease-in-out;
+        }
+
+        .nav-login-btn:hover::before {
+      left: 100%;
+    }
+
+        .nav-register-btn {
+      position: relative;
+      overflow: hidden;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .nav-register-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%);
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+      z-index: -1;
+        }
+
+        .nav-register-btn:hover::after {
+      opacity: 1;
+    }
+
+        /* Mobile Menu Login/Register Styles */
+        .mobile-login-btn {
+            transition: all 0.3s ease-in-out;
+        }
+
+        .mobile-login-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .mobile-register-btn {
+            transition: all 0.3s ease-in-out;
+            position: relative;
+            overflow: hidden;
+    }
+
+        .mobile-register-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease-in-out;
+        }
+
+        .mobile-register-btn:hover::before {
+            left: 100%;
+        }
+
+        .mobile-register-btn:hover {
+            transform: scale(1.02);
+        }
+
+        /* Futuristic Pinterest Gallery Styles - Optimized */
+        .gallery-card {
+            break-inside: avoid;
+            margin-bottom: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                       box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            transform: translate3d(0, 20px, 0);
+            position: relative;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            will-change: transform, opacity;
+            contain: layout style paint;
+        }
+
+        .gallery-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(139, 92, 246, 0.1));
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            z-index: 1;
+        }
+
+        .gallery-card:hover::before {
+            opacity: 1;
+        }
+
+        .gallery-card:hover {
+            transform: translate3d(0, -8px, 0) scale(1.02);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(6, 182, 212, 0.3),
+                0 0 30px rgba(6, 182, 212, 0.2);
+        }
+
+        .gallery-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 2;
+            will-change: transform;
+        }
+
+        .gallery-card:hover img {
+            transform: scale(1.05);
+        }
+
+        .gallery-card-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(6, 182, 212, 0.3));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 3;
+            backdrop-filter: blur(10px);
+            will-change: opacity;
+        }
+
+        .gallery-card:hover .gallery-card-overlay {
+            opacity: 1;
+        }
+
+        .gallery-card-actions {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .gallery-card-action {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                       background 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            will-change: transform, background;
+        }
+
+        .gallery-card-action::before {
+      content: '';
+      position: absolute;
+      top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .gallery-card-action:hover::before {
+            opacity: 1;
+        }
+
+        .gallery-card-action:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .gallery-card-action.love:hover {
+            background: linear-gradient(135deg, #f472b6, #ec4899);
+            border-color: #f472b6;
+            box-shadow: 0 0 25px rgba(244, 114, 182, 0.5);
+        }
+
+        .gallery-card-action.share:hover {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border-color: #8b5cf6;
+            box-shadow: 0 0 25px rgba(139, 92, 246, 0.5);
+        }
+
+
+        /* Futuristic Filter Button Styles */
+        .filter-btn.active {
+            background: linear-gradient(135deg, #06b6d4, #3b82f6);
+            color: white;
+            border-color: #06b6d4;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+        }
+
+        .filter-btn {
+            transition: all 0.5s ease-in-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .filter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+      width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease-in-out;
+        }
+
+        .filter-btn:hover::before {
+            left: 100%;
+        }
+
+        .filter-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(6, 182, 212, 0.3);
+        }
+
+        /* Gallery Animation */
+        @keyframes galleryCardFadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .gallery-card:nth-child(1) { animation-delay: 0.1s; }
+        .gallery-card:nth-child(2) { animation-delay: 0.2s; }
+        .gallery-card:nth-child(3) { animation-delay: 0.3s; }
+        .gallery-card:nth-child(4) { animation-delay: 0.4s; }
+        .gallery-card:nth-child(5) { animation-delay: 0.5s; }
+        .gallery-card:nth-child(6) { animation-delay: 0.6s; }
+        .gallery-card:nth-child(7) { animation-delay: 0.7s; }
+        .gallery-card:nth-child(8) { animation-delay: 0.8s; }
+        .gallery-card:nth-child(9) { animation-delay: 0.9s; }
+        .gallery-card:nth-child(10) { animation-delay: 1.0s; }
+
+        /* Performance optimizations for gallery */
+        #gallery-grid {
+            contain: layout style paint;
+            transform: translateZ(0);
+        }
+        
+        .gallery-card img {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+        
+        /* Responsive Gallery */
+        @media (max-width: 640px) {
+            #gallery-grid {
+                columns: 2;
+                column-gap: 1rem;
+            }
+            
+            .gallery-card {
+                margin-bottom: 1rem;
+            }
+            
+            .gallery-card img {
+                max-width: 100%;
+                height: auto;
+            }
+        }
+
+        @media (min-width: 641px) and (max-width: 768px) {
+            #gallery-grid {
+                columns: 3;
+                column-gap: 1.5rem;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 1024px) {
+            #gallery-grid {
+                columns: 4;
+                column-gap: 1.5rem;
+            }
+        }
+
+        @media (min-width: 1025px) and (max-width: 1280px) {
+            #gallery-grid {
+                columns: 5;
+                column-gap: 1.5rem;
+            }
+        }
+
+        @media (min-width: 1281px) {
+            #gallery-grid {
+                columns: 5;
+                column-gap: 1.5rem;
+            }
+        }
+
+        /* Mobile Menu Styles */
+        #mobile-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0 0 16px 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: translateY(-10px);
+            opacity: 0;
+            transition: all 0.3s ease-in-out;
+        }
+
+        #mobile-menu:not(.hidden) {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        #mobile-menu-btn {
+            position: relative;
+            z-index: 60;
+        }
+
+        #mobile-menu-btn:hover {
+            transform: scale(1.1);
+        }
+
+        #mobile-menu a {
+            border-radius: 8px;
+            margin: 2px 8px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        #mobile-menu a:hover {
+            background: rgba(6, 182, 212, 0.1);
+            transform: translateX(5px);
+        }
+    </style>
+</head>
+<body class="bg-dark-navy text-white">
+    <!-- Three.js Canvas untuk background 3D -->
+    <canvas id="three-canvas"></canvas>
+    
+    
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full z-50 glass border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0">
+                    <h1 class="text-2xl font-orbitron font-bold bg-gradient-to-r from-neon-cyan to-neon-purple bg-clip-text text-transparent animate-glow">
+                        INEMI
+                    </h1>
+    </div>
+
+                <!-- Navigation Menu -->
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-8">
+                        <a href="#home" class="text-white hover:text-neon-cyan transition-colors duration-300 font-medium">Home</a>
+                        <a href="#gallery-3d" class="text-white hover:text-neon-cyan transition-colors duration-300 font-medium">3D Gallery</a>
+                        <a href="#music" class="text-white hover:text-neon-cyan transition-colors duration-300 font-medium">Music</a>
+                        <a href="#features" class="text-white hover:text-neon-cyan transition-colors duration-300 font-medium">Features</a>
+                        <a href="#about" class="text-white hover:text-neon-cyan transition-colors duration-300 font-medium">About</a>
+                        <a href="#contact" class="text-white hover:text-neon-cyan transition-colors duration-300 font-medium">Contact</a>
+                    </div>
+        </div>
+        
+                <!-- Login/Register Buttons -->
+                <div class="hidden md:block">
+                    <div class="flex items-center space-x-4">
+                        <a href="/login" class="nav-login-btn text-white hover:text-neon-cyan transition-colors duration-300 font-medium px-4 py-2 rounded-full hover:bg-white/10">
+                            Login
+                        </a>
+                        <a href="/register" class="nav-register-btn bg-gradient-to-r from-neon-cyan to-neon-purple text-white px-6 py-2 rounded-full font-medium hover:scale-105 transition-transform duration-300 neon-glow">
+                            Register
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-white hover:text-neon-cyan transition-colors duration-300">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+                    </button>
+        </div>
+        </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="md:hidden hidden glass border-t border-white/10">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="#home" class="block px-3 py-2 text-white hover:text-neon-cyan transition-colors duration-300">Home</a>
+                <a href="#gallery-3d" class="block px-3 py-2 text-white hover:text-neon-cyan transition-colors duration-300">3D Gallery</a>
+                <a href="#music" class="block px-3 py-2 text-white hover:text-neon-cyan transition-colors duration-300">Music</a>
+                <a href="#features" class="block px-3 py-2 text-white hover:text-neon-cyan transition-colors duration-300">Features</a>
+                <a href="#about" class="block px-3 py-2 text-white hover:text-neon-cyan transition-colors duration-300">About</a>
+                <a href="#contact" class="block px-3 py-2 text-white hover:text-neon-cyan transition-colors duration-300">Contact</a>
+                <div class="pt-2 border-t border-white/10">
+                    <a href="/login" class="mobile-login-btn block px-3 py-2 text-white hover:text-neon-cyan transition-colors duration-300 hover:bg-white/10 rounded-lg">
+                        Login
+                    </a>
+                    <a href="/register" class="mobile-register-btn block px-3 py-2 bg-gradient-to-r from-neon-cyan to-neon-purple text-white rounded-lg font-medium text-center">
+                        Register
+                    </a>
+                </div>
+                </div>
+                </div>
+    </nav>
+    
+    <!-- Futuristic Hero Section with Volumetric Lighting -->
+    <section id="home" class="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <!-- 3D Volumetric Background -->
+        <div id="hero-3d-container" class="absolute inset-0">
+            <canvas id="hero-3d-canvas" class="w-full h-full"></canvas>
+        </div>
+        
+        <!-- Volumetric Light Overlay -->
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none"></div>
+        
+        <!-- Content Overlay -->
+        <div class="relative z-10 text-center px-4 max-w-4xl mx-auto">
+            <div class="mb-8 animate-slide-up">
+                <h1 class="text-6xl md:text-8xl font-orbitron font-bold mb-6 animate-glow">
+                    <span class="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+                        INEMI
+                    </span>
+                </h1>
+                <div class="w-32 h-1 bg-gradient-to-r from-cyan-400 to-purple-600 mx-auto rounded-full shadow-lg shadow-cyan-400/50"></div>
+            </div>
+            
+            <p class="text-xl md:text-2xl text-slate-300 mb-8 leading-relaxed font-light animate-slide-up" style="animation-delay: 0.2s;">
+                Innovating the Future with Intelligence
+            </p>
+            <p class="text-lg text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed animate-slide-up" style="animation-delay: 0.4s;">
+                Kami mengembangkan solusi digital dan AI untuk dunia yang lebih efisien dan cerdas.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-6 justify-center animate-slide-up" style="animation-delay: 0.6s;">
+                <button class="group px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold rounded-full hover:from-cyan-600 hover:to-blue-700 transition-all duration-500 transform hover:scale-105 shadow-lg hover:shadow-cyan-500/25 relative overflow-hidden gpu-accelerated">
+                    <span class="relative z-10">Pelajari Lebih Lanjut</span>
+                    <div class="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                </button>
+                <button class="group px-8 py-4 border-2 border-cyan-400 text-cyan-400 font-semibold rounded-full hover:bg-cyan-400 hover:text-slate-900 transition-all duration-500 transform hover:scale-105 relative overflow-hidden gpu-accelerated">
+                    <span class="relative z-10">Lihat Demo</span>
+                    <div class="absolute inset-0 bg-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Floating Particles Overlay -->
+        <div class="absolute inset-0 pointer-events-none">
+            <div class="floating-particle" style="top: 20%; left: 10%; animation-delay: 0s;"></div>
+            <div class="floating-particle" style="top: 60%; left: 80%; animation-delay: 2s;"></div>
+            <div class="floating-particle" style="top: 80%; left: 20%; animation-delay: 4s;"></div>
+            <div class="floating-particle" style="top: 30%; left: 70%; animation-delay: 6s;"></div>
+            <div class="floating-particle" style="top: 70%; left: 50%; animation-delay: 8s;"></div>
+        </div>
+    </section>
+
+
+    <!-- Futuristic Pinterest Gallery Section -->
+    <section id="pinterest-gallery" class="py-20 relative min-h-screen">
+        <!-- Futuristic Background -->
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-500/10 via-transparent to-transparent"></div>
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-500/10 via-transparent to-transparent"></div>
+            
+            <!-- Floating Particles -->
+            <div class="absolute top-20 left-10 w-4 h-4 bg-cyan-400 rounded-full animate-float opacity-60"></div>
+            <div class="absolute top-40 right-20 w-6 h-6 bg-purple-400 rounded-full animate-float opacity-40" style="animation-delay: -2s;"></div>
+            <div class="absolute bottom-40 left-20 w-3 h-3 bg-blue-400 rounded-full animate-float opacity-50" style="animation-delay: -4s;"></div>
+            <div class="absolute top-60 left-1/2 w-2 h-2 bg-emerald-400 rounded-full animate-float opacity-70" style="animation-delay: -1s;"></div>
+        </div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Futuristic Header -->
+            <div class="text-center mb-16">
+                <div class="inline-block mb-6">
+                    <h2 class="text-4xl md:text-6xl font-orbitron font-bold mb-4">
+                        <span class="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent">
+                            CREATIVE MATRIX
+                        </span>
+                    </h2>
+                    <div class="w-32 h-1 bg-gradient-to-r from-cyan-400 to-purple-600 mx-auto rounded-full"></div>
+                </div>
+                
+                <div class="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-8 max-w-4xl mx-auto">
+                    <p class="text-xl text-slate-200 font-poppins leading-relaxed">
+                        Discover and explore the infinite possibilities of AI-generated creativity. 
+                        Each image represents a unique vision brought to life through advanced technology.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Futuristic Filter Categories -->
+            <div class="flex flex-wrap justify-center gap-4 mb-12">
+                <button class="filter-btn active px-8 py-3 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium transition-all duration-500 hover:scale-105 hover:shadow-cyan-500/50 border border-cyan-400/30" data-category="all">
+                    <span class="relative z-10">ALL DIMENSIONS</span>
+                </button>
+                <button class="filter-btn px-8 py-3 rounded-full bg-white/5 text-slate-300 font-medium border border-white/20 transition-all duration-500 hover:bg-cyan-500/20 hover:border-cyan-400/50 hover:scale-105 backdrop-blur-md" data-category="art">
+                    <span class="relative z-10">DIGITAL ART</span>
+                </button>
+                <button class="filter-btn px-8 py-3 rounded-full bg-white/5 text-slate-300 font-medium border border-white/20 transition-all duration-500 hover:bg-purple-500/20 hover:border-purple-400/50 hover:scale-105 backdrop-blur-md" data-category="tech">
+                    <span class="relative z-10">TECH MATRIX</span>
+                </button>
+                <button class="filter-btn px-8 py-3 rounded-full bg-white/5 text-slate-300 font-medium border border-white/20 transition-all duration-500 hover:bg-emerald-500/20 hover:border-emerald-400/50 hover:scale-105 backdrop-blur-md" data-category="design">
+                    <span class="relative z-10">FUTURE DESIGN</span>
+                </button>
+                <button class="filter-btn px-8 py-3 rounded-full bg-white/5 text-slate-300 font-medium border border-white/20 transition-all duration-500 hover:bg-blue-500/20 hover:border-blue-400/50 hover:scale-105 backdrop-blur-md" data-category="nature">
+                    <span class="relative z-10">NATURE 2.0</span>
+                </button>
+            </div>
+
+
+            <!-- Futuristic Gallery Grid - Optimized -->
+            <div id="gallery-grid" class="columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-6 space-y-6" style="contain: layout style paint;">
+                <!-- Images will be loaded here dynamically -->
+            </div>
+
+            <!-- Load More Button -->
+            <div class="text-center mt-16">
+                <button id="load-more-btn" class="group relative px-12 py-4 bg-gradient-to-r from-cyan-500 to-purple-600 text-white font-semibold rounded-full text-lg shadow-2xl transition-all duration-500 border border-cyan-400/30 hover:scale-105 hover:shadow-cyan-500/50 overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-r from-cyan-400 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    <span class="relative z-10">LOAD MORE DIMENSIONS</span>
+                    <div class="absolute inset-0 bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+                </button>
+            </div>
+
+            <!-- No Images Message -->
+            <div id="no-images-message" class="text-center py-16 hidden">
+                <div class="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-12 max-w-md mx-auto">
+                    <div class="text-cyan-400 text-8xl mb-6">🔮</div>
+                    <h3 class="text-2xl font-semibold text-slate-200 mb-4">No Images Found</h3>
+                    <p class="text-slate-400">No images available in the database. Try adjusting your filters or check back later for new content.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Music Gallery Section -->
+    <section id="music" class="py-20 relative min-h-screen">
+        <!-- Animated Background -->
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-pink-200/20 to-purple-300/20 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-cyan-200/20 to-blue-300/20 rounded-full blur-3xl animate-pulse" style="animation-delay: 2s;"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <!-- Section Header -->
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-orbitron font-bold mb-6">
+                    <span class="bg-gradient-to-r from-pink-300 via-purple-300 to-cyan-300 bg-clip-text text-transparent">
+                        MUSIC GALLERY
+                    </span>
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    Discover and enjoy our curated collection of AI-generated music
+                </p>
+            </div>
+
+            <!-- Music Loading Spinner -->
+            <div id="music-loading" class="flex justify-center items-center py-20">
+                <div class="spinner"></div>
+                <span class="ml-4 text-gray-300">Loading music...</span>
+            </div>
+
+            <!-- Music Grid -->
+            <div id="music-grid" class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5 gap-3 md:gap-4 lg:gap-5 hidden">
+                <!-- Music cards will be dynamically loaded here -->
+            </div>
+
+            <!-- Load More Button -->
+            <div class="text-center mt-12">
+                <button id="load-more-music" class="glass-card px-8 py-3 rounded-2xl text-white font-medium hover:scale-105 transition-all duration-500 ease-in-out hidden">
+                    Load More Music
+                </button>
+            </div>
+
+            <!-- No Music Message -->
+            <div id="no-music-message" class="text-center py-20 hidden">
+                <div class="text-6xl mb-4">🎵</div>
+                <h3 class="text-2xl font-semibold text-gray-300 mb-2">No Music Available</h3>
+                <p class="text-gray-400">Check back later for new music releases</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl md:text-5xl font-orbitron font-bold mb-6">
+                    <span class="bg-gradient-to-r from-neon-cyan to-neon-purple bg-clip-text text-transparent">
+                        POWERFUL FEATURES
+                    </span>
+                </h2>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto">
+                    Discover the tools that will revolutionize your creative process
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Feature Card 1 -->
+                <div class="feature-card glass rounded-2xl p-8 text-center hover:scale-105 transition-transform duration-300 gpu-accelerated">
+                    <div class="w-16 h-16 bg-gradient-to-r from-neon-cyan to-light-blue rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+        </div>
+                    <h3 class="text-xl font-semibold mb-4 text-white">AI Image Generation</h3>
+                    <p class="text-gray-300">Create stunning visuals with advanced AI algorithms</p>
+                </div>
+                
+                <!-- Feature Card 2 -->
+                <div class="feature-card glass rounded-2xl p-8 text-center hover:scale-105 transition-transform duration-300 gpu-accelerated">
+                    <div class="w-16 h-16 bg-gradient-to-r from-neon-purple to-pink-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                        </svg>
+                </div>
+                    <h3 class="text-xl font-semibold mb-4 text-white">Music Composition</h3>
+                    <p class="text-gray-300">Generate original music with AI-powered composition</p>
+                </div>
+                
+                <!-- Feature Card 3 -->
+                <div class="feature-card glass rounded-2xl p-8 text-center hover:scale-105 transition-transform duration-300 gpu-accelerated">
+                    <div class="w-16 h-16 bg-gradient-to-r from-light-blue to-neon-cyan rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                </div>
+                    <h3 class="text-xl font-semibold mb-4 text-white">Lightning Fast</h3>
+                    <p class="text-gray-300">Optimized for speed and performance</p>
+            </div>
+                
+                <!-- Feature Card 4 -->
+                <div class="feature-card glass rounded-2xl p-8 text-center hover:scale-105 transition-transform duration-300 gpu-accelerated">
+                    <div class="w-16 h-16 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4 text-white">Secure & Private</h3>
+                    <p class="text-gray-300">Your creations are protected and private</p>
+        </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="animate-fade-in">
+                    <h2 class="text-4xl md:text-5xl font-orbitron font-bold mb-6">
+                        <span class="bg-gradient-to-r from-neon-cyan to-neon-purple bg-clip-text text-transparent">
+                            ABOUT INEMI
+                        </span>
+                    </h2>
+                    <p class="text-xl text-gray-300 mb-8 leading-relaxed">
+                        INEMI is a cutting-edge AI platform that empowers creators to push the boundaries 
+                        of imagination. Our advanced algorithms and intuitive interface make it easy to 
+                        generate stunning visuals and compose original music.
+                    </p>
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <div class="w-2 h-2 bg-neon-cyan rounded-full mr-4"></div>
+                            <span class="text-gray-300">Advanced AI Technology</span>
+                            </div>
+                        <div class="flex items-center">
+                            <div class="w-2 h-2 bg-neon-purple rounded-full mr-4"></div>
+                            <span class="text-gray-300">User-Friendly Interface</span>
+                            </div>
+                        <div class="flex items-center">
+                            <div class="w-2 h-2 bg-light-blue rounded-full mr-4"></div>
+                            <span class="text-gray-300">High-Quality Output</span>
+                            </div>
+                    </div>
+                    </div>
+            
+                <div class="relative">
+                    <div class="glass rounded-2xl p-8 text-center">
+                        <div class="w-32 h-32 bg-gradient-to-r from-neon-cyan to-neon-purple rounded-full flex items-center justify-center mx-auto mb-6 animate-float">
+                            <svg class="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                </div>
+                        <h3 class="text-2xl font-semibold mb-4 text-white">Innovation at its Core</h3>
+                        <p class="text-gray-300">Built with the latest AI technology to deliver exceptional results</p>
+            </div>
+                        </div>
+                        </div>
+                    </div>
+    </section>
+    
+    <!-- Contact Section -->
+    <section id="contact" class="py-20 relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl md:text-5xl font-orbitron font-bold mb-6">
+                <span class="bg-gradient-to-r from-neon-cyan to-neon-purple bg-clip-text text-transparent">
+                    GET IN TOUCH
+                </span>
+            </h2>
+            <p class="text-xl text-gray-300 mb-12 max-w-3xl mx-auto">
+                Ready to start your creative journey? Let's build something amazing together.
+            </p>
+            
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <button class="bg-gradient-to-r from-neon-cyan to-neon-purple text-white px-8 py-4 rounded-full text-lg font-medium hover:scale-105 transition-transform duration-300 neon-glow gpu-accelerated">
+                    Start Free Trial
+                </button>
+                <button class="border border-neon-cyan text-neon-cyan px-8 py-4 rounded-full text-lg font-medium hover:bg-neon-cyan hover:text-dark-navy transition-all duration-300 gpu-accelerated">
+                    Contact Sales
+                </button>
+                </div>
+                </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="py-12 border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-2xl font-orbitron font-bold bg-gradient-to-r from-neon-cyan to-neon-purple bg-clip-text text-transparent mb-4">
+                        INEMI
+                    </h3>
+                    <p class="text-gray-300">
+                        Empowering creators with AI technology
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 text-white">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#home" class="text-gray-300 hover:text-neon-cyan transition-colors duration-300">Home</a></li>
+                        <li><a href="#features" class="text-gray-300 hover:text-neon-cyan transition-colors duration-300">Features</a></li>
+                        <li><a href="#about" class="text-gray-300 hover:text-neon-cyan transition-colors duration-300">About</a></li>
+                        <li><a href="#contact" class="text-gray-300 hover:text-neon-cyan transition-colors duration-300">Contact</a></li>
+                    </ul>
+                    </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 text-white">Follow Us</h4>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-300 hover:text-neon-cyan transition-colors duration-300">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-neon-cyan transition-colors duration-300">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M22.46 6c-.77.35-1.6.58-2.46.69.88-.53 1.56-1.37 1.88-2.38-.83.5-1.75.85-2.72 1.05C18.37 4.5 17.26 4 16 4c-2.35 0-4.27 1.92-4.27 4.29 0 .34.04.67.11.98C8.28 9.09 5.11 7.38 3 4.79c-.37.63-.58 1.37-.58 2.15 0 1.49.75 2.81 1.91 3.56-.71 0-1.37-.2-1.95-.5v.03c0 2.08 1.48 3.82 3.44 4.21a4.22 4.22 0 0 1-1.93.07 4.28 4.28 0 0 0 4 2.98 8.521 8.521 0 0 1-5.33 1.84c-.34 0-.68-.02-1.02-.06C3.44 20.29 5.7 21 8.12 21 16 21 20.33 14.46 20.33 8.79c0-.19 0-.37-.01-.56.84-.6 1.56-1.36 2.14-2.23z"/>
+                            </svg>
+                        </a>
+                        <a href="#" class="text-gray-300 hover:text-neon-cyan transition-colors duration-300">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12.017 0C5.396 0 .029 5.367.029 11.987c0 5.079 3.158 9.417 7.618 11.174-.105-.949-.199-2.403.041-3.439.219-.937 1.406-5.957 1.406-5.957s-.359-.72-.359-1.781c0-1.663.967-2.911 2.168-2.911 1.024 0 1.518.769 1.518 1.688 0 1.029-.653 2.567-.992 3.992-.285 1.193.6 2.165 1.775 2.165 2.128 0 3.768-2.245 3.768-5.487 0-2.861-2.063-4.869-5.008-4.869-3.41 0-5.409 2.562-5.409 5.199 0 1.033.394 2.143.889 2.741.099.12.112.225.085.345-.09.375-.293 1.199-.334 1.363-.053.225-.172.271-.402.165-1.495-.69-2.433-2.878-2.433-4.646 0-3.776 2.748-7.252 7.92-7.252 4.158 0 7.392 2.967 7.392 6.923 0 4.135-2.607 7.462-6.233 7.462-1.214 0-2.357-.629-2.746-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24.009 12.017 24.009c6.624 0 11.99-5.367 11.99-11.988C24.007 5.367 18.641.001.012.001z"/>
+                            </svg>
+                        </a>
+                </div>
+            </div>
+        </div>
+            
+            <div class="mt-8 pt-8 border-t border-white/10 text-center">
+                <p class="text-gray-400">
+                    © 2024 INEMI. All rights reserved. Built with ❤️ and AI.
+                </p>
+    </div>
+  </div>
+    </footer>
+
+    <!-- JavaScript untuk Three.js dan interaktivitas -->
+    <script>
+        // Performance monitoring
+        let fps = 0;
+        let lastTime = performance.now();
+        let frameCount = 0;
+        
+        // Three.js Volumetric Lighting Scene Setup
+        let heroScene, heroCamera, heroRenderer, heroParticles, heroLights;
+        let mouseX = 0, mouseY = 0;
+        let windowHalfX = window.innerWidth / 2;
+        let windowHalfY = window.innerHeight / 2;
+        let time = 0;
+        
+        
+        // Check WebGL support
+        function initWebGL() {
+            try {
+                const canvas = document.createElement('canvas');
+                return !!(window.WebGLRenderingContext && canvas.getContext('webgl'));
+            } catch (e) {
+                return false;
+            }
+        }
+        
+        // Initialize Volumetric Lighting Scene
+        function initVolumetricLighting() {
+            if (!initWebGL()) {
+                document.body.classList.add('no-webgl');
+                return;
+            }
+            
+            // Scene setup
+            heroScene = new THREE.Scene();
+            heroScene.fog = new THREE.Fog(0x0f172a, 50, 200);
+            
+            // Camera setup
+            heroCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            heroCamera.position.set(0, 0, 5);
+            
+            // Renderer setup dengan optimasi performa
+            heroRenderer = new THREE.WebGLRenderer({
+                canvas: document.getElementById('hero-3d-canvas'),
+                alpha: true,
+                antialias: true,
+                powerPreference: "high-performance"
+            });
+            heroRenderer.setSize(window.innerWidth, window.innerHeight);
+            heroRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); // Limit untuk performa
+            heroRenderer.setClearColor(0x0f172a, 0);
+            
+            // Lighting setup - Volumetric lighting
+            heroLights = {
+                ambient: new THREE.AmbientLight(0x404040, 0.3),
+                directional: new THREE.DirectionalLight(0x38bdf8, 1.2),
+                point1: new THREE.PointLight(0xa78bfa, 0.8, 50),
+                point2: new THREE.PointLight(0x38bdf8, 0.6, 30)
+            };
+            
+            // Position lights for volumetric effect
+            heroLights.directional.position.set(5, 5, 5);
+            heroLights.directional.castShadow = false;
+            
+            heroLights.point1.position.set(-3, 2, 3);
+            heroLights.point2.position.set(3, -2, 3);
+            
+            // Add lights to scene
+            heroScene.add(heroLights.ambient);
+            heroScene.add(heroLights.directional);
+            heroScene.add(heroLights.point1);
+            heroScene.add(heroLights.point2);
+            
+            // Create volumetric particle system
+            createVolumetricParticles();
+            
+            // Start animation loop
+            animateVolumetric();
+        }
+        
+        // Create volumetric particles
+        function createVolumetricParticles() {
+            const particleCount = 1000;
+            const geometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(particleCount * 3);
+            const colors = new Float32Array(particleCount * 3);
+            const sizes = new Float32Array(particleCount);
+            
+            // Generate particles
+            for (let i = 0; i < particleCount; i++) {
+                const i3 = i * 3;
+                
+                // Random positions in a sphere
+                const radius = Math.random() * 20 + 5;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.random() * Math.PI;
+                
+                positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+                positions[i3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+                positions[i3 + 2] = radius * Math.cos(phi);
+                
+                // Blue to purple gradient colors
+                const colorIntensity = Math.random() * 0.5 + 0.5;
+                colors[i3] = 0.22 + Math.random() * 0.1; // Blue component
+                colors[i3 + 1] = 0.49 + Math.random() * 0.2; // Green component
+                colors[i3 + 2] = 0.97 + Math.random() * 0.03; // Red component
+                
+                // Random sizes
+                sizes[i] = Math.random() * 2 + 0.5;
+            }
+            
+            geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+            geometry.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+            
+            // Create particle material
+            const material = new THREE.PointsMaterial({
+                size: 0.1,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.6,
+                blending: THREE.AdditiveBlending
+            });
+            
+            // Create particle system
+            heroParticles = new THREE.Points(geometry, material);
+            heroScene.add(heroParticles);
+        }
+        
+        // Animate volumetric lighting
+        function animateVolumetric() {
+            requestAnimationFrame(animateVolumetric);
+            
+            time += 0.01;
+            
+            // Animate particles
+            if (heroParticles) {
+                heroParticles.rotation.y += 0.001;
+                heroParticles.rotation.x += 0.0005;
+                
+                // Breathing effect for particles
+                const positions = heroParticles.geometry.attributes.position.array;
+                for (let i = 0; i < positions.length; i += 3) {
+                    positions[i + 1] += Math.sin(time + i * 0.01) * 0.001;
+                }
+                heroParticles.geometry.attributes.position.needsUpdate = true;
+            }
+            
+            // Animate lights - breathing effect
+            if (heroLights) {
+                const breatheIntensity = 0.5 + Math.sin(time * 0.5) * 0.3;
+                heroLights.directional.intensity = 1.2 * breatheIntensity;
+                heroLights.point1.intensity = 0.8 * breatheIntensity;
+                heroLights.point2.intensity = 0.6 * breatheIntensity;
+                
+                // Subtle light movement
+                heroLights.point1.position.x = -3 + Math.sin(time * 0.3) * 0.5;
+                heroLights.point1.position.y = 2 + Math.cos(time * 0.4) * 0.3;
+                heroLights.point2.position.x = 3 + Math.cos(time * 0.2) * 0.4;
+                heroLights.point2.position.y = -2 + Math.sin(time * 0.5) * 0.2;
+            }
+            
+            // Parallax camera movement
+            if (heroCamera) {
+                heroCamera.position.x += (mouseX * 0.0001 - heroCamera.position.x) * 0.05;
+                heroCamera.position.y += (-mouseY * 0.0001 - heroCamera.position.y) * 0.05;
+                heroCamera.lookAt(heroScene.position);
+            }
+            
+            // Render
+            if (heroRenderer && heroScene && heroCamera) {
+                heroRenderer.render(heroScene, heroCamera);
+            }
+        }
+        
+        // Mouse movement handler for parallax
+        function onMouseMove(event) {
+            mouseX = event.clientX - windowHalfX;
+            mouseY = event.clientY - windowHalfY;
+        }
+        
+        // Window resize handler
+        function onWindowResize() {
+            windowHalfX = window.innerWidth / 2;
+            windowHalfY = window.innerHeight / 2;
+            
+            if (heroCamera && heroRenderer) {
+                heroCamera.aspect = window.innerWidth / window.innerHeight;
+                heroCamera.updateProjectionMatrix();
+                heroRenderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+        
+        // Add event listeners
+        window.addEventListener('mousemove', onMouseMove, false);
+        window.addEventListener('resize', onWindowResize, false);
+        
+        
+        
+        // Function untuk menampilkan error message
+        function showErrorMessage(message) {
+            const errorMsg = document.createElement('div');
+            errorMsg.className = 'absolute inset-0 flex items-center justify-center bg-red-500/20 text-red-400 px-8 py-4 rounded-lg border border-red-500/30 backdrop-blur-sm';
+            errorMsg.innerHTML = `
+                <div class="text-center">
+                    <svg class="w-12 h-12 mx-auto mb-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-lg font-medium">${message}</p>
+                    <p class="text-sm mt-2">Please check your database connection</p>
+                </div>
+            `;
+            document.getElementById('gallery-3d').appendChild(errorMsg);
+            
+            // Auto-hide error message
+            setTimeout(() => {
+                if (errorMsg.parentNode) {
+                    errorMsg.parentNode.removeChild(errorMsg);
+                }
+            }, 5000);
+        }
+        
+        // Gallery animation loop
+        
+        
+        
+        // Animation loop dengan optimasi performa
+        
+        // Mouse movement handler
+        function onMouseMove(event) {
+            mouseX = event.clientX - windowHalfX;
+            mouseY = event.clientY - windowHalfY;
+        }
+        
+        // Window resize handler
+        function onWindowResize() {
+            windowHalfX = window.innerWidth / 2;
+            windowHalfY = window.innerHeight / 2;
+            
+            if (camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        }
+        
+        // Intersection Observer untuk animasi scroll
+        function initScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-slide-up');
+                    }
+                });
+            }, observerOptions);
+
+            // Observe feature cards
+            document.querySelectorAll('.feature-card').forEach(card => {
+      observer.observe(card);
+    });
+        }
+        
+        // Mobile menu toggle
+        function initMobileMenu() {
+            console.log('🔧 Initializing mobile menu...');
+            
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            if (!mobileMenuBtn) {
+                console.error('❌ Mobile menu button not found');
+                return;
+            }
+            
+            if (!mobileMenu) {
+                console.error('❌ Mobile menu not found');
+                return;
+            }
+            
+            console.log('✅ Mobile menu elements found');
+            
+            // Toggle menu on button click
+            mobileMenuBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('📱 Mobile menu button clicked');
+                
+                const isHidden = mobileMenu.classList.contains('hidden');
+                if (isHidden) {
+                    mobileMenu.classList.remove('hidden');
+                    console.log('📱 Mobile menu opened');
+                } else {
+                    mobileMenu.classList.add('hidden');
+                    console.log('📱 Mobile menu closed');
+                }
+            });
+            
+            // Close menu when clicking on links
+            const menuLinks = mobileMenu.querySelectorAll('a');
+            console.log(`📱 Found ${menuLinks.length} menu links`);
+            
+            menuLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                    console.log('📱 Mobile menu closed after link click');
+                });
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!mobileMenuBtn.contains(e.target) && !mobileMenu.contains(e.target)) {
+                    mobileMenu.classList.add('hidden');
+                }
+            });
+            
+            console.log('✅ Mobile menu initialized successfully');
+        }
+
+        // Smooth scrolling untuk navigation links
+        function initSmoothScrolling() {
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      });
+    });
+        }
+        
+        // Performance optimization: Throttle scroll events
+        function throttle(func, limit) {
+            let inThrottle;
+            return function() {
+                const args = arguments;
+                const context = this;
+                if (!inThrottle) {
+                    func.apply(context, args);
+                    inThrottle = true;
+                    setTimeout(() => inThrottle = false, limit);
+                }
+            }
+        }
+        
+        // FPS Counter untuk Gallery
+        function updateFPSCounter() {
+            const fpsElement = document.getElementById('fps-counter');
+            if (fpsElement) {
+                fpsElement.textContent = fps;
+                
+                // Change color based on FPS
+                if (fps >= 50) {
+                    fpsElement.style.color = '#10b981'; // Green
+                } else if (fps >= 30) {
+                    fpsElement.style.color = '#f59e0b'; // Yellow
+                } else {
+                    fpsElement.style.color = '#ef4444'; // Red
+                }
+            }
+        }
+        
+        // Gallery resize handler
+        
+        // Pinterest Gallery Functions
+        let currentPage = 1;
+        let currentCategory = 'all';
+        let isLoading = false;
+        let hasMoreImages = true;
+
+        async function initPinterestGallery() {
+            console.log('🚀 Initializing Futuristic Pinterest Gallery...');
+            
+            // Check if gallery elements exist
+            const galleryGrid = document.getElementById('gallery-grid');
+            const noImagesMessage = document.getElementById('no-images-message');
+            
+            console.log('🔍 Gallery elements check:', {
+                galleryGrid: !!galleryGrid,
+                noImagesMessage: !!noImagesMessage
+            });
+            
+            if (!galleryGrid) {
+                console.error('❌ Gallery grid element not found!');
+                return;
+            }
+            
+            // Load initial images
+            await loadGalleryImages();
+            
+            // Setup filter buttons
+            setupFilterButtons();
+            
+            // Setup load more button
+            setupLoadMoreButton();
+            
+            // Setup scroll animations
+            setupScrollAnimations();
+        }
+
+        async function loadGalleryImages(page = 1, category = 'all') {
+            if (isLoading) return;
+            
+            isLoading = true;
+            const galleryGrid = document.getElementById('gallery-grid');
+            const noImagesMessage = document.getElementById('no-images-message');
+            
+            if (page === 1) {
+                galleryGrid.innerHTML = '';
+                noImagesMessage.classList.add('hidden');
+            }
+
+            try {
+                console.log(`🖼️ Loading gallery images from database - Page: ${page}, Category: ${category}`);
+                
+                // Load from database images API only
+                const response = await fetch(`/api/landing/images?page=${page}&per_page=20`);
+                let images = [];
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    images = data.data || []; // API returns 'data' not 'items'
+                    console.log(`🖼️ Loaded ${images.length} images from database:`, images);
+                    
+                    // Update hasMoreImages based on API pagination
+                    if (data.pagination) {
+                        hasMoreImages = data.pagination.has_next || false;
+                        console.log(`🖼️ Pagination info:`, data.pagination);
+                    }
+                    
+                    // Filter by category if not 'all'
+                    if (category !== 'all' && images.length > 0) {
+                        images = images.filter(img => {
+                            // Use category from API or filter by title/description
+                            const imgCategory = img.category || '';
+                            const title = (img.title || '').toLowerCase();
+                            const description = (img.description || '').toLowerCase();
+                            const text = `${title} ${description} ${imgCategory}`;
+                            
+                            switch(category) {
+                                case 'art':
+                                    return text.includes('art') || text.includes('painting') || text.includes('drawing') || text.includes('creative') || imgCategory.toLowerCase() === 'art';
+                                case 'tech':
+                                    return text.includes('tech') || text.includes('ai') || text.includes('digital') || text.includes('cyber') || text.includes('future') || imgCategory.toLowerCase() === 'sci-fi';
+                                case 'design':
+                                    return text.includes('design') || text.includes('ui') || text.includes('ux') || text.includes('graphic') || text.includes('logo') || imgCategory.toLowerCase() === 'digital';
+                                case 'nature':
+                                    return text.includes('nature') || text.includes('landscape') || text.includes('forest') || text.includes('mountain') || text.includes('ocean') || imgCategory.toLowerCase() === 'nature';
+                                default:
+                                    return true;
+                            }
+                        });
+                        console.log(`🖼️ Filtered to ${images.length} images for category: ${category}`);
+                    }
+                } else {
+                    console.error('❌ Failed to fetch images from API:', response.status, response.statusText);
+                    const errorText = await response.text();
+                    console.error('❌ Error response:', errorText);
+                }
+                
+                // Only show images from database, no fallback
+                if (images.length === 0) {
+                    if (page === 1) {
+                        noImagesMessage.classList.remove('hidden');
+                    }
+                    hasMoreImages = false;
+                } else {
+                    // hasMoreImages already set from API pagination above
+                    displayGalleryImages(images, page === 1);
+                }
+                
+            } catch (error) {
+                console.error('❌ Error loading gallery images:', error);
+                
+                // Show no images message on error
+                if (page === 1) {
+                    noImagesMessage.classList.remove('hidden');
+                }
+                hasMoreImages = false;
+            } finally {
+                isLoading = false;
+                console.log('🔄 Loading state reset');
+            }
+        }
+
+
+        function displayGalleryImages(images, isFirstPage = false) {
+            const galleryGrid = document.getElementById('gallery-grid');
+            
+            console.log(`🖼️ Displaying ${images.length} images, isFirstPage: ${isFirstPage}`);
+            
+            if (isFirstPage) {
+                galleryGrid.innerHTML = '';
+            }
+            
+            // Use document fragment for better performance
+            const fragment = document.createDocumentFragment();
+            
+            images.forEach((image, index) => {
+                console.log(`🖼️ Processing image ${index + 1}:`, image);
+                const card = createGalleryCard(image, index);
+                fragment.appendChild(card);
+            });
+            
+            // Append all cards at once for better performance
+            galleryGrid.appendChild(fragment);
+            
+            console.log(`🖼️ Gallery grid now has ${galleryGrid.children.length} cards`);
+            
+            // Update load more button visibility
+            const loadMoreBtn = document.getElementById('load-more-btn');
+            if (hasMoreImages) {
+                loadMoreBtn.classList.remove('hidden');
+            } else {
+                loadMoreBtn.classList.add('hidden');
+            }
+        }
+
+        function createGalleryCard(image, index) {
+            const card = document.createElement('div');
+            card.className = 'gallery-card';
+            
+            // Use database image data - API returns 'image_url' field
+            const imageUrl = image.image_url || 'https://via.placeholder.com/400x600/1e293b/06b6d4?text=Matrix+Loading';
+            const imageTitle = image.title || 'AI Generated Image';
+            const imageId = image.id || `img-${index}`;
+            
+            console.log(`🖼️ Creating card for image:`, { id: imageId, url: imageUrl, title: imageTitle });
+            
+            card.innerHTML = `
+                <div class="relative">
+                    <img src="${imageUrl}" 
+                         loading="lazy"
+                         onerror="this.src='https://via.placeholder.com/400x600/1e293b/06b6d4?text=Matrix+Loading'">
+                    
+                    <div class="gallery-card-overlay">
+                        <div class="gallery-card-actions">
+                            <div class="gallery-card-action love" onclick="handleLove('${imageId}')" title="Save to Matrix">
+                                ✨
+                            </div>
+                            <div class="gallery-card-action share" onclick="handleShare('${imageId}')" title="Share Dimension">
+                                🚀
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Optimized animation using requestAnimationFrame
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translate3d(0, 0, 0)';
+                }, index * 50); // Reduced delay for smoother animation
+            });
+            
+            return card;
+        }
+
+        function setupFilterButtons() {
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            
+            filterButtons.forEach(button => {
+                button.addEventListener('click', async () => {
+                    // Update active state
+                    filterButtons.forEach(btn => {
+                        btn.classList.remove('active');
+                        btn.classList.add('bg-white', 'text-gray-700', 'border', 'border-gray-200');
+                        btn.classList.remove('bg-purple-500', 'text-white');
+                    });
+                    
+                    button.classList.add('active');
+                    button.classList.remove('bg-white', 'text-gray-700', 'border', 'border-gray-200');
+                    button.classList.add('bg-purple-500', 'text-white');
+                    
+                    // Update current category and reset pagination
+                    currentCategory = button.dataset.category;
+                    currentPage = 1;
+                    hasMoreImages = true;
+                    
+                    // Load images for new category
+                    await loadGalleryImages(1, currentCategory);
+                });
+            });
+        }
+
+        function setupLoadMoreButton() {
+            const loadMoreBtn = document.getElementById('load-more-btn');
+            
+            loadMoreBtn.addEventListener('click', async () => {
+                if (!isLoading && hasMoreImages) {
+                    currentPage++;
+                    await loadGalleryImages(currentPage, currentCategory);
+                }
+            });
+        }
+
+        function setupScrollAnimations() {
+            // Optimized intersection observer with better performance
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        // Use requestAnimationFrame for smooth animation
+                        requestAnimationFrame(() => {
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translate3d(0, 0, 0)';
+                        });
+                        // Stop observing once animated
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -20px 0px'
+            });
+            
+            // Observe gallery cards with debouncing
+            const observeCards = () => {
+                const galleryCards = document.querySelectorAll('.gallery-card:not(.observed)');
+                galleryCards.forEach(card => {
+                    card.classList.add('observed');
+                    observer.observe(card);
+                });
+            };
+            
+            // Initial observation
+            observeCards();
+            
+            // Re-observe when new cards are added
+            const galleryGrid = document.getElementById('gallery-grid');
+            if (galleryGrid) {
+                const mutationObserver = new MutationObserver(observeCards);
+                mutationObserver.observe(galleryGrid, { childList: true });
+            }
+        }
+
+        function handleLove(imageId) {
+            console.log(`✨ Saved to Matrix: ${imageId}`);
+            // Add love functionality here
+            // Could save to localStorage or send to API
+            
+            // Show feedback
+            const button = event.target.closest('.gallery-card-action');
+            button.style.background = 'linear-gradient(135deg, #f472b6, #ec4899)';
+            button.style.transform = 'scale(1.3)';
+            setTimeout(() => {
+                button.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        function handleShare(imageId) {
+            console.log(`🚀 Shared Dimension: ${imageId}`);
+            // Add share functionality here
+            // Could open share modal or copy link
+            
+            // Show feedback
+            const button = event.target.closest('.gallery-card-action');
+            button.style.background = 'linear-gradient(135deg, #8b5cf6, #7c3aed)';
+            button.style.transform = 'scale(1.3)';
+            setTimeout(() => {
+                button.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        
+        // Cleanup function untuk memory management
+        window.addEventListener('beforeunload', function() {
+            if (renderer) {
+                renderer.dispose();
+            }
+            if (scene) {
+                scene.clear();
+            }
+            if (galleryRenderer) {
+                galleryRenderer.dispose();
+            }
+            if (galleryScene) {
+                galleryScene.clear();
+            }
+    });
+
+    // Music Player Functionality
+    let currentMusicPage = 1;
+    let currentMusicGenre = 'all';
+    let isLoadingMusic = false;
+    let currentPlayingAudio = null;
+    let currentPlayingButton = null;
+
+    // Load music from database
+    async function loadMusic() {
+        if (isLoadingMusic) return;
+        
+        console.log('🎵 Loading music...');
+        isLoadingMusic = true;
+        const loadingElement = document.getElementById('music-loading');
+        const musicGrid = document.getElementById('music-grid');
+        const noMusicMessage = document.getElementById('no-music-message');
+        const loadMoreButton = document.getElementById('load-more-music');
+        
+        // Check if elements exist
+        if (!loadingElement || !musicGrid || !noMusicMessage || !loadMoreButton) {
+            console.error('❌ Music gallery elements not found');
+            return;
+        }
+        
+        try {
+            loadingElement.classList.remove('hidden');
+            musicGrid.classList.add('hidden');
+            noMusicMessage.classList.add('hidden');
+            
+            console.log(`📡 Fetching: /api/landing/music?page=${currentMusicPage}&per_page=40&genre=${currentMusicGenre}`);
+            const response = await fetch(`/api/landing/music?page=${currentMusicPage}&per_page=40&genre=${currentMusicGenre}`);
+         
+         if (!response.ok) {
+           throw new Error(`HTTP error! status: ${response.status}`);
+         }
+         
+         const data = await response.json();
+            console.log('📊 Music data received:', data);
+            
+            if (data.success && data.data && data.data.length > 0) {
+                if (currentMusicPage === 1) {
+                    musicGrid.innerHTML = '';
+                }
+                
+                data.data.forEach((song, index) => {
+                    console.log(`🎶 Creating card for song ${index + 1}:`, song.title);
+                    const musicCard = createMusicCard(song);
+                    musicGrid.appendChild(musicCard);
+                });
+                
+                musicGrid.classList.remove('hidden');
+                console.log(`✅ Loaded ${data.data.length} music cards`);
+                
+                // Show/hide load more button
+                if (data.has_more) {
+                    loadMoreButton.classList.remove('hidden');
+         } else {
+                    loadMoreButton.classList.add('hidden');
+                }
+                
+                // Animate new cards
+                animateNewMusicCards();
+            } else {
+                console.log('ℹ️ No music data available, showing fallback data');
+                if (currentMusicPage === 1) {
+                    // Show fallback music data for testing
+                    showFallbackMusic();
+                }
+                loadMoreButton.classList.add('hidden');
+            }
+        } catch (error) {
+            console.error('❌ Error loading music:', error);
+            if (currentMusicPage === 1) {
+                noMusicMessage.classList.remove('hidden');
+                // Show error message
+                noMusicMessage.innerHTML = `
+                    <div class="text-6xl mb-4">⚠️</div>
+                    <h3 class="text-2xl font-semibold text-gray-300 mb-2">Error Loading Music</h3>
+                    <p class="text-gray-400">Unable to connect to music database. Please try again later.</p>
+                    <button onclick="loadMusic()" class="mt-4 px-6 py-2 bg-gradient-to-r from-neon-cyan to-neon-purple text-white rounded-full hover:scale-105 transition-transform duration-300">
+                        Retry
+                    </button>
+                `;
+            }
+        } finally {
+            loadingElement.classList.add('hidden');
+            isLoadingMusic = false;
+        }
+    }
+
+    // Create music card element - Artwork Focused Design
+    function createMusicCard(song) {
+        console.log('🎶 Creating music card for:', song);
+        
+         const card = document.createElement('div');
+        card.className = 'music-card gpu-optimized';
+        
+        // Use correct field names from API
+        const imageUrl = song.cover_image_url || song.image_url || 'https://via.placeholder.com/300x300/6366f1/ffffff?text=Music+Cover';
+        const audioUrl = song.music_url || song.audio_url || '#';
+        const title = song.title || 'Untitled Song';
+        const artist = song.created_by || song.artist || 'Unknown Artist';
+        const duration = song.duration || '3:45';
+        
+         card.innerHTML = `
+            <img src="${imageUrl}" 
+                 alt="${title}" 
+                 class="music-cover"
+                 loading="lazy"
+                 decoding="async"
+                 onerror="this.src='https://via.placeholder.com/300x300/6366f1/ffffff?text=Music+Cover'">
+            <div class="music-info">
+                <div>
+                    <h3 class="music-title">${title}</h3>
+                    <p class="music-artist">${artist}</p>
+             </div>
+                <div class="music-controls">
+                    <button class="play-button" data-audio-url="${audioUrl}" data-song-id="${song.id}">
+                        <span class="play-icon">▶</span>
+                    </button>
+                    <span class="music-duration">${duration}</span>
+           </div>
+           </div>
+            <div class="music-progress-container">
+                <div class="music-progress"></div>
+            </div>
+            <audio preload="none" data-song-id="${song.id}">
+                <source src="${audioUrl}" type="audio/mpeg">
+                <source src="${audioUrl}" type="audio/wav">
+                <source src="${audioUrl}" type="audio/ogg">
+                Your browser does not support the audio element.
+            </audio>
+        `;
+        
+        // Add click event to play button
+        const playButton = card.querySelector('.play-button');
+        const audio = card.querySelector('audio');
+        
+        if (playButton && audio) {
+            playButton.addEventListener('click', (e) => {
+           e.stopPropagation();
+                toggleMusicPlayback(audio, playButton);
+            });
+        }
+        
+        // Add click event to entire card for future features
+        card.addEventListener('click', (e) => {
+            if (e.target !== playButton && !playButton.contains(e.target)) {
+                // Future: Open music details modal
+                console.log('Card clicked:', title);
+            }
+        });
+        
+        return card;
+    }
+
+    // Enhanced music playback functionality
+    let currentPlayingCard = null;
+    let progressInterval = null;
+
+    function toggleMusicPlayback(audio, button) {
+        const card = button.closest('.music-card');
+        
+        console.log('🎵 Toggle called - Audio paused:', audio.paused);
+        console.log('🎵 Current playing audio:', currentPlayingAudio);
+        console.log('🎵 Current playing button:', currentPlayingButton);
+        
+        // Stop current playing audio if different
+        if (currentPlayingAudio && currentPlayingAudio !== audio) {
+            console.log('🎵 Stopping different audio');
+            stopCurrentAudio();
+        }
+        
+        if (audio.paused) {
+            console.log('🎵 Playing audio');
+            playAudio(audio, button, card);
+            } else {
+            console.log('🎵 Pausing audio');
+            pauseAudio(audio, button, card);
+        }
+    }
+
+    function playAudio(audio, button, card) {
+        console.log('🎵 playAudio called');
+        
+        // Set up audio event listeners
+        audio.addEventListener('timeupdate', () => updateProgress(audio, card));
+        audio.addEventListener('ended', () => stopCurrentAudio());
+        audio.addEventListener('error', (e) => handleAudioError(e, button, card));
+        
+        // Play audio
+        audio.play().then(() => {
+            console.log('🎵 Audio play promise resolved');
+            
+            // Update UI state
+            button.classList.add('playing');
+            button.querySelector('.play-icon').textContent = '⏸';
+            card.classList.add('playing');
+            
+            // Set current playing references
+            currentPlayingAudio = audio;
+            currentPlayingButton = button;
+            currentPlayingCard = card;
+            
+            // Start progress tracking
+            startProgressTracking(audio, card);
+            
+            console.log('🎵 Music started playing:', card.querySelector('.music-title').textContent);
+            console.log('🎵 Current playing audio set to:', currentPlayingAudio);
+        }).catch(error => {
+            console.error('Error playing audio:', error);
+            handleAudioError(error, button, card);
+        });
+    }
+
+    function pauseAudio(audio, button, card) {
+        console.log('🎵 pauseAudio called');
+        
+        audio.pause();
+        button.classList.remove('playing');
+        button.querySelector('.play-icon').textContent = '▶';
+        card.classList.remove('playing');
+        
+        stopProgressTracking();
+        
+        // Reset current playing references for pause
+        resetCurrentAudio();
+        
+        console.log('🎵 Music paused');
+        console.log('🎵 Current playing audio after pause:', currentPlayingAudio);
+    }
+
+    function stopCurrentAudio() {
+        if (currentPlayingAudio) {
+            currentPlayingAudio.pause();
+            currentPlayingAudio.currentTime = 0;
+        }
+        
+        if (currentPlayingButton) {
+            currentPlayingButton.classList.remove('playing');
+            currentPlayingButton.querySelector('.play-icon').textContent = '▶';
+        }
+        
+        if (currentPlayingCard) {
+            currentPlayingCard.classList.remove('playing');
+            // Reset progress bar
+            const progressBar = currentPlayingCard.querySelector('.music-progress');
+            if (progressBar) {
+                progressBar.style.width = '0%';
+            }
+        }
+        
+        stopProgressTracking();
+        
+        // Reset all current playing references
+        currentPlayingAudio = null;
+        currentPlayingButton = null;
+        currentPlayingCard = null;
+    }
+
+    function resetCurrentAudio() {
+        // Reset current playing references without stopping audio
+        currentPlayingAudio = null;
+        currentPlayingButton = null;
+        currentPlayingCard = null;
+    }
+
+    function startProgressTracking(audio, card) {
+        stopProgressTracking(); // Clear any existing interval
+        
+        progressInterval = setInterval(() => {
+            if (audio.duration && !audio.paused) {
+                const progress = (audio.currentTime / audio.duration) * 100;
+                updateProgressBar(card, progress);
+            }
+        }, 100);
+    }
+
+    function stopProgressTracking() {
+        if (progressInterval) {
+            clearInterval(progressInterval);
+            progressInterval = null;
+        }
+    }
+
+    function updateProgress(audio, card) {
+        if (audio.duration && !audio.paused) {
+            const progress = (audio.currentTime / audio.duration) * 100;
+            updateProgressBar(card, progress);
+        }
+    }
+
+    function updateProgressBar(card, progress) {
+        const progressBar = card.querySelector('.music-progress');
+        if (progressBar) {
+            progressBar.style.width = progress + '%';
+        }
+    }
+
+    function handleAudioError(error, button, card) {
+        console.error('Audio error:', error);
+        
+        // Reset button state
+        button.classList.remove('playing');
+        button.querySelector('.play-icon').textContent = '⚠';
+        
+        if (card) {
+            card.classList.remove('playing');
+        }
+        
+        // Show error message
+        showAudioErrorMessage(card);
+        
+        // Reset button after 3 seconds
+        setTimeout(() => {
+            button.querySelector('.play-icon').textContent = '▶';
+        }, 3000);
+    }
+
+    function showAudioErrorMessage(card) {
+        // Create temporary error message
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'audio-error-message';
+        errorMsg.textContent = 'Audio tidak tersedia';
+        errorMsg.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        `;
+        
+        card.appendChild(errorMsg);
+        
+        // Remove error message after 3 seconds
+            setTimeout(() => {
+            if (errorMsg.parentNode) {
+                errorMsg.parentNode.removeChild(errorMsg);
+            }
+        }, 3000);
+    }
+
+    // Animate new music cards
+    function animateNewMusicCards() {
+        const cards = document.querySelectorAll('#music-grid .music-card');
+        cards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+    }
+
+    // Load more music
+    function loadMoreMusic() {
+        currentMusicPage++;
+        loadMusic();
+    }
+
+    // Filter music by genre
+    function filterMusic(genre) {
+        currentMusicGenre = genre;
+        currentMusicPage = 1;
+        loadMusic();
+    }
+
+    // Show fallback music data for testing
+    function showFallbackMusic() {
+        console.log('🎵 Showing fallback music data');
+        
+        const musicGrid = document.getElementById('music-grid');
+        const noMusicMessage = document.getElementById('no-music-message');
+        
+        if (!musicGrid) return;
+        
+        // Clear existing content
+        musicGrid.innerHTML = '';
+        
+        // Fallback music data - 40 tracks
+        const fallbackMusic = [
+            {
+                id: 'fallback-1',
+                title: 'Neon Dreams',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/6366f1/ffffff?text=Neon+Dreams',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:24'
+            },
+            {
+                id: 'fallback-2',
+                title: 'Cyber Symphony',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/10b981/ffffff?text=Cyber+Symphony',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '4:12'
+            },
+            {
+                id: 'fallback-3',
+                title: 'Digital Waves',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/f59e0b/ffffff?text=Digital+Waves',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '2:58'
+            },
+            {
+                id: 'fallback-4',
+                title: 'Future Bass',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/ef4444/ffffff?text=Future+Bass',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:45'
+            },
+            {
+                id: 'fallback-5',
+                title: 'Synth Pop',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/8b5cf6/ffffff?text=Synth+Pop',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:18'
+            },
+            {
+                id: 'fallback-6',
+                title: 'Ambient Space',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/06b6d4/ffffff?text=Ambient+Space',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '5:22'
+            },
+            {
+                id: 'fallback-7',
+                title: 'Electric Pulse',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/ec4899/ffffff?text=Electric+Pulse',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:33'
+            },
+            {
+                id: 'fallback-8',
+                title: 'Neon Nights',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/14b8a6/ffffff?text=Neon+Nights',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '4:07'
+            },
+            {
+                id: 'fallback-9',
+                title: 'Digital Horizon',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/f97316/ffffff?text=Digital+Horizon',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:52'
+            },
+            {
+                id: 'fallback-10',
+                title: 'Cyber City',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/84cc16/ffffff?text=Cyber+City',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:15'
+            },
+            {
+                id: 'fallback-11',
+                title: 'Virtual Reality',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/3b82f6/ffffff?text=Virtual+Reality',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '4:28'
+            },
+            {
+                id: 'fallback-12',
+                title: 'Neon Lights',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/a855f7/ffffff?text=Neon+Lights',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:41'
+            },
+            {
+                id: 'fallback-13',
+                title: 'Digital Dreams',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/ef4444/ffffff?text=Digital+Dreams',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:09'
+            },
+            {
+                id: 'fallback-14',
+                title: 'Cyber Punk',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/06b6d4/ffffff?text=Cyber+Punk',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:56'
+            },
+            {
+                id: 'fallback-15',
+                title: 'Future Funk',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/10b981/ffffff?text=Future+Funk',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:27'
+            },
+            {
+                id: 'fallback-16',
+                title: 'Neon Genesis',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/f59e0b/ffffff?text=Neon+Genesis',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '4:15'
+            },
+            {
+                id: 'fallback-17',
+                title: 'Digital Age',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/8b5cf6/ffffff?text=Digital+Age',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:38'
+            },
+            {
+                id: 'fallback-18',
+                title: 'Cyber Wave',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/ec4899/ffffff?text=Cyber+Wave',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:21'
+            },
+            {
+                id: 'fallback-19',
+                title: 'Neon Future',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/14b8a6/ffffff?text=Neon+Future',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '4:03'
+            },
+            {
+                id: 'fallback-20',
+                title: 'Digital Revolution',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/f97316/ffffff?text=Digital+Revolution',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:47'
+            },
+            {
+                id: 'fallback-21',
+                title: 'Neon Pulse',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/ec4899/ffffff?text=Neon+Pulse',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:12'
+            },
+            {
+                id: 'fallback-22',
+                title: 'Cyber Storm',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/14b8a6/ffffff?text=Cyber+Storm',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '4:18'
+            },
+            {
+                id: 'fallback-23',
+                title: 'Digital Echo',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/f97316/ffffff?text=Digital+Echo',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:29'
+            },
+            {
+                id: 'fallback-24',
+                title: 'Neon Vibes',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/84cc16/ffffff?text=Neon+Vibes',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:55'
+            },
+            {
+                id: 'fallback-25',
+                title: 'Cyber Matrix',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/3b82f6/ffffff?text=Cyber+Matrix',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '4:22'
+            },
+            {
+                id: 'fallback-26',
+                title: 'Digital Fusion',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/a855f7/ffffff?text=Digital+Fusion',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:16'
+            },
+            {
+                id: 'fallback-27',
+                title: 'Neon Catalyst',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/ef4444/ffffff?text=Neon+Catalyst',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:44'
+            },
+            {
+                id: 'fallback-28',
+                title: 'Cyber Evolution',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/06b6d4/ffffff?text=Cyber+Evolution',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '4:08'
+            },
+            {
+                id: 'fallback-29',
+                title: 'Digital Spectrum',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/10b981/ffffff?text=Digital+Spectrum',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:31'
+            },
+            {
+                id: 'fallback-30',
+                title: 'Neon Frequency',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/f59e0b/ffffff?text=Neon+Frequency',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:58'
+            },
+            {
+                id: 'fallback-31',
+                title: 'Cyber Dimension',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/8b5cf6/ffffff?text=Cyber+Dimension',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '4:14'
+            },
+            {
+                id: 'fallback-32',
+                title: 'Digital Mirage',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/ec4899/ffffff?text=Digital+Mirage',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:25'
+            },
+            {
+                id: 'fallback-33',
+                title: 'Neon Paradox',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/14b8a6/ffffff?text=Neon+Paradox',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:52'
+            },
+            {
+                id: 'fallback-34',
+                title: 'Cyber Nexus',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/f97316/ffffff?text=Cyber+Nexus',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '4:01'
+            },
+            {
+                id: 'fallback-35',
+                title: 'Digital Aurora',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/84cc16/ffffff?text=Digital+Aurora',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:37'
+            },
+            {
+                id: 'fallback-36',
+                title: 'Neon Prism',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/3b82f6/ffffff?text=Neon+Prism',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:49'
+            },
+            {
+                id: 'fallback-37',
+                title: 'Cyber Velocity',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/a855f7/ffffff?text=Cyber+Velocity',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:23'
+            },
+            {
+                id: 'fallback-38',
+                title: 'Digital Momentum',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/ef4444/ffffff?text=Digital+Momentum',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '4:06'
+            },
+            {
+                id: 'fallback-39',
+                title: 'Neon Infinity',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/06b6d4/ffffff?text=Neon+Infinity',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '3:54'
+            },
+            {
+                id: 'fallback-40',
+                title: 'Cyber Transcendence',
+                created_by: '@ai_artist',
+                cover_image_url: 'https://via.placeholder.com/300x300/10b981/ffffff?text=Cyber+Transcendence',
+                music_url: 'https://www.soundjay.com/misc/sounds/bell-ringing-05.wav',
+                duration: '4:19'
+            }
+        ];
+        
+        // Create music cards
+        fallbackMusic.forEach(song => {
+            const musicCard = createMusicCard(song);
+            musicGrid.appendChild(musicCard);
+        });
+        
+        // Show the grid
+        musicGrid.classList.remove('hidden');
+        noMusicMessage.classList.add('hidden');
+        
+        // Animate cards
+        animateNewMusicCards();
+        
+        console.log('✅ Fallback music data loaded');
+    }
+
+    // Initialize music gallery
+    function initMusicGallery() {
+        console.log('🎵 Initializing music gallery...');
+        
+        // Check if music section exists
+        const musicSection = document.getElementById('music');
+        if (!musicSection) {
+            console.error('❌ Music section not found');
+            return;
+        }
+        
+        console.log('✅ Music section found, loading music...');
+        loadMusic();
+        
+        // Add event listener for load more button
+        const loadMoreButton = document.getElementById('load-more-music');
+        if (loadMoreButton) {
+            loadMoreButton.addEventListener('click', loadMoreMusic);
+            console.log('✅ Load more button event listener added');
+                    } else {
+            console.warn('⚠️ Load more button not found');
+        }
+    }
+
+    // Initialize everything when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 DOM loaded, initializing INEMI Landing Page...');
+        
+        // Initialize Volumetric Lighting Hero
+        try {
+            initVolumetricLighting();
+            console.log('✅ Volumetric Lighting initialized');
+        } catch (e) {
+            console.error('❌ Volumetric Lighting initialization failed:', e);
+        }
+        
+        
+        try {
+            initScrollAnimations();
+            console.log('✅ Scroll animations initialized');
+        } catch (e) {
+            console.error('❌ Scroll animations initialization failed:', e);
+        }
+        
+        try {
+            initMobileMenu();
+            console.log('✅ Mobile menu initialized');
+        } catch (e) {
+            console.error('❌ Mobile menu initialization failed:', e);
+        }
+        
+        try {
+            initSmoothScrolling();
+            console.log('✅ Smooth scrolling initialized');
+        } catch (e) {
+            console.error('❌ Smooth scrolling initialization failed:', e);
+        }
+        
+        // Initialize music gallery
+        try {
+            initMusicGallery();
+            console.log('✅ Music gallery initialized');
+        } catch (e) {
+            console.error('❌ Music gallery initialization failed:', e);
+        }
+        
+        // Initialize Pinterest gallery
+        try {
+            initPinterestGallery();
+            console.log('✅ Pinterest gallery initialized');
+        } catch (e) {
+            console.error('❌ Pinterest gallery initialization failed:', e);
+        }
+        
+        // Add event listeners with throttling for performance
+        window.addEventListener('mousemove', throttle(onMouseMove, 16));
+        window.addEventListener('resize', throttle(onWindowResize, 100));
+        
+        // Add GPU acceleration class to animated elements
+        document.querySelectorAll('.animate-float, .animate-glow, .hover\\:scale-105').forEach(el => {
+            el.classList.add('gpu-accelerated');
+        });
+        
+        console.log('🚀 INEMI Landing Page fully initialized with Three.js and Music Gallery');
+    });
+    </script>
+</body>
+</html>

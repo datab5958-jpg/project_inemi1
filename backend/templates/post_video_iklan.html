@@ -1,0 +1,487 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  body {
+    background: linear-gradient(135deg, #070614, #0b0a13, #24243e);
+    min-height: 100vh;
+    font-family: 'Segoe UI', sans-serif;
+    color: #fff;
+    padding: 2rem 1rem;
+  }
+  .post-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 8px 32px 0 rgba(108, 99, 255, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    margin: 0 auto;
+    max-width: 70%;
+    animation: fadeInUp 0.8s ease both;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: none; }
+  }
+  .post-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .profile-pic {
+    width: 52px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #6c63ff;
+    box-shadow: 0 0 8px #6c63ff66;
+  }
+  .username {
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+  .post-content {
+    font-size: 1rem;
+    color: #ccc;
+    margin-bottom: 1rem;
+  }
+  .video-container {
+    position: relative;
+    margin: 1.5rem 0;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    background: rgba(36, 36, 46, 0.65);
+    backdrop-filter: blur(18px);
+    border: 1.5px solid rgba(108, 99, 255, 0.25);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    animation: fadeInVideo 1.2s cubic-bezier(0.4,0,0.2,1);
+  }
+  .futuristic-video {
+    width: 100%;
+    height: auto;
+    border-radius: 1.5rem;
+    object-fit: cover;
+    transition: all 0.3s ease;
+  }
+  .futuristic-video:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 30px rgba(108, 99, 255, 0.5);
+  }
+  @keyframes fadeInVideo {
+    from { opacity: 0; transform: translateY(30px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .action-buttons {
+    display: flex;
+    justify-content: space-around;
+    gap: 1rem;
+    flex-direction: row;
+    flex-wrap: nowrap;
+  }
+  .action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    color: #ccc;
+    background: rgba(255, 255, 255, 0.07);
+    padding: 0.6rem 1rem;
+    border-radius: 2rem;
+    border: none;
+    transition: 0.2s;
+    backdrop-filter: blur(6px);
+  }
+  .action-btn:hover {
+    color: #fff;
+    transform: scale(1.05);
+    background: linear-gradient(90deg, #6c63ff, #ff4ecd);
+    box-shadow: 0 0 12px #ff4ecd55;
+  }
+  .comment-box {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, 0.2);
+    background: rgba(255, 255, 255, 0.06);
+  }
+  @media (max-width: 600px) {
+    .post-card { 
+      max-width: 100%; 
+      padding: 1rem;
+    }
+    .action-buttons { 
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
+      gap: 0.5rem; 
+      font-size: 12px;
+      justify-content: space-between;
+      overflow-x: auto;
+      padding: 0.5rem 0;
+      width: 100%;
+    }
+    .action-btn {
+      display: flex !important;
+      flex-direction: row !important;
+      padding: 0.5rem 0.8rem;
+      min-width: auto;
+      flex: 1;
+      font-size: 11px;
+      border-radius: 1.5rem;
+      white-space: nowrap;
+      align-items: center;
+      justify-content: center;
+    }
+    .action-btn i {
+      font-size: 14px;
+    }
+    .photo-profile { width: 80px; }
+  }
+
+  @media (max-width: 480px) {
+    .action-buttons {
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
+      gap: 0.3rem;
+      font-size: 10px;
+      justify-content: space-between;
+    }
+    .action-btn {
+      display: flex !important;
+      flex-direction: row !important;
+      padding: 0.4rem 0.6rem;
+      min-width: auto;
+      font-size: 10px;
+      align-items: center;
+      justify-content: center;
+    }
+    .action-btn i {
+      font-size: 12px;
+    }
+  }
+</style>
+
+<div class="post-card">
+  <!-- Header -->
+  <div class="post-header">
+    <img src="{{ user.avatar_url or '/static/assets/image/default.jpg' }}" alt="Profile" class="profile-pic">
+    <div>
+      <div class="username">{{ user.username }}</div>
+      <small>
+        Dibuat: {{ (video_iklan.created_at|utc_to_wib)|format_tanggal_id if video_iklan.created_at else 'Baru saja' }}
+        {% if video_iklan.updated_at and video_iklan.updated_at != video_iklan.created_at %}
+          <span style="color:#a5b4fc;">&nbsp;|&nbsp;Diedit: {{ (video_iklan.updated_at|utc_to_wib)|format_tanggal_id }}</span>
+        {% endif %}
+      </small>
+    </div>
+  </div>
+  <!-- Caption -->
+  <div class="post-content">
+      {{ video_iklan.caption or 'Tidak ada caption' }}
+  </div>
+  <!-- Video Post -->
+  <div class="video-container">
+    <video class="futuristic-video" controls>
+      <source src="/static/results/{{ video_iklan.video_url.decode() }}" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  </div>
+  <!-- Tombol Aksi -->
+  <div class="action-buttons">
+    <button class="action-btn like-btn" data-content-type="video_iklan" data-content-id="{{ video_iklan.id }}" data-liked="{{ 'true' if is_liked else 'false' }}">
+      <i class="bi bi-heart{% if is_liked %}-fill text-danger{% endif %}"></i>
+      <span class="like-count">{{ likes_count }}</span> Like
+    </button>
+    <button class="action-btn">
+      <i class="bi bi-chat-left-dots"></i> {{ comments|length }} Comment
+    </button>
+    <button class="action-btn" onclick="openShareModal()">
+      <i class="bi bi-share-fill"></i> Share
+    </button>
+  </div>
+  <!-- Komentar -->
+  <div class="mt-4">
+    <h5 class="mb-3 text-white">Komentar ({{ comments|length }})</h5>
+    {% if comments %}
+      {% for comment in comments %}
+      <div class="d-flex mb-3 bg-transparent rounded-4 p-3 comment-box" data-comment-id="{{ comment.id }}">
+        <img src="{{ comment.user.avatar_url or '/static/assets/image/default.jpg' }}" class="rounded-circle me-3" width="48" height="48" style="object-fit:cover; border:2px solid #6c63ff; box-shadow:0 0 8px #6c63ff55;">
+        <div class="flex-grow-1">
+          <div class="fw-semibold text-white">{{ comment.user.username }} <small class="ms-2">{{ (comment.created_at|utc_to_wib)|format_tanggal_id if comment.created_at else 'Baru saja' }}</small></div>
+          <div class="text-light">{{ comment.text }}</div>
+          {% if 'user_id' in session %}
+          <div class="mt-2">
+            <button class="btn btn-sm btn-outline-primary reply-btn" onclick="showReplyForm({{ comment.id }})">
+              <i class="bi bi-reply"></i> Balas
+            </button>
+          </div>
+          {% endif %}
+          
+          <!-- Reply form (hidden by default) -->
+          <div class="reply-form mt-3" id="reply-form-{{ comment.id }}" style="display: none;">
+            <form class="reply-comment-form" data-parent-comment-id="{{ comment.id }}">
+              <div class="d-flex">
+                <img src="{{ session.avatar_url or '/static/assets/image/default.jpg' }}" class="rounded-circle me-2" width="32" height="32" style="object-fit:cover; border:2px solid #00e0ff;">
+                <input type="text" class="form-control form-control-sm rounded-pill bg-dark border border-white text-white px-3" placeholder="Tulis balasan..." required>
+                <button type="submit" class="btn btn-primary btn-sm ms-2 rounded-pill">Kirim</button>
+                <button type="button" class="btn btn-secondary btn-sm ms-1 rounded-pill" onclick="hideReplyForm({{ comment.id }})">Batal</button>
+              </div>
+            </form>
+          </div>
+          
+          <!-- Show replies -->
+          {% if comment.replies %}
+            {% for reply in comment.replies %}
+            <div class="d-flex mt-2 ms-4 bg-transparent rounded-3 p-2 reply-box">
+              <img src="{{ reply.user.avatar_url or '/static/assets/image/default.jpg' }}" class="rounded-circle me-2" width="32" height="32" style="object-fit:cover; border:2px solid #f59e0b;">
+              <div>
+                <div class="fw-semibold text-white small">{{ reply.user.username }} <small class="ms-1">{{ (reply.created_at|utc_to_wib)|format_tanggal_id if reply.created_at else 'Baru saja' }}</small></div>
+                <div class="text-light small">{{ reply.text }}</div>
+              </div>
+            </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="text-center py-3">
+        Belum ada komentar. Jadilah yang pertama berkomentar!
+      </div>
+    {% endif %}
+    <!-- Tambah Komentar -->
+    {% if 'user_id' in session %}
+    <form class="mt-4" id="comment-form" data-content-type="video_iklan" data-content-id="{{ video_iklan.id }}">
+      <div class="d-flex">
+        <img src="{{ session.avatar_url or '/static/assets/image/default.jpg' }}" class="rounded-circle photo-profile me-3" width="48" height="48" style="object-fit:cover; border:2px solid #00e0ff; box-shadow:0 0 8px #00e0ff55;">
+        <input type="text" class="form-control rounded-pill bg-dark text-white border-0 px-4" placeholder="Tulis komentar..." id="comment-input">
+        <button type="submit" class="btn btn-primary ms-2 rounded-pill">Kirim</button>
+      </div>
+    </form>
+    {% else %}
+    <div class="text-center text-muted py-3">
+      <a href="{{ url_for('web_pages.login') }}" class="text-decoration-none">Login</a> untuk berkomentar
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Share Modal (sama seperti post_video.html) -->
+<div id="shareModal" class="modal fade" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content bg-dark text-white border-0" style="backdrop-filter: blur(15px); background: rgba(33, 37, 41, 0.9) !important;">
+      <div class="modal-header border-0">
+        <h5 class="modal-title" id="shareModalLabel">Bagikan ke</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row g-3">
+          <div class="col-6">
+            <button class="btn btn-success w-100 py-3 rounded-3" onclick="shareToWhatsApp()">
+              <i class="bi bi-whatsapp fs-4"></i>
+              <div class="mt-2">WhatsApp</div>
+            </button>
+          </div>
+          <div class="col-6">
+            <button class="btn btn-primary w-100 py-3 rounded-3" onclick="shareToFacebook()">
+              <i class="bi bi-facebook fs-4"></i>
+              <div class="mt-2">Facebook</div>
+            </button>
+          </div>
+          <div class="col-6">
+            <button class="btn btn-dark w-100 py-3 rounded-3" onclick="shareToTwitter()">
+              <i class="bi bi-twitter-x fs-4"></i>
+              <div class="mt-2">Twitter/X</div>
+            </button>
+          </div>
+          <div class="col-6">
+            <button class="btn btn-info w-100 py-3 rounded-3" onclick="shareToTelegram()">
+              <i class="bi bi-telegram fs-4"></i>
+              <div class="mt-2">Telegram</div>
+            </button>
+          </div>
+          <div class="col-12">
+            <button class="btn btn-outline-light w-100 py-3 rounded-3" onclick="copyLink(event)">
+              <i class="bi bi-link-45deg fs-4"></i>
+              <div class="mt-2">Salin Link</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Share functionality (sama seperti post_video.html)
+function openShareModal() {
+  const modal = new bootstrap.Modal(document.getElementById('shareModal'));
+  modal.show();
+}
+function getShareUrl() { return window.location.href; }
+function getShareText() {
+  const caption = "{{ video_iklan.caption or 'Lihat video iklan menarik ini!' }}";
+  const username = "{{ user.username }}";
+  return `${caption} - Dibagikan oleh ${username} di Inemi`;
+}
+function shareToWhatsApp() {
+  const url = encodeURIComponent(getShareUrl());
+  const text = encodeURIComponent(getShareText());
+  window.open(`https://wa.me/?text=${text}%20${url}`, '_blank');
+}
+function shareToFacebook() {
+  const url = encodeURIComponent(getShareUrl());
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+}
+function shareToTwitter() {
+  const url = encodeURIComponent(getShareUrl());
+  const text = encodeURIComponent(getShareText());
+  window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+}
+function shareToTelegram() {
+  const url = encodeURIComponent(getShareUrl());
+  const text = encodeURIComponent(getShareText());
+  window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
+}
+function copyLink(event) {
+  const url = getShareUrl();
+  navigator.clipboard.writeText(url).then(() => {
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="bi bi-check-circle fs-4"></i><div class="mt-2">Tersalin!</div>';
+    button.classList.remove('btn-outline-light');
+    button.classList.add('btn-success');
+    setTimeout(() => {
+      button.innerHTML = originalText;
+      button.classList.remove('btn-success');
+      button.classList.add('btn-outline-light');
+    }, 2000);
+  }).catch(err => {
+    console.error('Failed to copy: ', err);
+    alert('Gagal menyalin link');
+  });
+}
+// Like functionality
+// (Sama seperti post_video.html, sesuaikan endpoint jika perlu)
+document.querySelectorAll('.like-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const contentType = this.dataset.contentType;
+    const contentId = this.dataset.contentId;
+    const isLiked = this.dataset.liked === 'true';
+    fetch('/like', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', },
+      body: `content_type=${contentType}&content_id=${contentId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const icon = this.querySelector('i');
+        const likeCount = this.querySelector('.like-count');
+        if (data.liked) {
+          icon.className = 'bi bi-heart-fill text-danger';
+          this.dataset.liked = 'true';
+        } else {
+          icon.className = 'bi bi-heart';
+          this.dataset.liked = 'false';
+        }
+        likeCount.textContent = data.like_count;
+      }
+    })
+    .catch(error => { console.error('Error:', error); });
+  });
+});
+// Reply comment functions
+function showReplyForm(commentId) {
+  const replyForm = document.getElementById(`reply-form-${commentId}`);
+  if (replyForm) {
+    replyForm.style.display = 'block';
+    replyForm.querySelector('input').focus();
+  }
+}
+
+function hideReplyForm(commentId) {
+  const replyForm = document.getElementById(`reply-form-${commentId}`);
+  if (replyForm) {
+    replyForm.style.display = 'none';
+    replyForm.querySelector('input').value = '';
+  }
+}
+
+// Handle reply form submission
+document.addEventListener('DOMContentLoaded', function() {
+  document.addEventListener('submit', function(e) {
+    if (e.target.classList.contains('reply-comment-form')) {
+      e.preventDefault();
+      
+      const form = e.target;
+      const parentCommentId = form.getAttribute('data-parent-comment-id');
+      const input = form.querySelector('input');
+      const text = input.value.trim();
+      
+      if (!text) return;
+      
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+      
+      const formData = new FormData();
+      formData.append('parent_comment_id', parentCommentId);
+      formData.append('text', text);
+      
+      fetch('/comment/reply', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          alert('Balasan berhasil dikirim!');
+          input.value = '';
+          hideReplyForm(parentCommentId);
+          // Reload page to show new reply
+          setTimeout(() => location.reload(), 1000);
+        } else {
+          alert(data.error || 'Gagal mengirim balasan');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan saat mengirim balasan');
+      })
+      .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      });
+    }
+  });
+});
+
+// Comment form functionality
+const commentForm = document.getElementById('comment-form');
+if (commentForm) {
+  commentForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const contentType = this.dataset.contentType;
+    const contentId = this.dataset.contentId;
+    const commentInput = document.getElementById('comment-input');
+    const commentText = commentInput.value.trim();
+    if (!commentText) return;
+    fetch('/comment', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', },
+      body: `content_type=${contentType}&content_id=${contentId}&text=${encodeURIComponent(commentText)}`
+    })
+    .then(response => response.json())
+    .then(data => { if (data.success) window.location.reload(); })
+    .catch(error => { console.error('Error:', error); });
+  });
+}
+</script>
+{% endblock %} 

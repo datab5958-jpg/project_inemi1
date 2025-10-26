@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  body, .bg-dark-gradient {
+    background: linear-gradient(135deg, #181c2b 0%, #232946 100%) !important;
+    min-height: 100vh;
+  }
+  .search-bar {
+    background: #232946;
+    border: 1.5px solid #343a40;
+    transition: box-shadow 0.2s;
+  }
+  .search-bar:focus-within {
+    box-shadow: 0 0 0 2px #6c63ff44;
+    border-color: #6c63ff;
+  }
+  .story-avatar {
+    border: 2.5px solid #6c63ff;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px 0 #23294633;
+  }
+  .story-avatar:hover {
+    transform: scale(1.12) rotate(-3deg);
+    box-shadow: 0 4px 16px 0 #6c63ff55;
+    border-color: #ff4ecd;
+  }
+  .story-name {
+    color: #eaeaea;
+    font-size: 0.92rem;
+    margin-top: 0.3rem;
+    text-shadow: 0 1px 2px #181c2b;
+  }
+  .list-group-item {
+    background: #181c2b !important;
+    border: none;
+    border-radius: 1rem !important;
+    margin-bottom: 0.5rem;
+    transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+  }
+  .list-group-item:hover {
+    background: #232946 !important;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 2px 12px 0 #6c63ff22;
+  }
+  .chat-preview {
+    color: #bcbcbc;
+    font-size: 0.97rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 170px;
+  }
+  .chat-time {
+    color: #8a8a8a;
+    font-size: 0.85rem;
+    min-width: 48px;
+    text-align: right;
+  }
+  @media (max-width: 576px) {
+    .chat-preview { max-width: 90px; }
+    .story-avatar { width: 44px !important; height: 44px !important; }
+  }
+</style>
+<div class="container py-4" x-data="{ show: false }" x-init="setTimeout(() => show = true, 80)">
+  <!-- Search Bar -->
+  <form method="get" action="" class="d-flex align-items-center mb-4" x-transition.opacity.duration.500ms x-show="show">
+    <div class="flex-grow-1 search-bar rounded-pill px-3 py-2 d-flex align-items-center">
+      <i class="bi bi-search text-white me-2"></i>
+      <input type="text" name="q" value="{{ search_query or '' }}" class="form-control bg-transparent border-0 text-white p-0" placeholder="Cari user..." style="box-shadow: none;">
+    </div>
+    <button class="btn btn-outline-primary ms-2 rounded-pill px-3 py-1" type="submit">Cari</button>
+  </form>
+
+  {% if search_query and found_users %}
+    <div class="mb-3">
+      <div class="fw-semibold text-white mb-2">Hasil Pencarian:</div>
+      <div class="list-group bg-transparent">
+        {% for user in found_users %}
+        <a href="{{ url_for('web_pages.isi_chat') }}?user_name={{ user.username }}" class="list-group-item list-group-item-action d-flex align-items-center">
+          <img src="{{ user.avatar_url or '/static/assets/image/default.jpg' }}" width="44" height="44" class="rounded-circle me-3" alt="">
+          <div>
+            <div class="fw-semibold text-white">{{ user.username }}</div>
+            <div class="chat-preview">Klik untuk mulai chat</div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  {% elif search_query %}
+    <div class="text-secondary mb-3">User tidak ditemukan.</div>
+  {% endif %}
+
+  <!-- AI Chat Section -->
+  <div class="mb-4">
+    <div class="fw-semibold text-white mb-2">AI Assistant</div>
+    <a href="{{ url_for('web_pages.ai_chat') }}" class="list-group-item list-group-item-action d-flex align-items-center">
+      <div class="d-flex align-items-center">
+        <div class="bg-gradient-primary rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 44px; height: 44px; background: linear-gradient(135deg, #6c63ff, #ff4ecd);">
+          <i class="bi bi-robot text-white" style="font-size: 1.2rem;"></i>
+        </div>
+        <div>
+          <div class="fw-semibold text-white">AI Chat Assistant</div>
+          <div class="chat-preview">Generate prompt musik, video, dan foto</div>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="fw-semibold text-white mb-2">Daftar Chat</div>
+  <div class="list-group bg-transparent" x-transition.opacity.duration.700ms x-show="show">
+    {% if chat_users %}
+      {% for user in chat_users %}
+      <a href="{{ url_for('web_pages.isi_chat') }}?user_name={{ user.username }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+          <img src="{{ user.avatar_url or '/static/assets/image/default.jpg' }}" width="44" height="44" class="rounded-circle me-3" alt="">
+          <div>
+            <div class="fw-semibold text-white">{{ user.username }}</div>
+            <div class="chat-preview">Klik untuk buka chat</div>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    {% else %}
+      <div class="text-secondary px-2 py-3">Belum ada chat.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

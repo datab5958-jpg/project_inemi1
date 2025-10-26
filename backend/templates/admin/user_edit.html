@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit User - Admin INEMI</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo/logo.png') }}">
+    
+    <!-- Modern CSS Framework -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #4facfe;
+            --danger-color: #ff6b6b;
+            --warning-color: #feca57;
+            --info-color: #54a0ff;
+            --dark-bg: #0a0a0f;
+            --card-bg: #1a1a2e;
+            --input-bg: #16213e;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #6b7280;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+
+        /* Container Wrapper */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* Header Section */
+        .page-header {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .page-title i {
+            color: var(--primary-color);
+            font-size: 32px;
+        }
+
+        .back-button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        /* User Avatar Section */
+        .user-info-section {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 700;
+            color: white;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .user-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .user-id {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .form-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        /* Form Groups */
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-primary);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-control,
+        .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--input-bg) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 12px;
+            color: var(--text-primary) !important;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+        
+        .form-control:not(:focus),
+        .form-select:not(:focus) {
+            color: var(--text-primary) !important;
+        }
+        
+        .form-control[type="text"],
+        .form-control[type="email"],
+        .form-control[type="password"],
+        .form-control[type="number"] {
+            color: var(--text-primary) !important;
+            background: var(--input-bg) !important;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary-color) !important;
+            background: rgba(102, 126, 234, 0.1) !important;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            color: var(--text-primary) !important;
+        }
+        
+        /* Override Bootstrap default styles */
+        input.form-control,
+        select.form-select {
+            color: var(--text-primary) !important;
+            background-color: var(--input-bg) !important;
+        }
+        
+        input.form-control:focus,
+        select.form-select:focus {
+            color: var(--text-primary) !important;
+            background-color: rgba(102, 126, 234, 0.1) !important;
+        }
+        
+        /* Ensure text is visible when typing */
+        input[type="text"]:not(:placeholder-shown),
+        input[type="email"]:not(:placeholder-shown),
+        input[type="password"]:not(:placeholder-shown),
+        input[type="number"]:not(:placeholder-shown) {
+            color: var(--text-primary) !important;
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+        
+        /* Fix autofill styling */
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 30px var(--input-bg) inset !important;
+            -webkit-text-fill-color: var(--text-primary) !important;
+            color: var(--text-primary) !important;
+        }
+        
+        /* Additional input styling for better visibility */
+        .form-control:valid,
+        .form-control:invalid {
+            color: var(--text-primary) !important;
+        }
+        
+        /* Ensure all input states have visible text */
+        .form-control[value]:not([value=""]),
+        .form-control:not(:placeholder-shown) {
+            color: var(--text-primary) !important;
+        }
+
+        .form-text {
+            margin-top: 5px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Form select option styling */
+        .form-select option {
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        /* Form Grid */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .form-row-full {
+            grid-column: 1 / -1;
+        }
+
+        /* Info Section */
+        .info-section {
+            background: var(--input-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .info-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+
+        @media (min-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .info-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 15px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-block;
+        }
+
+        .badge-free {
+            background: rgba(79, 172, 254, 0.2);
+            color: #4facfe;
+        }
+
+        .badge-premium {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+
+        .badge-premier {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+
+        .badge-admin {
+            background: rgba(156, 39, 176, 0.2);
+            color: #9c27b0;
+        }
+
+        .badge-active {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover {
+            background: var(--input-bg);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* Danger Zone */
+        .danger-zone {
+            background: var(--card-bg);
+            border: 2px solid rgba(255, 107, 107, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .danger-zone-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: var(--danger-color);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .danger-zone-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .danger-zone-text h6 {
+            color: var(--text-primary);
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .danger-zone-text p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin: 0;
+            max-width: 500px;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-danger:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .btn-danger:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Flash Messages */
+        .alert {
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-success {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            color: #4caf50;
+        }
+
+        .alert-error {
+            background: rgba(255, 107, 107, 0.2);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: var(--danger-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .page-header {
+                padding: 20px;
+            }
+
+            .page-title {
+                font-size: 24px;
+            }
+
+            .page-title i {
+                font-size: 28px;
+            }
+
+            .form-card,
+            .user-info-section,
+            .danger-zone {
+                padding: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .danger-zone-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .danger-zone-text p {
+                max-width: 100%;
+            }
+
+            .btn-danger {
+                width: 100%;
+            justify-content: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px 0;
+            }
+
+            .main-container {
+                padding: 0 10px;
+            }
+
+            .page-header {
+                padding: 15px;
+                border-radius: 15px;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            .page-title i {
+                font-size: 24px;
+            }
+
+            .back-button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            .user-avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 30px;
+            }
+
+            .user-name {
+                font-size: 20px;
+            }
+
+            .form-card,
+            .user-info-section,
+            .danger-zone {
+                padding: 15px;
+                border-radius: 15px;
+            }
+
+            .form-title {
+                font-size: 18px;
+            }
+
+            .form-control,
+            .form-select {
+                padding: 10px 14px;
+                font-size: 14px;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                padding: 12px 24px;
+                font-size: 14px;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            opacity: 0;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+            opacity: 1;
+            }
+        }
+
+        /* Smooth Scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="page-header loading">
+            <h1 class="page-title">
+                <i class="bi bi-person-gear"></i>
+                Edit User
+            </h1>
+            <a href="{{ url_for('admin.users') }}" class="back-button">
+                <i class="bi bi-arrow-left"></i>
+                Kembali
+            </a>
+                </div>
+                
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'error' }}">
+                        <i class="bi bi-{{ 'check-circle' if category == 'success' else 'exclamation-circle' }}"></i>
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+        <!-- User Info -->
+        <div class="user-info-section loading" style="animation-delay: 0.1s;">
+                                <div class="user-avatar">
+                {{ user.username[0].upper() if user.username else 'U' }}
+                                </div>
+            <div class="user-name">{{ user.username }}</div>
+            <div class="user-id">ID: {{ user.id }}</div>
+                            </div>
+                            
+        <!-- Edit Form -->
+        <div class="form-card loading" style="animation-delay: 0.2s;">
+            <h2 class="form-title">Informasi User</h2>
+            
+            <form method="POST" id="editForm">
+                <div class="form-row">
+                            <!-- Username -->
+                    <div class="form-group">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" 
+                                       value="{{ user.username }}" required>
+                                <div class="form-text">Username harus unik dan tidak boleh kosong</div>
+                            </div>
+                            
+                            <!-- Email -->
+                    <div class="form-group">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" 
+                                       value="{{ user.email }}" required>
+                                <div class="form-text">Email harus valid dan tidak boleh kosong</div>
+                            </div>
+                            
+                            <!-- Role -->
+                    <div class="form-group">
+                                <label for="role" class="form-label">Role</label>
+                        <select class="form-select" id="role" name="role" required>
+                            <option value="free" {% if user.role == 'free' %}selected{% endif %}>Free</option>
+                            <option value="premium" {% if user.role == 'premium' %}selected{% endif %}>Premium</option>
+                            <option value="premier" {% if user.role == 'premier' %}selected{% endif %}>Premier</option>
+                            <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+                                    </select>
+                        <div class="form-text">Pilih role untuk user ini</div>
+                            </div>
+                            
+                            <!-- Kredit -->
+                    <div class="form-group">
+                                <label for="kredit" class="form-label">Kredit</label>
+                                <input type="number" class="form-control" id="kredit" name="kredit" 
+                                       value="{{ user.kredit }}" min="0" required>
+                                <div class="form-text">Jumlah kredit yang dimiliki user</div>
+                            </div>
+                            
+                            <!-- Password -->
+                    <div class="form-group">
+                                <label for="password" class="form-label">Password Baru</label>
+                                <input type="password" class="form-control" id="password" name="password" 
+                               placeholder="Kosongkan jika tidak ingin mengubah">
+                                <div class="form-text">Kosongkan jika tidak ingin mengubah password</div>
+                            </div>
+                            
+                            <!-- Confirm Password -->
+                    <div class="form-group">
+                                <label for="confirm_password" class="form-label">Konfirmasi Password</label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                               placeholder="Kosongkan jika tidak ingin mengubah">
+                                <div class="form-text">Konfirmasi password baru</div>
+                    </div>
+                            </div>
+                            
+                <!-- User Information -->
+                <div class="info-section">
+                    <h3 class="info-title">Informasi User</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Bergabung</span>
+                            <span class="info-value">
+                                {% if user.created_at %}
+                                    {{ user.created_at.strftime('%d %B %Y %H:%M') }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                                            </span>
+                                    </div>
+                        <div class="info-item">
+                            <span class="info-label">Role Saat Ini</span>
+                            <span class="info-value">
+                                <span class="badge badge-{{ user.role }}">{{ user.role|upper }}</span>
+                                            </span>
+                                    </div>
+                        <div class="info-item">
+                            <span class="info-label">Kredit Saat Ini</span>
+                            <span class="info-value">{{ user.kredit }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Status</span>
+                            <span class="info-value">
+                                <span class="badge badge-active">ACTIVE</span>
+                            </span>
+                        </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                <div class="button-group">
+                    <button type="submit" class="btn-primary">
+                        <i class="bi bi-check-circle"></i>
+                                    Update User
+                                </button>
+                    <a href="{{ url_for('admin.users') }}" class="btn-secondary">
+                        <i class="bi bi-x-circle"></i>
+                                    Batal
+                                </a>
+                            </div>
+                        </form>
+                </div>
+                
+                <!-- Danger Zone -->
+        <div class="danger-zone loading" style="animation-delay: 0.3s;">
+            <div class="danger-zone-header">
+                <i class="bi bi-exclamation-triangle"></i>
+                            Danger Zone
+                    </div>
+            <div class="danger-zone-content">
+                <div class="danger-zone-text">
+                    <h6>Hapus User</h6>
+                    <p>
+                                    Tindakan ini akan menghapus user secara permanen. 
+                                    Semua data user termasuk konten dan order akan hilang.
+                                </p>
+                            </div>
+                <div>
+                                {% if user.role != 'admin' %}
+                    <button type="button" class="btn-danger" 
+                                        onclick="deleteUser({{ user.id }}, '{{ user.username }}')">
+                        <i class="bi bi-trash"></i>
+                                    Hapus User
+                                </button>
+                                {% else %}
+                    <button type="button" class="btn-danger" disabled>
+                        <i class="bi bi-shield-x"></i>
+                                    Tidak Bisa Dihapus
+                                </button>
+                                {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script>
+        // Password validation
+        document.getElementById('password').addEventListener('input', function() {
+            const password = this.value;
+            const confirmPassword = document.getElementById('confirm_password');
+            
+            if (password && confirmPassword.value && password !== confirmPassword.value) {
+                confirmPassword.setCustomValidity('Password tidak cocok');
+            } else {
+                confirmPassword.setCustomValidity('');
+            }
+        });
+        
+        document.getElementById('confirm_password').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = this.value;
+            
+            if (password && confirmPassword && password !== confirmPassword) {
+                this.setCustomValidity('Password tidak cocok');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+        
+        // Form validation
+        document.getElementById('editForm').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+            
+            if (password && confirmPassword && password !== confirmPassword) {
+                e.preventDefault();
+                alert('Password dan konfirmasi password tidak cocok!');
+                return false;
+            }
+        });
+        
+        // Delete user function
+        function deleteUser(userId, username) {
+            if (!confirm(`Apakah Anda yakin ingin menghapus user "${username}"? Tindakan ini tidak dapat dibatalkan!`)) {
+                return;
+            }
+            
+            fetch(`/admin/users/${userId}/delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.href = '/admin/users';
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat menghapus user');
+            });
+        }
+
+        // Auto-hide alerts after 5 seconds
+                setTimeout(() => {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.style.transition = 'opacity 0.5s';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>
+
+
+
+
+

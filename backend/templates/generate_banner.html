@@ -1,0 +1,2822 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="min-vh-100" style="background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%);" x-data="{
+    loading: false,
+    title: '',
+    bannerType: 'banner',
+    uploadedFiles: [],
+    bannerExample: null,
+    extraFiles: [],
+    
+    uploadProgress: 0,
+    resultBanner: '',
+    resultSimulation: '',
+    errorMsg: '',
+    successMsg: '',
+    showPreview: false,
+    detectedInfo: null,
+    creditsUsed: 0,
+    requestId: null,
+    pollingInterval: null,
+    simulationPollingInterval: null,
+    toasts: [],
+    toastId: 0,
+    previewModal: {
+        show: false,
+        url: ''
+    },
+    detectingBanner: false,
+    
+    init() {
+        console.log('Generate Banner page initialized');
+        
+        // Ensure modal is closed on initialization
+        this.previewModal.show = false;
+        this.previewModal.url = '';
+        
+        // Import Google Fonts
+        const link = document.createElement('link');
+        link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap';
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+        
+    },
+    
+    showToast(type, title, message) {
+        const toast = {
+            id: ++this.toastId,
+            type: type,
+            title: title,
+            message: message
+        };
+        this.toasts.push(toast);
+        
+        // Auto remove after 5 seconds
+        setTimeout(() => {
+            this.removeToast(toast.id);
+        }, 5000);
+    },
+    
+    removeToast(id) {
+        this.toasts = this.toasts.filter(toast => toast.id !== id);
+    },
+    
+    handleFileUpload(event) {
+        // Prevent file upload during loading or detection
+        if (this.loading || this.detectingBanner) {
+            this.showToast('warning', 'Warning', 'Tidak bisa upload file saat proses sedang berjalan');
+            event.target.value = ''; // Clear the input
+            return;
+        }
+        
+        const files = Array.from(event.target.files);
+        this.processFiles(files);
+    },
+    
+    handleFileDrop(e) {
+        e.preventDefault();
+        
+        // Prevent file drop during loading or detection
+        if (this.loading || this.detectingBanner) {
+            this.showToast('warning', 'Warning', 'Tidak bisa upload file saat proses sedang berjalan');
+            return;
+        }
+        
+        const files = Array.from(e.dataTransfer.files);
+        this.processFiles(files);
+    },
+    
+    async processFiles(files) {
+        // Prevent processing files during loading or detection
+        if (this.loading || this.detectingBanner) {
+            this.showToast('warning', 'Warning', 'Tidak bisa memproses file saat proses sedang berjalan');
+            return;
+        }
+        
+        for (const file of files) {
+            if (file.type.startsWith('image/')) {
+                if (file.name.toLowerCase().includes('contoh') || file.name.toLowerCase().includes('example')) {
+                    this.bannerExample = file;
+                } else {
+                    this.extraFiles.push(file);
+                }
+                this.uploadedFiles.push(file);
+                
+                // Auto-detect banner information using AI Gemini
+                await this.detectBannerInfo(file);
+            }
+        }
+        if (files.length > 0) {
+            this.showToast('success', 'File Uploaded', `${files.length} file(s) berhasil diupload!`);
+        }
+    },
+    
+    async detectBannerInfo(file) {
+        // Prevent detection during loading
+        if (this.loading) {
+            this.showToast('warning', 'Warning', 'Tidak bisa menganalisis banner saat generate sedang berjalan');
+            return;
+        }
+        
+        try {
+            this.detectingBanner = true;
+            this.showToast('info', 'AI Analysis', '🤖 AI Gemini sedang menganalisis banner...');
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const response = await fetch('/detect_banner', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.detectedInfo = result.detected_info;
+                this.showToast('success', 'AI Analysis Complete', '✅ Banner berhasil dianalisis dengan AI Gemini!');
+                
+                // Auto-fill title if detected text is available
+                if (result.detected_info?.detected_text && !this.title.trim()) {
+                    this.title = result.detected_info.detected_text;
+                    this.showToast('info', 'Auto-Fill', 'Judul banner otomatis diisi dari analisis AI');
+                }
+            } else {
+                this.showToast('warning', 'Analysis Failed', result.error || 'Gagal menganalisis banner');
+            }
+        } catch (error) {
+            console.error('Error detecting banner:', error);
+            this.showToast('error', 'Analysis Error', 'Terjadi kesalahan saat menganalisis banner');
+        } finally {
+            this.detectingBanner = false;
+        }
+    },
+    
+    removeFile(index) {
+        const file = this.uploadedFiles[index];
+        if (file === this.bannerExample) {
+            this.bannerExample = null;
+        } else {
+            const extraIndex = this.extraFiles.indexOf(file);
+            if (extraIndex > -1) {
+                this.extraFiles.splice(extraIndex, 1);
+            }
+        }
+        this.uploadedFiles.splice(index, 1);
+    },
+    
+    clearAllFiles() {
+        this.uploadedFiles = [];
+        this.bannerExample = null;
+        this.extraFiles = [];
+        this.uploadProgress = 0;
+        document.getElementById('fileInput').value = '';
+    },
+    
+    async generateBanner() {
+        // Prevent multiple simultaneous requests
+        if (this.loading || this.detectingBanner) {
+            this.showToast('warning', 'Warning', 'Proses generate sedang berjalan, mohon tunggu...');
+            return;
+        }
+        
+        if (!this.title.trim()) {
+            this.showToast('error', 'Error', 'Judul banner harus diisi!');
+            return;
+        }
+        
+        this.loading = true;
+        this.errorMsg = '';
+        this.successMsg = '';
+        this.showPreview = false;
+        
+        try {
+            // Create JSON payload for banner generation
+            const payload = {
+                title: this.title,
+                banner_type: this.bannerType
+            };
+            
+            // If there are uploaded files, use FormData, otherwise use JSON
+            let requestBody;
+            let contentType;
+            
+            if (this.uploadedFiles.length > 0) {
+                // Use FormData for file uploads
+            const formData = new FormData();
+            formData.append('title', this.title);
+                formData.append('banner_type', this.bannerType);
+            
+            // Add all uploaded files
+            this.uploadedFiles.forEach(file => {
+                formData.append('files', file);
+            });
+                
+                requestBody = formData;
+                contentType = null; // Let browser set Content-Type for FormData
+            } else {
+                // Use JSON for text-only requests
+                requestBody = JSON.stringify(payload);
+                contentType = 'application/json';
+            }
+            
+            const response = await fetch('/smart_banner', {
+                method: 'POST',
+                headers: contentType ? {
+                    'Content-Type': contentType
+                } : {},
+                body: requestBody
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                if (result.status === 'processing') {
+                    this.requestId = result.request_id;
+                    this.detectedInfo = result.detected_info;
+                    this.creditsUsed = result.credits_used;
+                    this.successMsg = result.message;
+                    this.showToast('success', 'Processing', 'Banner sedang diproses, mohon tunggu...');
+                    
+                    // Start polling for completion - keep loading true
+                    this.startPolling();
+                    // Don't set loading to false here, keep it true until polling completes
+                } else {
+                    this.handleBannerComplete(result);
+                    this.loading = false;
+                }
+            } else {
+                this.errorMsg = result.error || 'Terjadi kesalahan saat generate banner';
+                this.showToast('error', 'Error', this.errorMsg);
+                this.loading = false;
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            this.errorMsg = 'Terjadi kesalahan saat mengirim request';
+            this.showToast('error', 'Error', this.errorMsg);
+            this.loading = false;
+        }
+    },
+    
+    startPolling() {
+        if (this.pollingInterval) {
+            clearInterval(this.pollingInterval);
+        }
+        
+        this.pollingInterval = setInterval(async () => {
+            try {
+                // Include title in the request
+                const url = `/check_banner_status/${this.requestId}?title=${encodeURIComponent(this.title)}`;
+                const response = await fetch(url);
+                const result = await response.json();
+                console.log('📊 Polling result:', result);
+                
+                if (result.success) {
+                    if (result.status === 'completed') {
+                        console.log('✅ Banner generation completed, calling handleBannerComplete');
+                        this.handleBannerComplete(result);
+                        clearInterval(this.pollingInterval);
+                    } else {
+                        console.log('⏳ Banner still processing, status:', result.status);
+                    }
+                } else {
+                    console.error('❌ Banner generation failed:', result.error);
+                    this.errorMsg = result.error || 'Error checking status';
+                    this.showToast('error', 'Error', this.errorMsg);
+                    this.loading = false;
+                    clearInterval(this.pollingInterval);
+                }
+            } catch (error) {
+                console.error('Polling error:', error);
+                this.errorMsg = 'Error checking banner status';
+                this.showToast('error', 'Error', this.errorMsg);
+                this.loading = false;
+                clearInterval(this.pollingInterval);
+            }
+        }, 3000); // Poll every 3 seconds
+    },
+    
+    handleBannerComplete(result) {
+        console.log('🎉 Banner completed with result:', result);
+        
+        // Set banner result
+        this.resultBanner = result.banner_url;
+        this.resultSimulation = result.simulation_url;
+        this.showPreview = true;
+        this.successMsg = result.message || 'Banner berhasil dibuat!';
+        this.loading = false;
+        
+        // Log banner info for debugging
+        console.log('🎉 Banner completed:', {
+            url: result.banner_url,
+            simulation_url: result.simulation_url,
+            message: result.message,
+            showPreview: this.showPreview,
+            resultBanner: this.resultBanner,
+            resultSimulation: this.resultSimulation,
+            image_id: result.image_id,
+            file_size: result.file_size
+        });
+        
+        // Show success message with database info
+        if (result.image_id) {
+            this.showToast('success', 'Success', `Banner berhasil dibuat dan disimpan! (ID: ${result.image_id})`);
+        } else {
+            this.showToast('success', 'Success', 'Banner berhasil dibuat!');
+        }
+        
+        
+        // Force re-evaluation of Alpine.js
+        this.$nextTick(() => {
+            console.log('🔄 After nextTick:', {
+                showPreview: this.showPreview,
+                resultBanner: this.resultBanner
+            });
+        });
+        
+        // Toast already shown above with database info
+        
+        // If we have a simulation request ID, start polling for simulation
+        if (result.simulation_request_id) {
+            this.startSimulationPolling(result.simulation_request_id);
+        }
+        
+        if (this.pollingInterval) {
+            clearInterval(this.pollingInterval);
+        }
+    },
+    
+    startSimulationPolling(simulationRequestId) {
+        if (this.simulationPollingInterval) {
+            clearInterval(this.simulationPollingInterval);
+        }
+        
+        this.simulationPollingInterval = setInterval(async () => {
+            try {
+                const response = await fetch(`/check_simulation_status/${simulationRequestId}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    if (result.status === 'completed') {
+                        this.resultSimulation = result.simulation_url;
+                        this.showToast('success', 'Simulation Ready', 'Billboard simulation siap!');
+                        clearInterval(this.simulationPollingInterval);
+                    }
+                } else {
+                    console.error('Simulation polling error:', result.error);
+                    clearInterval(this.simulationPollingInterval);
+                }
+            } catch (error) {
+                console.error('Simulation polling error:', error);
+                clearInterval(this.simulationPollingInterval);
+            }
+        }, 3000); // Poll every 3 seconds
+    },
+    
+        downloadGambar() {
+            if (this.resultBanner) {
+                try {
+                    // Cross-platform download function
+                    const link = document.createElement('a');
+                    link.href = this.resultBanner;
+                    link.download = `banner_${new Date().getTime()}.png`;
+                    link.target = '_blank';
+                    
+                    // For mobile devices, use different approach
+                    if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                        // Mobile devices - open in new tab
+                        window.open(this.resultBanner, '_blank');
+                        this.showToast('success', 'Download', 'Gambar dibuka di tab baru untuk download...');
+                    } else {
+                        // Desktop - direct download
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        this.showToast('success', 'Download', 'Gambar sedang didownload...');
+                    }
+                } catch (error) {
+                    console.error('Download error:', error);
+                    // Fallback - open in new tab
+                    window.open(this.resultBanner, '_blank');
+                    this.showToast('success', 'Download', 'Gambar dibuka di tab baru...');
+                }
+            } else {
+                this.showToast('error', 'Error', 'Gambar belum tersedia untuk download');
+            }
+        },
+        
+    
+    downloadPDF() {
+        if (this.resultBanner) {
+            const width = this.detectedInfo ? this.detectedInfo.width_m : 2.0;
+            const height = this.detectedInfo ? this.detectedInfo.height_m : 1.0;
+            const url = `/download_banner_pdf?banner_url=${encodeURIComponent(this.resultBanner)}&width_m=${width}&height_m=${height}`;
+            
+            try {
+                // Cross-platform PDF download
+                if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                    // Mobile devices - open in new tab
+            window.open(url, '_blank');
+                    this.showToast('success', 'Download', 'PDF dibuka di tab baru untuk download...');
+                } else {
+                    // Desktop - direct download
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `banner_${width}x${height}m.pdf`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    this.showToast('success', 'Download', 'PDF sedang didownload dengan kualitas 1000 DPI...');
+                }
+            } catch (error) {
+                console.error('PDF download error:', error);
+                // Fallback - open in new tab
+                window.open(url, '_blank');
+                this.showToast('success', 'Download', 'PDF dibuka di tab baru...');
+            }
+        } else {
+            this.showToast('error', 'Error', 'Banner belum tersedia untuk download');
+        }
+    },
+    
+    resetForm() {
+        this.title = '';
+        this.clearAllFiles();
+        this.resultBanner = '';
+        this.resultSimulation = '';
+        this.showPreview = false;
+        this.detectedInfo = null;
+        this.creditsUsed = 0;
+        this.requestId = null;
+        this.errorMsg = '';
+        this.successMsg = '';
+        
+        if (this.pollingInterval) {
+            clearInterval(this.pollingInterval);
+        }
+        if (this.simulationPollingInterval) {
+            clearInterval(this.simulationPollingInterval);
+        }
+        this.showToast('success', 'Reset', 'Form berhasil direset!');
+    },
+    
+    previewBanner(url) {
+        if (url && url.trim()) {
+            this.previewModal.url = url;
+            this.previewModal.show = true;
+        } else {
+            this.showToast('error', 'Error', 'URL gambar tidak valid');
+        }
+    },
+    
+    closePreview() {
+        this.previewModal.show = false;
+        this.previewModal.url = '';
+        // Force re-evaluation
+        this.$nextTick(() => {
+            this.previewModal.show = false;
+        });
+    }
+}">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+        <template x-for="toast in toasts" :key="toast.id">
+            <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" x-transition>
+                <div class="toast-header" :class="toast.type === 'success' ? 'bg-success text-white' : 'bg-danger text-white'">
+                    <i :class="toast.type === 'success' ? 'bi bi-check-circle-fill' : 'bi bi-exclamation-triangle-fill'" class="me-2"></i>
+                    <strong class="me-auto" x-text="toast.title"></strong>
+                    <button type="button" class="btn-close btn-close-white" @click="removeToast(toast.id)"></button>
+                </div>
+                <div class="toast-body" x-text="toast.message"></div>
+            </div>
+        </template>
+    </div>
+
+    <!-- Header Section with Glassmorphism -->
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10">
+                <div class="text-center mb-5">
+                    <div class="glassmorphism-header p-5 rounded-4 mb-4">
+                        <h1 class="display-3 fw-bold text-white mb-3" style="font-family: 'Inter', sans-serif; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                            ✨ Generate Banner AI
+                </h1>
+                        <p class="lead text-white-50 mb-0" style="font-family: 'Inter', sans-serif; font-size: 1.2rem;">
+                            Buat banner profesional otomatis hanya dari judul — dengan deteksi cerdas dan simulasi billboard.
+                </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+        <div class="container">
+            <!-- Configuration Section -->
+            <div class="row justify-content-center mb-5">
+                <div class="col-lg-8">
+                    <div class="premium-card">
+                        <div class="card-header-premium">
+                            <h5 class="card-title-premium mb-0">
+                                <span class="icon-wrapper me-3">🖋️</span>Konfigurasi Banner
+                    </h5>
+                </div>
+                        <div class="card-body-premium">
+                    <!-- Title Input -->
+                    <div class="mb-4">
+                            <label for="title" class="form-label-premium">
+                                <span class="icon-wrapper me-2">🖋️</span>Judul Banner
+                        </label>
+                            <div class="input-group-premium">
+                        <input 
+                            type="text" 
+                            id="title"
+                            x-model="title"
+                                    class="form-control-premium" 
+                            placeholder="Masukkan judul banner Anda..."
+                                    :disabled="loading || detectingBanner"
+                                    :class="{'loading-disabled': loading || detectingBanner}"
+                        >
+                            </div>
+                            <div class="form-tooltip">
+                                <span class="tooltip-icon">💡</span>
+                            Judul akan menjadi teks utama pada banner
+                        </div>
+                    </div>
+
+                    <!-- Banner Type Selector -->
+                    <div class="mb-4">
+                        <label for="bannerType" class="form-label-premium">
+                            <span class="icon-wrapper me-2">🎨</span>Jenis Banner
+                        </label>
+                        <div class="banner-type-selector">
+                            <div class="banner-type-options">
+                                <label class="banner-type-option" :class="{'selected': bannerType === 'banner'}">
+                                    <input 
+                                        type="radio" 
+                                        x-model="bannerType" 
+                                        value="banner"
+                                        :disabled="loading || detectingBanner"
+                                    >
+                                    <div class="option-content">
+                                        <div class="option-icon">📋</div>
+                                        <div class="option-text">
+                                            <div class="option-title">Banner</div>
+                                            <div class="option-desc">Standar indoor/outdoor</div>
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="banner-type-option" :class="{'selected': bannerType === 'spanduk'}">
+                                    <input 
+                                        type="radio" 
+                                        x-model="bannerType" 
+                                        value="spanduk"
+                                        :disabled="loading || detectingBanner"
+                                    >
+                                    <div class="option-content">
+                                        <div class="option-icon">🛣️</div>
+                                        <div class="option-text">
+                                            <div class="option-title">Spanduk</div>
+                                            <div class="option-desc">Jalan raya & promosi</div>
+                                        </div>
+                                    </div>
+                                </label>
+                                
+                                <label class="banner-type-option" :class="{'selected': bannerType === 'baliho'}">
+                                    <input 
+                                        type="radio" 
+                                        x-model="bannerType" 
+                                        value="baliho"
+                                        :disabled="loading || detectingBanner"
+                                    >
+                                    <div class="option-content">
+                                        <div class="option-icon">🏢</div>
+                                        <div class="option-text">
+                                            <div class="option-title">Baliho</div>
+                                            <div class="option-desc">Billboard & kota</div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- File Upload Section -->
+                    <div class="mb-4">
+                            <label class="form-label-premium">
+                                <span class="icon-wrapper me-2">☁️</span>Upload File untuk Analisa (Opsional)
+                        </label>
+                        <div class="upload-description">
+                            <span class="description-text">
+                                📏 Upload foto banner/spanduk/baliho untuk dianalisa ukuran, warna, dan teks secara otomatis
+                            </span>
+                        </div>
+                        
+                            <!-- Enhanced Upload Area -->
+                        <div 
+                            class="upload-area-premium"
+                            @dragover.prevent
+                            @drop.prevent="handleFileDrop($event)"
+                            :class="{'upload-success': uploadedFiles.length > 0, 'upload-disabled': loading || detectingBanner}"
+                        >
+                                <div x-show="uploadedFiles.length === 0" class="upload-content">
+                                    <div class="cloud-icon">☁️</div>
+                                    <h6 class="upload-title">Drag & Drop file di sini</h6>
+                                    <p class="upload-subtitle">atau</p>
+                                <button 
+                                    type="button" 
+                                    class="btn-upload"
+                                    @click="document.getElementById('fileInput').click()"
+                                    :disabled="loading || detectingBanner"
+                                    :class="{'loading-disabled': loading || detectingBanner}"
+                                >
+                                        <span class="btn-icon">📁</span>Pilih File
+                                </button>
+                                <input 
+                                    type="file" 
+                                    id="fileInput"
+                                    multiple
+                                    accept="image/*"
+                                    @change="handleFileUpload($event)"
+                                    class="d-none"
+                                    :disabled="detectingBanner"
+                                >
+                            </div>
+                            
+                                <div x-show="uploadedFiles.length > 0" class="upload-success-content">
+                                    <div class="success-icon">📏</div>
+                                    <h6 class="success-title">Foto siap dianalisa!</h6>
+                                    <p class="success-subtitle">
+                                    <span x-text="uploadedFiles.length"></span> file untuk analisa ukuran banner
+                                </p>
+                                    
+                                    <!-- AI Detection Loading -->
+                                    <div x-show="detectingBanner" class="ai-detection-loading">
+                                        <div class="ai-spinner">
+                                            <div class="ai-spinner-ring"></div>
+                                        </div>
+                                        <p class="ai-detection-text">🤖 AI Gemini sedang menganalisis ukuran & warna banner...</p>
+                                    </div>
+                            </div>
+                        </div>
+
+                        <!-- File List -->
+                        <div x-show="uploadedFiles.length > 0" class="mt-3">
+                                <h6 class="file-list-title">
+                                    <span class="icon-wrapper me-2">📋</span>File Terupload:
+                            </h6>
+                                <div class="file-list">
+                                <template x-for="(file, index) in uploadedFiles" :key="index">
+                                        <div class="file-item">
+                                            <div class="file-info">
+                                                <span class="file-icon">🖼️</span>
+                                                <span class="file-name" x-text="file.name"></span>
+                                                <span x-show="file === bannerExample" class="file-badge">Banner Contoh</span>
+                                        </div>
+                                        <button 
+                                            type="button" 
+                                            class="btn-remove"
+                                            @click="removeFile(index)"
+                                            :disabled="loading || detectingBanner"
+                                        >
+                                                ❌
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <button 
+                                    type="button" 
+                                    class="btn-clear"
+                                    @click="clearAllFiles()"
+                                    :disabled="loading || detectingBanner"
+                                >
+                                        <span class="btn-icon">🗑️</span>Hapus Semua
+                                </button>
+                            </div>
+                        </div>
+
+                            <!-- Upload Tips -->
+                            <div class="upload-tips">
+                                <div class="tips-header">
+                                    <span class="tips-icon">💡</span>Tips Analisa Banner
+                                </div>
+                                <ul class="tips-list">
+                                    <li><strong>📏 Analisa Ukuran:</strong> Upload foto banner/spanduk/baliho untuk deteksi otomatis dimensi</li>
+                                    <li><strong>🎨 Analisa Warna:</strong> AI akan mendeteksi warna dominan dari foto</li>
+                                    <li><strong>📝 Analisa Teks:</strong> AI akan membaca teks yang ada di foto</li>
+                                    <li><strong>📁 Format:</strong> PNG, JPG, JPEG, GIF, WEBP</li>
+                                </ul>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                        <div class="generate-section">
+                        <button 
+                            type="button" 
+                            class="btn-generate"
+                            @click="generateBanner()"
+                            :disabled="loading || detectingBanner || !title.trim()"
+                            :class="{'loading-disabled': loading || detectingBanner}"
+                            :style="{'pointer-events': (loading || detectingBanner) ? 'none' : 'auto'}"
+                        >
+                                <span x-show="!loading" class="btn-content">
+                                    <span class="btn-icon">✨</span>Generate Banner Otomatis
+                            </span>
+                                <span x-show="loading" class="btn-loading">
+                                    <span class="spinner"></span>
+                                    <span class="loading-text">Sedang menghasilkan banner...</span>
+                            </span>
+                        </button>
+                    </div>
+
+                    <!-- Reset Button -->
+                        <div class="reset-section">
+                        <button 
+                            type="button" 
+                            class="btn-reset"
+                            @click="resetForm()"
+                            :disabled="loading || detectingBanner"
+                            :class="{'loading-disabled': loading || detectingBanner}"
+                        >
+                                <span class="btn-icon">🔄</span>Reset Form
+                        </button>
+                    </div>
+                    
+                </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+            <!-- Results Section -->
+            <div class="row justify-content-center" x-show="showPreview || loading">
+                <div class="col-12">
+                    <div class="results-container">
+                        <div class="results-header">
+                            <h4 class="results-title">
+                                <span class="icon-wrapper me-2">✨</span>Hasil Generate Banner
+                            </h4>
+                        </div>
+                        <div class="results-content">
+                            <!-- Side-by-Side Results -->
+                            <div class="row g-4">
+                                <!-- Banner Hasil AI (Left) -->
+        <div class="col-lg-6">
+                                    <div class="result-card banner-card">
+                                        <div class="result-card-header">
+                                            <h5 class="result-card-title">
+                                                <span class="icon-wrapper me-2">🖼️</span>Banner Hasil AI
+                    </h5>
+                </div>
+                                        <div class="result-card-body">
+                    <!-- Loading State -->
+                        <div x-show="loading" class="loading-state">
+                            <div class="loading-spinner">
+                                <div class="spinner-ring"></div>
+                        </div>
+                            <h6 class="loading-title">🤖 AI Sedang Bekerja...</h6>
+                            <p class="loading-subtitle">Membuat banner profesional dengan teknologi AI canggih</p>
+                            <div class="loading-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill"></div>
+                                </div>
+                                <p class="progress-text">Proses generate membutuhkan waktu 30-60 detik</p>
+                            </div>
+                    </div>
+
+                    <!-- Error Message -->
+                        <div x-show="errorMsg" class="message-error" x-transition>
+                            <span class="error-icon">❌</span>
+                        <span x-text="errorMsg"></span>
+                    </div>
+
+                    <!-- Success Message -->
+                        <div x-show="successMsg" class="message-success" x-transition>
+                            <span class="success-icon">✅</span>
+                        <span x-text="successMsg"></span>
+                    </div>
+
+                    <!-- Detected Info -->
+                        <div x-show="detectedInfo" class="detected-info" x-transition>
+                            <div class="info-header">
+                                <span class="info-icon">🔍</span>Informasi Terdeteksi
+                            </div>
+                            <div class="info-grid">
+                                <div class="info-item">
+                                <strong>Ukuran:</strong> <span x-text="detectedInfo?.width_m || '2.0'"></span> x <span x-text="detectedInfo?.height_m || '1.0'"></span> m
+                            </div>
+                                <div class="info-item">
+                                <strong>Rasio:</strong> <span x-text="detectedInfo?.aspect_ratio || '2:1'"></span>
+                        </div>
+                        </div>
+                            <div x-show="detectedInfo?.dominant_colors" class="color-palette">
+                            <strong>Warna Dominan:</strong>
+                                <div class="color-swatches">
+                                <template x-for="color in (detectedInfo?.dominant_colors || [])" :key="color">
+                                    <div 
+                                            class="color-swatch-premium" 
+                                            :style="`background-color: ${color};`"
+                                        :title="color"
+                                    ></div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Banner Preview -->
+                            <div x-show="showPreview && resultBanner && resultBanner.trim() !== ''" class="banner-preview-container">
+                                <div class="banner-image-wrapper">
+                            <img 
+                                :src="resultBanner" 
+                                        class="banner-image"
+                                alt="Generated Banner"
+                            >
+                                    <div class="banner-overlay">
+                                        <div class="banner-actions">
+                                            <button class="btn-preview" @click="previewBanner(resultBanner)">
+                                                <span class="btn-icon">🔍</span>Preview
+                                            </button>
+                        </div>
+                                    </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+
+                    <!-- Empty State -->
+                        <div x-show="!loading && !showPreview && !errorMsg" class="empty-state">
+                            <div class="empty-icon">🖼️</div>
+                            <h6 class="empty-title">Belum ada banner</h6>
+                            <p class="empty-subtitle">Masukkan judul dan klik "Generate Banner Otomatis" untuk memulai</p>
+                    </div>
+                </div>
+            </div>
+
+                <!-- Simulasi Billboard Card (Right) -->
+                <div class="col-lg-6">
+                    <div class="result-card simulation-card">
+                        <div class="result-card-header">
+                            <h5 class="result-card-title">
+                                <span class="icon-wrapper me-2">🏢</span>Simulasi Billboard
+                            </h5>
+                        </div>
+                        <div class="result-card-body">
+                        <!-- Billboard Simulation -->
+                            <div x-show="resultSimulation" class="billboard-preview-container">
+                                <div class="billboard-image-wrapper">
+                                <img 
+                                    :src="resultSimulation" 
+                                        class="billboard-image"
+                                    alt="Billboard Simulation"
+                                >
+                                    <div class="billboard-overlay">
+                                        <div class="billboard-actions">
+                                            <button class="btn-preview" @click="previewBanner(resultSimulation)">
+                                                <span class="btn-icon">🔍</span>Preview
+                                            </button>
+                                        </div>
+                                    </div>
+                            </div>
+                        </div>
+
+                            <!-- Empty State for Simulation -->
+                            <div x-show="!resultSimulation && !loading" class="empty-state">
+                                <div class="empty-icon">🏢</div>
+                                <h6 class="empty-title">Simulasi akan muncul</h6>
+                                <p class="empty-description">
+                                    Setelah banner selesai dibuat
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Download Card - Terpisah di bawah -->
+    <div class="container mt-4" x-show="showPreview && resultBanner && resultBanner.trim() !== ''">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <div class="download-card-separate">
+                    <div class="download-card-header">
+                        <h5 class="download-card-title">
+                            <span class="icon-wrapper me-2">⬇️</span>Download Hasil Keren Anda
+                        </h5>
+                    </div>
+                    <div class="download-card-body">
+                        <div class="download-buttons-container">
+                            <button 
+                                type="button" 
+                                class="btn-download-individual btn-download-banner"
+                                @click="downloadGambar()"
+                            >
+                                <span class="btn-icon">📷</span>Download Gambar
+                            </button>
+                            
+                            <button 
+                                type="button" 
+                                class="btn-download-individual btn-download-pdf"
+                                @click="downloadPDF()"
+                            >
+                                <span class="btn-icon">📄</span>Download PDF (Siap Cetak)
+                            </button>
+                            
+                            <button 
+                                type="button" 
+                                class="btn-download-individual btn-download-new"
+                                @click="generateBanner()"
+                                :disabled="loading || detectingBanner"
+                                :class="{'loading-disabled': loading || detectingBanner}"
+                                :style="{'pointer-events': (loading || detectingBanner) ? 'none' : 'auto'}"
+                            >
+                                <span x-show="!loading" class="btn-icon">🔄</span>
+                                <span x-show="loading" class="btn-icon">⏳</span>
+                                <span x-text="loading ? 'Sedang Generate...' : 'Buat Banner Baru'"></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="container mt-5">
+        <div class="row">
+        <div class="col-12">
+                <div class="features-card">
+                    <div class="features-header">
+                        <h5 class="features-title">
+                            <span class="icon-wrapper me-3">⭐</span>Fitur Unggulan
+                    </h5>
+                </div>
+                    <div class="features-content">
+                        <div class="row g-4">
+                            <div class="col-md-3 text-center">
+                                <div class="feature-item">
+                                    <div class="feature-icon">✨</div>
+                                    <h6 class="feature-title">AI Otomatis</h6>
+                                    <p class="feature-description">Generate banner profesional hanya dari judul</p>
+                            </div>
+                        </div>
+                            <div class="col-md-3 text-center">
+                                <div class="feature-item">
+                                    <div class="feature-icon">🔍</div>
+                                    <h6 class="feature-title">Deteksi Cerdas</h6>
+                                    <p class="feature-description">Analisis banner contoh untuk adaptasi gaya</p>
+                            </div>
+                        </div>
+                            <div class="col-md-3 text-center">
+                                <div class="feature-item">
+                                    <div class="feature-icon">🏢</div>
+                                    <h6 class="feature-title">Simulasi Billboard</h6>
+                                    <p class="feature-description">Preview banner di mockup billboard</p>
+                            </div>
+                        </div>
+                            <div class="col-md-3 text-center">
+                                <div class="feature-item">
+                                    <div class="feature-icon">📄</div>
+                                    <h6 class="feature-title">PDF Siap Cetak</h6>
+                                    <p class="feature-description">Export ke PDF dengan ukuran real</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-premium">
+        <div class="container">
+            <div class="text-center">
+                <p class="footer-text">
+                    © 2025 INEMI AI — Banner Generator Powered by INEMI Vision API
+                </p>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<style>
+/* Alpine.js x-cloak */
+[x-cloak] { display: none !important; }
+/* Import Inter Font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Global Styles */
+* {
+    font-family: 'Inter', sans-serif;
+    box-sizing: border-box;
+}
+
+html, body {
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+}
+
+/* Add floating particles effect */
+.min-vh-100::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(rgba(102, 126, 234, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(102, 126, 234, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: grid-move 20s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes grid-move {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(50px, 50px); }
+}
+
+/* Floating dots animation */
+.min-vh-100::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 1;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 60%, rgba(240, 147, 251, 0.2) 0%, transparent 50%);
+    animation: float-bg 10s ease-in-out infinite;
+}
+
+@keyframes float-bg {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-10px, -10px) scale(1.1); }
+}
+
+/* Glassmorphism Header */
+.glassmorphism-header {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.glassmorphism-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* Premium Cards */
+.premium-card {
+    background: rgba(26, 26, 46, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    z-index: 10;
+}
+
+.premium-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+}
+
+.premium-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+.card-header-premium {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px 20px 0 0;
+    padding: 1.5rem;
+    border: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.card-header-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+.preview-header {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.card-title-premium {
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin: 0;
+    position: relative;
+    z-index: 2;
+}
+
+.icon-wrapper {
+    font-size: 1.3rem;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+}
+
+.card-body-premium {
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* Form Elements */
+.form-label-premium {
+    font-weight: 600;
+    color: #e0e0e0;
+    margin-bottom: 0.75rem;
+    display: block;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Upload Description */
+.upload-description {
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+}
+
+.description-text {
+    color: #93C5FD;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.form-control-premium {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    backdrop-filter: blur(10px);
+}
+
+.form-control-premium:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.02);
+}
+
+.form-control-premium::placeholder {
+    color: #a0a0a0;
+    opacity: 0.8;
+}
+
+.form-control-premium:disabled,
+.form-control-premium.loading-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.form-tooltip {
+    margin-top: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: rgba(67, 233, 123, 0.1);
+    border: 1px solid rgba(67, 233, 123, 0.2);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #43e97b;
+    backdrop-filter: blur(10px);
+}
+
+.tooltip-icon {
+    margin-right: 0.5rem;
+    filter: drop-shadow(0 0 5px rgba(67, 233, 123, 0.5));
+}
+
+/* Upload Area */
+.upload-area-premium {
+    border: 2px dashed #667eea;
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.02);
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+}
+
+.upload-area-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(102, 126, 234, 0.1) 50%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.upload-area-premium:hover {
+    border-color: rgba(102, 126, 234, 0.5);
+    background: rgba(255, 255, 255, 0.05);
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+}
+
+.upload-area-premium:hover::before {
+    opacity: 1;
+}
+
+.upload-area-premium.upload-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.upload-area-premium.upload-disabled:hover {
+    transform: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.upload-area-premium.upload-success {
+    border-color: #43e97b;
+    background: rgba(67, 233, 123, 0.1);
+}
+
+.upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.cloud-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    animation: float 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.5));
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+.upload-title {
+    font-weight: 600;
+    color: #e0e0e0;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.upload-subtitle {
+    color: #a0a0a0;
+    margin-bottom: 1.5rem;
+}
+
+.btn-upload {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.btn-upload::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-upload:hover::before {
+    left: 100%;
+}
+
+.btn-upload:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-upload:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.btn-icon {
+    margin-right: 0.5rem;
+}
+
+.upload-success-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.success-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+.success-title {
+    font-weight: 600;
+    color: #10B981;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 1px 2px rgba(16, 185, 129, 0.3);
+}
+
+.success-subtitle {
+    color: #9CA3AF;
+    margin: 0;
+    font-weight: 500;
+}
+
+/* File List */
+.file-list-title {
+    font-weight: 600;
+    color: #e0e0e0;
+    margin-bottom: 1rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.file-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.file-icon {
+    font-size: 1.2rem;
+}
+
+.file-name {
+    font-weight: 500;
+    color: #e0e0e0;
+}
+
+.file-badge {
+    background: #667eea;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.btn-remove {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-remove:hover {
+    background: #ee5a24;
+    transform: scale(1.1);
+}
+
+.btn-clear {
+    background: rgba(255, 255, 255, 0.05);
+    color: #a0a0a0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.btn-clear:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Upload Tips */
+.upload-tips {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(67, 233, 123, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+.tips-header {
+    font-weight: 600;
+    color: #43e97b;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.tips-icon {
+    margin-right: 0.5rem;
+}
+
+.tips-list {
+    margin: 0;
+    padding-left: 1.25rem;
+    color: #43e97b;
+}
+
+.tips-list li {
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Generate Button */
+.generate-section {
+    margin: 2rem 0 1rem 0;
+}
+
+.btn-generate {
+    width: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 1.25rem 2rem;
+    border-radius: 16px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.btn-generate::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-generate:hover::before {
+    left: 100%;
+}
+
+.btn-generate:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-generate:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.btn-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.btn-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.loading-text {
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Reset Button */
+.reset-section {
+    margin-top: 1rem;
+}
+
+.btn-reset {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    color: #a0a0a0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.btn-reset:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.btn-reset:disabled,
+.btn-reset.loading-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-upload:disabled,
+.btn-upload.loading-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-generate:disabled,
+.btn-generate.loading-disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    pointer-events: none !important;
+    background: rgba(102, 126, 234, 0.3) !important;
+    box-shadow: none !important;
+}
+
+.btn-generate:disabled:hover,
+.btn-generate.loading-disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    background: rgba(102, 126, 234, 0.3) !important;
+}
+
+/* Loading State */
+.loading-state {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.loading-spinner {
+    margin-bottom: 1.5rem;
+}
+
+.loading-progress {
+    margin-top: 2rem;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+    background-size: 200% 100%;
+    animation: progressShimmer 2s ease-in-out infinite;
+    border-radius: 4px;
+}
+
+@keyframes progressShimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.progress-text {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+}
+
+/* AI Detection Loading */
+.ai-detection-loading {
+    margin-top: 1rem;
+    text-align: center;
+    padding: 1rem;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 8px;
+    border: 1px solid rgba(102, 126, 234, 0.3);
+}
+
+.ai-spinner {
+    margin-bottom: 0.5rem;
+}
+
+.ai-spinner-ring {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(102, 126, 234, 0.3);
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: aiSpin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes aiSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.ai-detection-text {
+    font-size: 0.9rem;
+    color: #667eea;
+    margin: 0;
+    font-weight: 500;
+}
+
+.spinner-ring {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(255, 255, 255, 0.15);
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+}
+
+.loading-title {
+    font-weight: 600;
+    color: #e0e0e0;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.loading-subtitle {
+    color: #a0a0a0;
+    margin: 0;
+}
+
+/* Messages */
+.message-error {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff6b6b;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 107, 107, 0.2);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    backdrop-filter: blur(10px);
+}
+
+.message-success {
+    background: rgba(67, 233, 123, 0.1);
+    color: #43e97b;
+    padding: 1rem 1.25rem;
+    border-radius: 12px;
+    border: 1px solid rgba(67, 233, 123, 0.2);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    backdrop-filter: blur(10px);
+}
+
+.error-icon, .success-icon {
+    font-size: 1.2rem;
+    filter: drop-shadow(0 0 10px currentColor);
+}
+
+/* Detected Info */
+.detected-info {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    backdrop-filter: blur(10px);
+}
+
+.info-header {
+    font-weight: 600;
+    color: #667eea;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.info-icon {
+    font-size: 1.2rem;
+    filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.5));
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.info-item {
+    color: #e0e0e0;
+    font-size: 0.875rem;
+}
+
+.color-palette {
+    margin-top: 1rem;
+}
+
+.color-swatches {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.color-swatch-premium {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.color-swatch-premium:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+}
+
+/* Banner Preview */
+.banner-preview-section {
+    text-align: center;
+}
+
+/* Image Wrappers with Hover Effects */
+.banner-image-wrapper,
+.billboard-image-wrapper {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.banner-image-wrapper:hover,
+.billboard-image-wrapper:hover {
+    transform: scale(1.02);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.banner-image,
+.billboard-image {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Overlay Effects */
+.banner-overlay,
+.billboard-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    border-radius: 12px;
+}
+
+.banner-image-wrapper:hover .banner-overlay,
+.billboard-image-wrapper:hover .billboard-overlay {
+    opacity: 1;
+}
+
+.banner-actions,
+.billboard-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-preview {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-preview:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-preview .btn-icon {
+    font-size: 1.1rem;
+}
+
+.banner-result-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.preview-title {
+    font-weight: 600;
+    color: #e0e0e0;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.banner-preview-container {
+    margin-bottom: 0;
+}
+
+.banner-image {
+    max-width: 100%;
+    max-height: 400px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s ease;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+}
+
+.banner-image:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+}
+
+.billboard-section {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.billboard-title {
+    font-weight: 600;
+    color: #e0e0e0;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.billboard-container {
+    margin-bottom: 0;
+}
+
+.billboard-image {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.btn-action {
+    padding: 0.875rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 500;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-download {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.btn-download:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(67, 233, 123, 0.4);
+    color: white;
+}
+
+.btn-image {
+    background: rgba(255, 255, 255, 0.05);
+    color: #667eea;
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.btn-image:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+    color: #667eea;
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-regenerate {
+    background: rgba(255, 255, 255, 0.05);
+    color: #f093fb;
+    border: 1px solid rgba(240, 147, 251, 0.3);
+    backdrop-filter: blur(10px);
+}
+
+.btn-regenerate:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 0 20px rgba(240, 147, 251, 0.4);
+}
+
+/* Results Container */
+.results-container {
+    background: rgba(26, 26, 46, 0.8);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    position: relative;
+    z-index: 10;
+}
+
+/* Result Cards */
+.result-card {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(15px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.result-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.result-card-header {
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.result-card-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.banner-card .result-card-header {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.simulation-card .result-card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.result-card-body {
+    padding: 1.5rem;
+    height: calc(100% - 80px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.results-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+    background-size: 200% 100%;
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+.results-header {
+    padding: 2rem 2rem 1rem 2rem;
+    text-align: center;
+}
+
+.results-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.results-content {
+    padding: 0 2rem 2rem 2rem;
+}
+
+/* Download Card Separate */
+.download-card-separate {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease;
+    margin-bottom: 2rem;
+}
+
+.download-card-separate:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.download-card-header {
+    padding: 2rem 2rem 1.5rem 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+.download-card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.download-card-body {
+    padding: 2.5rem;
+    text-align: center;
+}
+
+.download-buttons-container {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Desktop/Large Screen - Horizontal Layout */
+@media (min-width: 1025px) {
+    .download-buttons-container {
+        flex-direction: row;
+        gap: 1.5rem;
+        flex-wrap: nowrap;
+    }
+    
+    .btn-download-individual {
+        flex: 1;
+        max-width: 200px;
+        padding: 1rem 1.5rem;
+    }
+}
+
+/* Banner Type Selector */
+.banner-type-selector {
+    margin-top: 0.5rem;
+}
+
+.banner-type-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.banner-type-option {
+    position: relative;
+    cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.banner-type-option:hover {
+    border-color: rgba(59, 130, 246, 0.5);
+    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.2);
+}
+
+.banner-type-option.selected {
+    border-color: #3B82F6;
+    background: rgba(59, 130, 246, 0.15);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+}
+
+.banner-type-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.option-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.option-icon {
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.option-text {
+    flex: 1;
+}
+
+.option-title {
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 0.25rem;
+}
+
+.option-desc {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.banner-type-option:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Individual Download Buttons */
+.btn-download-individual {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    min-width: 250px;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-download-individual::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-download-individual:hover::before {
+    left: 100%;
+}
+
+.btn-download-individual:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.btn-download-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-download-banner:hover {
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.btn-download-pdf {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.btn-download-pdf:hover {
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+}
+
+.btn-download-new {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(67, 233, 123, 0.3);
+}
+
+.btn-download-new:hover {
+    box-shadow: 0 8px 25px rgba(67, 233, 123, 0.4);
+}
+
+.btn-download-new:disabled,
+.btn-download-new.loading-disabled {
+    opacity: 0.5 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    pointer-events: none !important;
+    background: rgba(67, 233, 123, 0.3) !important;
+    box-shadow: none !important;
+}
+
+.btn-download-new:disabled:hover,
+.btn-download-new.loading-disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+    background: rgba(67, 233, 123, 0.3) !important;
+}
+
+
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 3rem 2rem;
+}
+
+.empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.5;
+    filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.3));
+}
+
+.empty-title {
+    font-weight: 600;
+    color: #a0a0a0;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.empty-subtitle {
+    color: #a0a0a0;
+    margin: 0;
+    opacity: 0.8;
+}
+
+/* Features Section */
+.features-card {
+    background: rgba(26, 26, 46, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    overflow: hidden;
+    position: relative;
+}
+
+.features-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+}
+
+.features-header {
+    background: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);
+    color: white;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.features-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    animation: shimmer 3s ease-in-out infinite;
+}
+
+.features-title {
+    font-weight: 600;
+    font-size: 1.2rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.features-content {
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.feature-item {
+    padding: 1.5rem;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    height: 100%;
+    backdrop-filter: blur(10px);
+}
+
+.feature-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(102, 126, 234, 0.3);
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+    filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.5));
+}
+
+.feature-title {
+    font-weight: 600;
+    color: #e0e0e0;
+    margin-bottom: 0.75rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.feature-description {
+    color: #a0a0a0;
+    font-size: 0.875rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Footer */
+.footer-premium {
+    background: rgba(26, 26, 46, 0.8);
+    backdrop-filter: blur(20px);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 2rem 0;
+    margin-top: 3rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-text {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 300;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Tablet Responsive */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .download-buttons-container {
+        flex-direction: row;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    
+    .btn-download-individual {
+        flex: 1;
+        min-width: 150px;
+        padding: 0.875rem 1.25rem;
+        font-size: 0.9rem;
+    }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .glassmorphism-header h1 {
+        font-size: 2rem;
+    }
+    
+    .glassmorphism-header p {
+        font-size: 1rem;
+    }
+    
+    .card-body-premium {
+        padding: 1.5rem;
+    }
+    
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        gap: 0.5rem;
+    }
+    
+    .btn-action {
+        padding: 0.75rem 1rem;
+        font-size: 0.875rem;
+    }
+    
+    .feature-item {
+        padding: 1rem;
+    }
+    
+    .feature-icon {
+        font-size: 2rem;
+    }
+    
+    .banner-result-section,
+    .billboard-section {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .banner-image {
+        max-height: 250px;
+    }
+    
+    .billboard-image {
+        max-height: 200px;
+    }
+    
+    .download-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn-download {
+        min-width: 250px;
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    /* Mobile Result Cards */
+    .result-card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .result-card-header {
+        padding: 1rem;
+    }
+    
+    .result-card-title {
+        font-size: 1rem;
+    }
+    
+    .result-card-body {
+        padding: 1rem;
+    }
+    
+    /* Mobile Preview Modal */
+    .preview-modal-content {
+        max-width: 95vw;
+        max-height: 95vh;
+        margin: 1rem;
+    }
+    
+    .preview-modal-header {
+        padding: 1rem;
+    }
+    
+    .preview-modal-title {
+        font-size: 1.2rem;
+    }
+    
+    .preview-modal-body {
+        padding: 1rem;
+    }
+    
+    .preview-modal-image {
+        max-height: 60vh;
+    }
+    
+    /* Mobile Download Card */
+    .download-card-separate {
+        margin-bottom: 1.5rem;
+    }
+    
+    .download-card-header {
+        padding: 1.5rem 1rem 1rem 1rem;
+    }
+    
+    .download-card-title {
+        font-size: 1.2rem;
+    }
+    
+    .download-card-body {
+        padding: 1.5rem;
+    }
+    
+    .download-buttons-container {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .btn-download-individual {
+        min-width: 200px;
+        padding: 0.875rem 1.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .results-header {
+        padding: 1.5rem 1rem 1rem 1rem;
+    }
+    
+    .results-content {
+        padding: 0 1rem 1.5rem 1rem;
+    }
+    
+    .download-section {
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        padding: 0 1rem;
+    }
+    
+    .glassmorphism-header {
+        padding: 2rem 1.5rem;
+    }
+    
+    .upload-area-premium {
+        padding: 1.5rem;
+    }
+    
+    .cloud-icon {
+        font-size: 2.5rem;
+    }
+    
+    .btn-generate {
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* Preview Modal */
+.preview-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-modal[x-cloak] {
+    display: none !important;
+}
+
+.preview-modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+}
+
+.preview-modal-content {
+    position: relative;
+    background: rgba(26, 26, 46, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+.preview-modal-header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.preview-modal-title {
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.preview-modal-close {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.preview-modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+}
+
+.preview-modal-body {
+    padding: 2rem;
+    text-align: center;
+}
+
+.preview-modal-image {
+    max-width: 100%;
+    max-height: 70vh;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+</style>
+
+    <!-- Preview Modal -->
+    <template x-if="previewModal.show && previewModal.url && previewModal.url.trim() !== '' && previewModal.url !== 'undefined'">
+        <div class="preview-modal" x-transition>
+        <div class="preview-modal-backdrop" @click="closePreview()"></div>
+        <div class="preview-modal-content">
+            <div class="preview-modal-header">
+                <h5 class="preview-modal-title">Preview Banner</h5>
+                <button class="preview-modal-close" @click="closePreview()">×</button>
+            </div>
+            <div class="preview-modal-body">
+                <img :src="previewModal.url" class="preview-modal-image" alt="Banner Preview" @error="closePreview()">
+            </div>
+        </div>
+        </div>
+    </template>
+
+{% endblock %}
+
+

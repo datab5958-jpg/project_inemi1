@@ -1,0 +1,67 @@
+<!-- Comments Panel (Slide Up) -->
+<div x-show="showComments" x-transition class="comments-panel" x-cloak>
+  <div class="panel-header d-flex justify-content-between align-items-center px-3 py-2">
+    <h6 class="mb-0 text-white">Komentar</h6>
+    <button class="btn btn-sm btn-outline-light" @click="toggle()"><i class="bi bi-x-lg"></i></button>
+  </div>
+  <div class="comment-body px-3 pb-3" style="max-height: 40vh; overflow-y: auto;">
+    <template x-if="loading">
+      <p class="text-muted text-center mt-3">Memuat komentar...</p>
+    </template>
+    <template x-if="!loading && comments.length === 0">
+      <p class="text-muted text-center mt-3">Belum ada komentar.</p>
+    </template>
+    <template x-for="comment in comments" :key="comment.id">
+      <div class="d-flex align-items-start gap-3 border-bottom border-dark-subtle py-2">
+        <img :src="comment.avatar_url || '/static/images/default-avatar.png'" width="36" height="36" class="rounded-circle border border-secondary-subtle">
+        <div class="flex-grow-1">
+          <strong class="text-light d-block" x-text="comment.username"></strong>
+          <p class="text-white-50 mb-1 small" x-text="comment.text"></p>
+          <small class="text-white d-block" x-text="comment.content"></small>
+        </div>
+      </div>
+    </template>
+  </div>
+  <form class="comment-form d-flex gap-2 px-3 pb-3 pt-2 bg-dark border-top" @submit.prevent="">
+    <input type="text" class="form-control rounded-pill bg-dark text-white border-0" placeholder="Tulis komentar..." x-model="newComment" required>
+    <button type="submit" class="btn btn-primary rounded-pill px-3"><i class="bi bi-send"></i></button>
+  </form>
+</div>
+
+<style>
+.comments-panel {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 70px;
+  max-width: 480px;
+  margin: 0 auto;
+  background: #181818;
+  border-top-left-radius: 1.2rem;
+  border-top-right-radius: 1.2rem;
+  z-index: 100;
+  color: #fff;
+  box-shadow: 0 -2px 24px rgba(0,0,0,0.45);
+  border: 1px solid #222;
+  overflow: hidden;
+}
+@media (min-width: 768px) {
+  .comments-panel {
+    left: 140px;
+    right: 0;
+    bottom: 40px;
+    max-width: 390px;
+  }
+}
+.comment-form .form-control {
+  font-size: 0.95rem;
+  background: #222 !important;
+}
+.comment-form .btn-primary {
+  background: linear-gradient(90deg, #2e31ff 60%, #157efb 100%);
+  border: none;
+}
+.comment-form.bg-dark {
+  background: #111 !important;
+}
+</style>

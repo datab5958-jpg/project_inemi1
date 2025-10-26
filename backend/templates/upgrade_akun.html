@@ -1,0 +1,2895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INEMI - Upgrade Your Account</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --danger-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #16213e;
+            --bg-card: rgba(26, 26, 46, 0.8);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #6b7280;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow-primary: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --shadow-secondary: 0 4px 16px rgba(0, 0, 0, 0.2);
+            --glow-primary: 0 0 20px rgba(102, 126, 234, 0.5);
+            --glow-secondary: 0 0 30px rgba(245, 87, 108, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(245, 87, 108, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(79, 172, 254, 0.05) 0%, transparent 50%);
+            z-index: -1;
+            animation: backgroundFloat 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            33% { transform: translateY(-20px) rotate(1deg); }
+            66% { transform: translateY(10px) rotate(-1deg); }
+        }
+
+        /* Header Section */
+        .header {
+            position: relative;
+            padding: 2rem 0 1.5rem 0;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .back-arrow {
+            position: absolute;
+            left: 2rem;
+            top: 2rem;
+            color: var(--text-primary);
+            font-size: 1.5rem;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: var(--bg-card);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            z-index: 100;
+            cursor: pointer;
+        }
+
+        .back-arrow:hover {
+            color: var(--text-primary);
+            transform: translateX(-5px) scale(1.1);
+            box-shadow: var(--glow-primary);
+        }
+
+        .brand-logo {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        
+        .logo-image {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s ease;
+            animation: logoFloat 3s ease-in-out infinite alternate;
+        }
+        
+        .logo-image:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.5);
+        }
+        
+        @keyframes logoFloat {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-10px); }
+        }
+        
+        .brand-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.8rem;
+            font-weight: 900;
+            margin-bottom: 0.8rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            0% { filter: brightness(1) drop-shadow(0 0 20px rgba(102, 126, 234, 0.3)); }
+            100% { filter: brightness(1.2) drop-shadow(0 0 30px rgba(102, 126, 234, 0.6)); }
+        }
+
+        .brand-subtitle {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+
+        /* Platform Icons */
+        .platform-icons {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .platform-icon {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+            padding: 0.8rem;
+            border-radius: 0.8rem;
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            min-width: 80px;
+        }
+        
+        .platform-icon i {
+            font-size: 1.5rem;
+        }
+        
+        .platform-icon span {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .platform-icon:hover {
+            color: var(--text-primary);
+            transform: translateY(-5px);
+            box-shadow: var(--glow-primary);
+        }
+
+        /* Payment Toggle */
+        .payment-toggle {
+            display: flex;
+            justify-content: center;
+            background: var(--bg-card);
+            border-radius: 2rem;
+            padding: 0.5rem;
+            margin-bottom: 2.5rem;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-primary);
+        }
+
+        .toggle-option {
+            flex: 1;
+            padding: 1rem 2rem;
+            border-radius: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .toggle-option.active {
+            background: var(--primary-gradient);
+            color: var(--text-primary);
+            box-shadow: var(--glow-primary);
+            transform: scale(1.05);
+        }
+
+        .toggle-option:not(.active) {
+            color: var(--text-secondary);
+        }
+
+        .toggle-option:not(.active):hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .flame-icon {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--warning-gradient);
+            color: var(--text-primary);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-secondary);
+        }
+
+        /* Pricing Container */
+        .pricing-container {
+            margin: 0 auto;
+            padding: 0 2rem;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .pricing-container::before,
+        .pricing-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 3rem;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .pricing-container::before {
+            left: 0;
+            background: linear-gradient(to right, var(--bg-primary), transparent);
+        }
+
+        .pricing-container::after {
+            right: 0;
+            background: linear-gradient(to left, var(--bg-primary), transparent);
+        }
+
+        /* Hide shadows on mobile */
+        @media (max-width: 768px) {
+            .pricing-container::before,
+            .pricing-container::after {
+                display: none;
+            }
+        }
+
+        .pricing-grid {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            padding: 0.5rem 2rem;
+            outline: none;
+            border: none;
+            justify-content: flex-start;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+            box-sizing: border-box;
+        }
+        
+        .pricing-grid::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .pricing-grid::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .pricing-grid::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        
+        .pricing-grid::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .pricing-grid.desktop {
+            overflow-x: auto;
+            overflow-y: hidden;
+            justify-content: flex-start;
+            flex-wrap: nowrap;
+            gap: 1.5rem;
+            outline: none;
+            border: none;
+            max-width: 100%;
+            margin: 0 auto;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+            padding: 0 2rem;
+            box-sizing: border-box;
+        }
+        
+        .pricing-grid.desktop::-webkit-scrollbar {
+            height: 6px;
+        }
+        
+        .pricing-grid.desktop::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .pricing-grid.desktop::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+        
+        .pricing-grid.desktop::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .pricing-grid.desktop .pricing-card {
+            flex-shrink: 0;
+            min-width: 280px;
+            max-width: 280px;
+            width: 280px;
+        }
+
+        .pricing-grid.mobile {
+            overflow-x: auto;
+            overflow-y: hidden;
+            scroll-behavior: smooth;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+            -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
+            scroll-snap-type: x mandatory; /* Snap to cards */
+            padding: 0 2rem; /* Padding for centering */
+            white-space: nowrap; /* Prevent wrapping */
+            position: relative;
+            width: 100%;
+            max-width: 100%;
+            justify-content: flex-start;
+            box-sizing: border-box;
+            /* Allow full scroll range */
+            scroll-padding-left: 0;
+            scroll-padding-right: 0;
+        }
+        
+        /* Add extra padding to ensure first card can be scrolled to fully visible */
+        .pricing-grid.mobile::before {
+            content: '';
+            display: inline-block;
+            width: 2rem;
+            height: 1px;
+            flex-shrink: 0;
+        }
+        
+        .pricing-grid.mobile::after {
+            content: '';
+            display: inline-block;
+            width: 2rem;
+            height: 1px;
+            flex-shrink: 0;
+        }
+
+        .pricing-grid.mobile::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        .pricing-grid.mobile .pricing-card {
+            scroll-snap-align: center; /* Center each card when scrolling */
+            flex-shrink: 0; /* Prevent cards from shrinking */
+            display: inline-block; /* Ensure proper inline display */
+            vertical-align: top; /* Align cards to top */
+            margin-right: 0.5rem; /* Margin for better spacing */
+            width: 280px; /* Fixed width for consistent scrolling */
+            min-width: 280px; /* Ensure minimum width */
+            max-width: 280px; /* Ensure maximum width */
+            box-sizing: border-box;
+        }
+        
+        .pricing-grid.mobile .pricing-card:last-child {
+            margin-right: 0; /* Remove margin from last card */
+        }
+
+        /* Pricing Cards */
+        .pricing-card {
+            min-width: 280px;
+            max-width: 280px;
+            width: 280px;
+            flex-shrink: 0;
+            background: var(--bg-card);
+            border-radius: 1.2rem;
+            padding: 1.5rem 1.2rem;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+            box-sizing: border-box;
+            margin: 0 0.5rem;
+        }
+
+        .pricing-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .pricing-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: var(--shadow-primary), var(--glow-primary);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .pricing-card.featured {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            transform: scale(1.05);
+        }
+
+        .pricing-card.featured:hover {
+            transform: translateY(-10px) scale(1.07);
+            box-shadow: var(--shadow-primary), var(--glow-primary);
+        }
+
+        .featured-badge {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.2rem;
+            background: var(--warning-gradient);
+            color: var(--text-primary);
+            padding: 0.3rem 1rem;
+            border-radius: 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            box-shadow: var(--shadow-secondary);
+            z-index: 10;
+        }
+
+        .card-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.6rem;
+            margin-top: 0.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .pricing-card.featured .card-title {
+            margin-top: 2rem;
+        }
+
+        .card-price {
+            font-size: 2rem;
+            font-weight: 900;
+            margin-bottom: 0.3rem;
+            color: var(--text-primary);
+        }
+
+        .price-original {
+            text-decoration: line-through;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+
+        .price-discount {
+            color: #43e97b;
+        }
+
+        .price-note {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .subscribe-btn {
+            width: 100%;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 0.8rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-gradient {
+            background: var(--primary-gradient);
+            color: var(--text-primary);
+        }
+
+        .btn-gradient::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-gradient:hover::before {
+            left: 100%;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--glow-primary);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-outline:hover {
+            background: #667eea;
+            color: var(--text-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--glow-primary);
+        }
+
+        .card-description {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .features-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features-list li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.4rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            padding: 0.3rem 0;
+        }
+
+        .feature-icon {
+            color: #43e97b;
+            margin-right: 0.6rem;
+            font-size: 0.9rem;
+            width: 18px;
+            text-align: center;
+        }
+
+        .teams-icon {
+            width: 35px;
+            height: 35px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.8rem;
+        }
+
+        /* Navigation */
+        .pricing-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 1.5rem;
+            gap: 1.5rem;
+        }
+
+        .nav-arrow {
+            background: none;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            font-size: 1.7rem;
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            border-radius: 50%;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+        }
+
+        .nav-arrow:hover {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            transform: scale(1.1);
+        }
+
+        .nav-arrow:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        #nav-dots {
+            display: flex;
+            gap: 1.1rem;
+        }
+
+        #nav-dots .dot {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            display: inline-block;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        #nav-dots .dot.active {
+            background: var(--primary-gradient);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+            transform: scale(1.2);
+        }
+
+        /* Loading and Error States */
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+
+        .loading i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #667eea;
+        }
+
+        .error {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #ff6b6b;
+        }
+
+        .error i {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header {
+                padding: 1.5rem 0 1rem 0;
+            }
+
+            .brand-title {
+                font-size: 2.2rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .brand-subtitle {
+                font-size: 0.95rem;
+                line-height: 1.5;
+                padding: 0 1rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .back-arrow {
+                left: 1rem;
+                top: 1rem;
+                width: 40px;
+                height: 40px;
+            }
+
+            .platform-icons {
+                gap: 0.8rem;
+                margin-bottom: 1.5rem;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .platform-icon {
+                min-width: 60px;
+                padding: 0.6rem;
+                gap: 0.2rem;
+            }
+            
+            .platform-icon i {
+                font-size: 1.2rem;
+            }
+            
+            .platform-icon span {
+                font-size: 0.6rem;
+            }
+
+            .payment-toggle {
+                margin: 0 1rem 2.5rem 1rem;
+            }
+
+            .toggle-option {
+                padding: 0.7rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            .pricing-container {
+                padding: 0 1rem;
+                margin-bottom: 2rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                box-sizing: border-box;
+            }
+
+            .pricing-grid {
+                gap: 0.5rem;
+                padding: 0.5rem 1rem;
+                max-width: 100%;
+                justify-content: flex-start;
+                box-sizing: border-box;
+            }
+
+            .pricing-card {
+                min-width: 280px;
+                max-width: 300px;
+                padding: 1.8rem 1.5rem;
+                border-radius: 20px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+                margin: 0 0.25rem;
+            }
+
+            .pricing-card.featured {
+                transform: scale(1.05);
+                border: 2px solid var(--primary-gradient);
+            }
+
+            .pricing-card.featured:hover {
+                transform: scale(1.05) translateY(-5px);
+            }
+
+            .card-title {
+                font-size: 1.4rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .card-price {
+                font-size: 2.5rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .price-note {
+                font-size: 0.9rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .subscribe-btn {
+                padding: 1rem 2rem;
+                font-size: 1.1rem;
+                border-radius: 50px;
+                font-weight: 600;
+                margin-bottom: 1.5rem;
+                width: 100%;
+                transition: all 0.3s ease;
+            }
+
+            .subscribe-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            }
+
+            .card-description {
+                font-size: 0.95rem;
+                margin-bottom: 1.5rem;
+                color: var(--text-secondary);
+            }
+
+            .features-list li {
+                font-size: 0.95rem;
+                margin-bottom: 0.8rem;
+                padding-left: 0.5rem;
+                line-height: 1.6;
+            }
+
+            .feature-icon {
+                margin-right: 0.8rem;
+                color: #43e97b;
+            }
+
+            .custom-plan-section {
+                margin-top: 2rem;
+                padding: 2rem 1.5rem;
+                max-width: 100%;
+                border-radius: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 1rem 0;
+            }
+
+            .brand-title {
+                font-size: 1.8rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .brand-subtitle {
+                font-size: 0.9rem;
+                padding: 0 0.5rem;
+                line-height: 1.4;
+            }
+
+            .back-arrow {
+                left: 0.5rem;
+                top: 0.5rem;
+                width: 35px;
+                height: 35px;
+            }
+
+            .platform-icons {
+                gap: 0.6rem;
+                margin-bottom: 1rem;
+            }
+
+            .platform-icon {
+                min-width: 50px;
+                padding: 0.5rem;
+                gap: 0.1rem;
+            }
+            
+            .platform-icon i {
+                font-size: 1rem;
+            }
+            
+            .platform-icon span {
+                font-size: 0.5rem;
+            }
+
+            .payment-toggle {
+                margin: 0 0.5rem 2rem 0.5rem;
+            }
+
+            .toggle-option {
+                padding: 0.6rem 1rem;
+                font-size: 0.8rem;
+            }
+
+            .pricing-container {
+                padding: 0 0.5rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                box-sizing: border-box;
+            }
+
+            .pricing-grid {
+                padding: 0.5rem 0.5rem;
+                box-sizing: border-box;
+                justify-content: flex-start;
+            }
+
+            .pricing-card {
+                min-width: 280px;
+                max-width: 300px;
+                padding: 1.5rem 1.2rem;
+                margin: 0 0.125rem;
+            }
+
+            .card-title {
+                font-size: 1.2rem;
+            }
+
+            .card-price {
+                font-size: 2.2rem;
+            }
+
+            .subscribe-btn {
+                padding: 0.9rem 1.5rem;
+                font-size: 1rem;
+            }
+
+            .features-list li {
+                font-size: 0.9rem;
+                margin-bottom: 0.6rem;
+            }
+
+            .card-description {
+                font-size: 0.9rem;
+            }
+
+            .custom-plan-section {
+                padding: 1.5rem 1rem;
+                margin-top: 1.5rem;
+            }
+        }
+
+        /* Custom Plan Section */
+        .custom-plan-section {
+            margin: 3rem auto;
+            padding: 2.5rem;
+            background: var(--bg-card);
+            border-radius: 2rem;
+            border: 2px solid var(--border-color);
+            backdrop-filter: blur(10px);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            align-self: center;
+        }
+        
+        .custom-plan-section .features-list {
+            text-align: left;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .custom-plan-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .custom-plan-section:hover::before {
+            transform: scaleX(1);
+        }
+
+        .custom-plan-section:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-primary), 0 0 30px rgba(79, 172, 254, 0.3);
+            border-color: rgba(79, 172, 254, 0.3);
+        }
+
+        .custom-plan-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .custom-plan-description {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Desktop specific styles */
+        @media (min-width: 769px) {
+            .pricing-grid {
+                justify-content: center;
+            }
+
+            .pricing-card {
+                min-width: 280px;
+                max-width: 280px;
+                width: 280px;
+                flex: none;
+                padding: 1.5rem;
+            }
+
+            .pricing-nav {
+                display: flex !important;
+            }
+            
+            .custom-plan-section {
+                margin: 4rem auto;
+                max-width: 600px;
+                padding: 3rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                align-self: center;
+            }
+        }
+
+        /* Contact & Information Section */
+        .contact-section {
+            padding: 5rem 0;
+            background: linear-gradient(135deg, 
+                rgba(10, 10, 20, 0.98) 0%, 
+                rgba(5, 15, 30, 0.98) 25%,
+                rgba(2, 8, 20, 0.98) 50%,
+                rgba(1, 5, 15, 0.98) 75%,
+                rgba(0, 2, 8, 0.98) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .contact-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(102, 126, 234, 0.08) 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, rgba(245, 87, 108, 0.08) 0%, transparent 60%),
+                radial-gradient(circle at 50% 50%, rgba(255, 193, 7, 0.05) 0%, transparent 70%);
+            z-index: 1;
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
+
+        .contact-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.02) 50%, transparent 70%),
+                linear-gradient(-45deg, transparent 30%, rgba(255, 255, 255, 0.02) 50%, transparent 70%);
+            z-index: 1;
+            animation: shimmer 15s linear infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: translateX(0) translateY(0); }
+            25% { transform: translateX(-10px) translateY(-5px); }
+            50% { transform: translateX(10px) translateY(5px); }
+            75% { transform: translateX(-5px) translateY(10px); }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .contact-section .container {
+            position: relative;
+            z-index: 2;
+        }
+
+        .contact-header {
+            text-align: center;
+            margin-bottom: 4rem;
+            position: relative;
+        }
+
+        .contact-title {
+            font-size: 3rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            position: relative;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+
+        .contact-title i {
+            color: #667eea;
+            font-size: 2.5rem;
+            animation: iconPulse 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.5));
+        }
+
+        .contact-subtitle {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto 2rem;
+            line-height: 1.7;
+            position: relative;
+            animation: fadeInUp 1s ease-out 0.5s both;
+        }
+
+        .contact-badges {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+            animation: fadeInUp 1s ease-out 0.7s both;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(245, 87, 108, 0.15) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            animation: badgeFloat 3s ease-in-out infinite;
+        }
+
+        .badge:nth-child(1) { animation-delay: 0s; }
+        .badge:nth-child(2) { animation-delay: 1s; }
+        .badge:nth-child(3) { animation-delay: 2s; }
+
+        .badge:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        @keyframes badgeFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes titleGlow {
+            0% { 
+                filter: drop-shadow(0 0 5px rgba(102, 126, 234, 0.2));
+                transform: scale(1);
+            }
+            100% { 
+                filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.4));
+                transform: scale(1.02);
+            }
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { 
+                transform: scale(1) rotate(0deg);
+                filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.3));
+            }
+            50% { 
+                transform: scale(1.1) rotate(5deg);
+                filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.5));
+            }
+        }
+
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2.5rem;
+            margin-bottom: 5rem;
+            perspective: 1000px;
+        }
+
+        .contact-card {
+            background: linear-gradient(145deg, 
+                rgba(0, 0, 0, 0.4) 0%, 
+                rgba(0, 0, 0, 0.6) 100%);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            animation: cardFloat 6s ease-in-out infinite;
+        }
+
+        .contact-card:nth-child(1) { animation-delay: 0s; }
+        .contact-card:nth-child(2) { animation-delay: 1s; }
+        .contact-card:nth-child(3) { animation-delay: 2s; }
+        .contact-card:nth-child(4) { animation-delay: 3s; }
+
+        .contact-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(102, 126, 234, 0.05) 0%, 
+                rgba(245, 87, 108, 0.05) 50%, 
+                rgba(255, 193, 7, 0.05) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 1;
+        }
+
+        .contact-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            animation: rotate 4s linear infinite;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: 2;
+        }
+
+        .contact-card:hover::before {
+            opacity: 1;
+        }
+
+        .contact-card:hover::after {
+            opacity: 1;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-15px) rotateX(5deg) rotateY(5deg);
+            box-shadow: 
+                0 25px 50px rgba(102, 126, 234, 0.2),
+                0 0 0 1px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        @keyframes cardFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .contact-icon {
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            font-size: 2.2rem;
+            color: white;
+            box-shadow: 
+                0 10px 30px rgba(102, 126, 234, 0.3),
+                0 0 0 4px rgba(255, 255, 255, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            z-index: 3;
+            animation: iconBounce 3s ease-in-out infinite;
+            transition: all 0.4s ease;
+        }
+
+        .contact-icon::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            border-radius: 50%;
+            z-index: -1;
+            opacity: 0;
+            animation: iconPulse 2s ease-in-out infinite;
+        }
+
+        .contact-card:hover .contact-icon {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 
+                0 15px 40px rgba(102, 126, 234, 0.4),
+                0 0 0 6px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+
+        .contact-card:hover .contact-icon::before {
+            opacity: 0.3;
+        }
+
+        @keyframes iconBounce {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); opacity: 0; }
+            50% { transform: scale(1.1); opacity: 0.3; }
+        }
+
+        .contact-card h3 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            position: relative;
+            z-index: 3;
+            animation: textGlow 4s ease-in-out infinite;
+        }
+
+        .contact-card p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-size: 1rem;
+            position: relative;
+            z-index: 3;
+        }
+
+        .contact-info {
+            margin-bottom: 2rem;
+            position: relative;
+            z-index: 3;
+        }
+
+        .contact-info strong {
+            display: block;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .contact-info small {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .contact-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 1rem 2rem;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            width: 100%;
+            position: relative;
+            z-index: 3;
+            box-shadow: 
+                0 8px 25px rgba(102, 126, 234, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        .contact-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .contact-btn:hover::before {
+            left: 100%;
+        }
+
+        .contact-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 
+                0 15px 35px rgba(102, 126, 234, 0.4),
+                0 0 0 2px rgba(255, 255, 255, 0.1);
+        }
+
+        .contact-btn:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        .contact-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            position: relative;
+            z-index: 3;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: statusPulse 2s ease-in-out infinite;
+        }
+
+        .status-dot.online {
+            background: #10b981;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+
+        .status-dot.busy {
+            background: #f59e0b;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+
+        .status-dot.offline {
+            background: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+
+        .status-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { 
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% { 
+                opacity: 0.7;
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes textGlow {
+            0%, 100% { 
+                text-shadow: 0 0 5px rgba(102, 126, 234, 0.2);
+            }
+            50% { 
+                text-shadow: 0 0 15px rgba(102, 126, 234, 0.4);
+            }
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            margin-bottom: 5rem;
+            position: relative;
+        }
+
+        .faq-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+
+        .faq-title i {
+            color: #667eea;
+            font-size: 2.2rem;
+            animation: iconPulse 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.5));
+        }
+
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            perspective: 1000px;
+        }
+
+        .faq-item {
+            background: linear-gradient(145deg, 
+                rgba(0, 0, 0, 0.4) 0%, 
+                rgba(0, 0, 0, 0.6) 100%);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            animation: faqSlideIn 0.8s ease-out both;
+        }
+
+        .faq-item:nth-child(1) { animation-delay: 0.1s; }
+        .faq-item:nth-child(2) { animation-delay: 0.2s; }
+        .faq-item:nth-child(3) { animation-delay: 0.3s; }
+        .faq-item:nth-child(4) { animation-delay: 0.4s; }
+
+        .faq-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(102, 126, 234, 0.03) 0%, 
+                rgba(245, 87, 108, 0.03) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .faq-item:hover::before {
+            opacity: 1;
+        }
+
+        .faq-item:hover {
+            transform: translateY(-8px) rotateX(2deg);
+            box-shadow: 
+                0 20px 40px rgba(102, 126, 234, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+            border-color: rgba(102, 126, 234, 0.2);
+        }
+
+        .faq-item h4 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .faq-item h4::before {
+            content: '❓';
+            font-size: 1.2rem;
+            animation: questionBounce 2s ease-in-out infinite;
+        }
+
+        .faq-item p {
+            color: var(--text-secondary);
+            line-height: 1.7;
+            font-size: 1rem;
+            position: relative;
+            z-index: 2;
+            margin-bottom: 1rem;
+        }
+
+        .faq-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(245, 87, 108, 0.15) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 2;
+            animation: tagFloat 4s ease-in-out infinite;
+        }
+
+        .faq-item:nth-child(1) .faq-tag { animation-delay: 0s; }
+        .faq-item:nth-child(2) .faq-tag { animation-delay: 1s; }
+        .faq-item:nth-child(3) .faq-tag { animation-delay: 2s; }
+        .faq-item:nth-child(4) .faq-tag { animation-delay: 3s; }
+
+        @keyframes tagFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-3px); }
+        }
+
+        @keyframes faqSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(50px) rotateX(-10deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) rotateX(0deg);
+            }
+        }
+
+        @keyframes questionBounce {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(10deg); }
+        }
+
+        /* Company Information */
+        .company-info {
+            background: linear-gradient(145deg, 
+                rgba(0, 0, 0, 0.4) 0%, 
+                rgba(0, 0, 0, 0.6) 100%);
+            backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            padding: 3rem;
+            position: relative;
+            overflow: hidden;
+            animation: companyGlow 8s ease-in-out infinite;
+        }
+
+        .company-info::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 30% 20%, rgba(102, 126, 234, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 70% 80%, rgba(245, 87, 108, 0.05) 0%, transparent 50%);
+            z-index: 1;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2.5rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .info-card {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 15px;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            animation: infoCardFloat 6s ease-in-out infinite;
+        }
+
+        .info-card:nth-child(1) { animation-delay: 0s; }
+        .info-card:nth-child(2) { animation-delay: 1.5s; }
+        .info-card:nth-child(3) { animation-delay: 3s; }
+        .info-card:nth-child(4) { animation-delay: 4.5s; }
+
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, 
+                rgba(102, 126, 234, 0.03) 0%, 
+                rgba(245, 87, 108, 0.03) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .info-card:hover::before {
+            opacity: 1;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 30px rgba(102, 126, 234, 0.15);
+        }
+
+        .info-card h4 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .info-card h4 i {
+            color: #667eea;
+            font-size: 1.3rem;
+            animation: iconRotate 4s ease-in-out infinite;
+            filter: drop-shadow(0 0 8px rgba(102, 126, 234, 0.4));
+        }
+
+        .info-card p {
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+            font-weight: 500;
+            position: relative;
+            z-index: 2;
+            line-height: 1.6;
+        }
+
+        .info-card p:last-child {
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .info-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(245, 87, 108, 0.15) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 2;
+            animation: infoBadgeFloat 5s ease-in-out infinite;
+        }
+
+        .info-card:nth-child(1) .info-badge { animation-delay: 0s; }
+        .info-card:nth-child(2) .info-badge { animation-delay: 1.25s; }
+        .info-card:nth-child(3) .info-badge { animation-delay: 2.5s; }
+        .info-card:nth-child(4) .info-badge { animation-delay: 3.75s; }
+
+        @keyframes infoBadgeFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
+        }
+
+        @keyframes companyGlow {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(102, 126, 234, 0.05);
+            }
+            50% { 
+                box-shadow: 0 0 40px rgba(102, 126, 234, 0.1);
+            }
+        }
+
+        @keyframes infoCardFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+
+        @keyframes iconRotate {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(5deg) scale(1.05); }
+            50% { transform: rotate(0deg) scale(1.1); }
+            75% { transform: rotate(-5deg) scale(1.05); }
+        }
+
+        /* Floating Particles Effect */
+        .contact-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.05), transparent),
+                radial-gradient(2px 2px at 40px 70px, rgba(102, 126, 234, 0.05), transparent),
+                radial-gradient(1px 1px at 90px 40px, rgba(245, 87, 108, 0.05), transparent),
+                radial-gradient(1px 1px at 130px 80px, rgba(255, 193, 7, 0.05), transparent);
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            animation: particleFloat 20s linear infinite;
+            z-index: 1;
+        }
+
+        @keyframes particleFloat {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-200px); }
+        }
+
+        /* Scroll Reveal Animation */
+        .contact-section {
+            opacity: 0;
+            transform: translateY(50px);
+            animation: sectionReveal 1s ease-out 0.3s both;
+        }
+
+        @keyframes sectionReveal {
+            0% {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile Responsive for Contact Section */
+        @media (max-width: 768px) {
+            .contact-section {
+                padding: 3rem 1rem;
+            }
+
+            .contact-header {
+                text-align: center;
+                margin-bottom: 2rem;
+            }
+
+            .contact-title {
+                font-size: 1.8rem;
+                flex-direction: column;
+                gap: 0.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .contact-title i {
+                font-size: 1.8rem;
+                color: var(--primary-gradient);
+            }
+
+            .contact-subtitle {
+                font-size: 1rem;
+                line-height: 1.5;
+                margin-bottom: 1.5rem;
+            }
+
+            .contact-badges {
+                gap: 0.5rem;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-bottom: 2rem;
+            }
+
+            .badge {
+                font-size: 0.8rem;
+                padding: 0.4rem 0.8rem;
+                border-radius: 20px;
+            }
+
+            .contact-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .contact-card {
+                padding: 1.8rem 1.5rem;
+                border-radius: 15px;
+                text-align: center;
+                transition: transform 0.3s ease;
+            }
+
+            .contact-card:hover {
+                transform: translateY(-5px);
+            }
+
+            .contact-icon {
+                width: 70px;
+                height: 70px;
+                font-size: 1.8rem;
+                margin: 0 auto 1rem auto;
+            }
+
+            .contact-card h3 {
+                font-size: 1.3rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .contact-card p {
+                font-size: 0.9rem;
+                margin-bottom: 1rem;
+            }
+
+            .contact-info {
+                margin-bottom: 1.5rem;
+            }
+
+            .contact-info strong {
+                font-size: 1rem;
+                display: block;
+                margin-bottom: 0.25rem;
+            }
+
+            .contact-info small {
+                font-size: 0.8rem;
+                color: var(--text-secondary);
+            }
+
+            .contact-btn {
+                width: 100%;
+                padding: 0.8rem 1.5rem;
+                font-size: 0.9rem;
+                border-radius: 25px;
+                margin-bottom: 1rem;
+            }
+
+            .contact-status {
+                justify-content: center;
+            }
+
+            .faq-title {
+                font-size: 1.8rem;
+                text-align: center;
+                margin-bottom: 1.5rem;
+            }
+
+            .faq-grid {
+                grid-template-columns: 1fr;
+                gap: 1.2rem;
+            }
+
+            .faq-item {
+                padding: 1.5rem;
+                border-radius: 12px;
+            }
+
+            .faq-item h4 {
+                font-size: 1.1rem;
+                margin-bottom: 0.8rem;
+            }
+
+            .faq-item p {
+                font-size: 0.9rem;
+                line-height: 1.5;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .company-info {
+                padding: 2rem 1rem;
+                margin: 0;
+            }
+
+            .info-card {
+                padding: 1.5rem;
+                border-radius: 12px;
+                text-align: center;
+            }
+
+            .info-card h4 {
+                font-size: 1.2rem;
+                margin-bottom: 1rem;
+            }
+
+            .info-card p {
+                font-size: 0.9rem;
+                line-height: 1.5;
+            }
+
+            .faq-tag {
+                font-size: 0.7rem;
+                padding: 0.25rem 0.6rem;
+                border-radius: 10px;
+            }
+
+            .info-badge {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.6rem;
+                border-radius: 10px;
+            }
+        }
+
+        /* Tablet Responsive */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .contact-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 2rem;
+            }
+
+            .faq-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .info-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Performance Optimizations */
+        .contact-card,
+        .faq-item,
+        .info-card {
+            will-change: transform;
+        }
+
+        /* Reduced Motion Support */
+        @media (prefers-reduced-motion: reduce) {
+            .contact-section::before,
+            .contact-section::after,
+            .contact-title,
+            .contact-title i,
+            .contact-icon,
+            .contact-card,
+            .faq-item,
+            .info-card,
+            .info-card h4 i,
+            .badge,
+            .faq-tag,
+            .info-badge,
+            .status-dot {
+                animation: none;
+            }
+            
+            .contact-card:hover,
+            .faq-item:hover,
+            .info-card:hover,
+            .badge:hover {
+                transform: none;
+            }
+        }
+
+        /* High Contrast Mode Support */
+        @media (prefers-contrast: high) {
+            .contact-card,
+            .faq-item,
+            .info-card {
+                border: 2px solid var(--text-primary);
+            }
+            
+            .badge,
+            .faq-tag,
+            .info-badge {
+                border: 1px solid var(--text-primary);
+            }
+        }
+
+        /* Print Styles */
+        @media print {
+            .contact-section {
+                background: white !important;
+                color: black !important;
+            }
+            
+            .contact-card,
+            .faq-item,
+            .info-card {
+                background: white !important;
+                border: 1px solid black !important;
+                box-shadow: none !important;
+            }
+            
+            .contact-btn {
+                background: #f0f0f0 !important;
+                color: black !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <a href="/home" class="back-arrow">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <div class="brand-logo">
+            <img src="{{ url_for('static', filename='logo/logo.png') }}" alt="INEMI Logo" class="logo-image">
+        </div>
+        <h1 class="brand-title">INEMI</h1>
+        <p class="brand-subtitle w-75 mx-auto">🚀 Platform AI Terdepan untuk Kreasi Konten Digital</p>
+        
+        <div class="platform-icons">
+            <div class="platform-icon" title="Generasi Gambar AI">
+                <i class="fas fa-image"></i>
+                <span>Gambar AI</span>
+            </div>
+            <div class="platform-icon" title="Kreasi Video AI">
+                <i class="fas fa-video"></i>
+                <span>Video AI</span>
+            </div>
+            <div class="platform-icon" title="Produksi Musik AI">
+                <i class="fas fa-music"></i>
+                <span>Musik AI</span>
+            </div>
+            <div class="platform-icon" title="Text to Speech">
+                <i class="fas fa-microphone"></i>
+                <span>TTS AI</span>
+            </div>
+            <div class="platform-icon" title="Chat Assistant">
+                <i class="fas fa-comments"></i>
+                <span>Chat AI</span>
+            </div>
+            <div class="platform-icon" title="Model AI Canggih">
+                <i class="fas fa-robot"></i>
+                <span>AI Model</span>
+            </div>
+        </div>
+
+        <div class="payment-toggle">
+            <div class="toggle-option active">
+                Bayar Bulanan
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing Section -->
+    <div class="pricing-container">
+        <div id="pricing-grid" class="pricing-grid">
+            <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>✨ Memuat paket luar biasa yang akan mengubah kreativitas Anda...</p>
+            </div>
+        </div>
+        <div class="pricing-nav" style="display:none;align-items:center;justify-content:center;margin-top:1.5rem;gap:1.5rem;">
+            <button id="nav-left" class="nav-arrow" aria-label="Sebelumnya">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div id="nav-dots" style="display:flex;gap:1.1rem;"></div>
+            <button id="nav-right" class="nav-arrow" aria-label="Selanjutnya">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Contact & Information Section -->
+    <div class="contact-section">
+        <div class="container">
+            <div class="contact-header">
+                <h2 class="contact-title">
+                    <i class="fas fa-headset"></i>
+                    Butuh Bantuan? Kami Ada untuk Anda!
+                </h2>
+                <p class="contact-subtitle">
+                    Hubungi tim dukungan kami untuk pertanyaan tentang paket kami atau bantuan dengan akun Anda.
+                </p>
+                <div class="contact-badges">
+                    <span class="badge">🚀 Dukungan 24/7</span>
+                    <span class="badge">⚡ Respons Instan</span>
+                    <span class="badge">💬 Berbagai Saluran</span>
+                </div>
+            </div>
+            
+            <div class="contact-grid">
+                <!-- Contact Methods -->
+                <div class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <h3>Dukungan Email</h3>
+                    <p>Dapatkan bantuan detail melalui email</p>
+                    <div class="contact-info">
+                        <strong>questmd24@gmail.com</strong>
+                        <small>Waktu respons: 24 jam</small>
+                    </div>
+                    <button class="contact-btn" onclick="openEmail()">
+                        <i class="fas fa-paper-plane"></i>
+                        Kirim Email
+                    </button>
+                    <div class="contact-status">
+                        <span class="status-dot online"></span>
+                        <span class="status-text">Online</span>
+                    </div>
+                </div>
+                
+                <div class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fas fa-phone"></i>
+                    </div>
+                    <h3>Dukungan Telepon</h3>
+                    <p>Berbicara langsung dengan tim kami</p>
+                    <div class="contact-info">
+                        <strong>+62-831-9722-4519</strong>
+                        <small>Sen-Jum: 09.00-18.00 WIB</small>
+                    </div>
+                    <button class="contact-btn" onclick="openPhone()">
+                        <i class="fas fa-phone"></i>
+                        Telepon Sekarang
+                    </button>
+                    <div class="contact-status">
+                        <span class="status-dot busy"></span>
+                        <span class="status-text">Busy</span>
+                    </div>
+                </div>
+                
+                <div class="contact-card">
+                    <div class="contact-icon">
+                        <i class="fab fa-whatsapp"></i>
+                    </div>
+                    <h3>WhatsApp</h3>
+                    <p>Dukungan cepat melalui WhatsApp</p>
+                    <div class="contact-info">
+                        <strong>+62-831-9722-4519</strong>
+                        <small>Tersedia 24/7</small>
+                    </div>
+                    <button class="contact-btn" onclick="openWhatsApp()">
+                        <i class="fab fa-whatsapp"></i>
+                        Chat Sekarang
+                    </button>
+                    <div class="contact-status">
+                        <span class="status-dot online"></span>
+                        <span class="status-text">Online</span>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <!-- FAQ Section -->
+            <div class="faq-section">
+                <h3 class="faq-title">
+                    <i class="fas fa-question-circle"></i>
+                    Pertanyaan yang Sering Diajukan
+                </h3>
+                <div class="faq-grid">
+                    <div class="faq-item">
+                        <h4>Bagaimana cara upgrade akun saya?</h4>
+                        <p>Cukup pilih paket yang diinginkan di atas dan ikuti proses pembayaran. Akun Anda akan diupgrade segera setelah pembayaran berhasil.</p>
+                        <div class="faq-tag">💳 Pembayaran</div>
+                    </div>
+                    <div class="faq-item">
+                        <h4>Bisakah saya membatalkan langganan kapan saja?</h4>
+                        <p>Ya, Anda dapat membatalkan langganan kapan saja. Anda akan tetap memiliki akses ke fitur premium hingga akhir periode penagihan.</p>
+                        <div class="faq-tag">🔄 Pembatalan</div>
+                    </div>
+                    <div class="faq-item">
+                        <h4>Metode pembayaran apa saja yang diterima?</h4>
+                        <p>Kami menerima semua kartu kredit utama, transfer bank, dan dompet digital termasuk GoPay, OVO, DANA, dan LinkAja.</p>
+                        <div class="faq-tag">💳 Metode Pembayaran</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Company Information -->
+            <div class="company-info">
+                <div class="info-grid">
+                    <div class="info-card">
+                        <h4><i class="fas fa-building"></i> Company</h4>
+                        <p>INEMI - Ai Advertising Platform</p>
+                        <p>Innovating music creation with AI technology</p>
+                        <div class="info-badge">🏢 Established 2024</div>
+                    </div>
+                    <div class="info-card">
+                        <h4><i class="fas fa-map-marker-alt"></i> Location</h4>
+                        <p>Jambi, Indonesia</p>
+                        <p>Serving customers worldwide</p>
+                        <div class="info-badge">🌍 Global Reach</div>
+                    </div>
+                    <div class="info-card">
+                        <h4><i class="fas fa-clock"></i> Business Hours</h4>
+                        <p>Monday - Friday: 9:00 AM - 6:00 PM WIB</p>
+                        <p>Saturday: 9:00 AM - 2:00 PM WIB</p>
+                        <div class="info-badge">⏰ Always Available</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        let products = [];
+        let currentIndex = 0;
+        let isMobile = /android|iphone|ipad|mobile/i.test(navigator.userAgent);
+        
+        // Set grid class based on device
+        function setGridClass() {
+            const grid = document.getElementById('pricing-grid');
+            const nav = document.querySelector('.pricing-nav');
+            
+            console.log(`Setting grid class - isMobile: ${isMobile}`);
+            console.log(`Grid found: ${!!grid}, Nav found: ${!!nav}`);
+            
+            if (isMobile) {
+                grid.classList.add('mobile');
+                grid.classList.remove('desktop');
+                nav.style.display = 'flex';
+                console.log('Mobile mode enabled');
+            } else {
+                grid.classList.add('desktop');
+                grid.classList.remove('mobile');
+                nav.style.display = 'flex'; // Show navigation for desktop too
+                console.log('Desktop mode enabled with scroll');
+            }
+        }
+
+        function formatPrice(price) {
+            return new Intl.NumberFormat('id-ID', {
+                style: 'currency',
+                currency: 'IDR',
+                minimumFractionDigits: 0
+            }).format(price);
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('pricing-grid');
+            
+            if (products.length === 0) {
+                grid.innerHTML = '<div class="error"><i class="fas fa-exclamation-triangle"></i><p>Tidak ada produk tersedia</p></div>';
+                return;
+            }
+
+            // Pre-calculate values for better performance
+            const centerIndex = Math.floor(products.length / 2);
+            const featuresCache = new Map();
+            
+            const productCards = products.map((product, index) => {
+                const isFeatured = index === centerIndex;
+                const isFree = product.price === 0;
+                const isTeams = product.name.toLowerCase().includes('team');
+                
+                // Cache features to avoid recalculation
+                if (!featuresCache.has(product.id)) {
+                    featuresCache.set(product.id, getFeatures(product));
+                }
+                const features = featuresCache.get(product.id);
+
+                return `<div class="pricing-card ${isFeatured ? 'featured' : ''}">
+                    ${isFeatured ? '<div class="featured-badge">Best Offer</div>' : ''}
+                    ${isTeams ? '<div class="teams-icon"><i class="fas fa-users"></i></div>' : ''}
+                    <h3 class="card-title">${product.name}</h3>
+                    <div class="card-price">${isFree ? 'Free' : `<span class="price-discount">${formatPrice(product.price)}</span>`}</div>
+                    <div class="price-note">${isFree ? 'Forever' : 'in. tax.'}</div>
+                    <button class="subscribe-btn ${isFree ? 'btn-outline' : 'btn-gradient'}" onclick="createOrder(${product.id}, ${product.price})">${isFree ? 'Free' : (isTeams ? 'Get Started Now' : 'Subscribe')}</button>
+                    <div class="card-description">Perfect for ${getTargetUser(product)}</div>
+                    <ul class="features-list">${features.map(feature => `<li><i class="fas fa-check feature-icon"></i>${feature}</li>`).join('')}</ul>
+                </div>`;
+            }).join('');
+
+            grid.innerHTML = productCards;
+             
+             // Add custom plan section separately below (outside of scrollable grid)
+             const customPlanSection = document.createElement('div');
+             customPlanSection.className = 'custom-plan-section';
+             customPlanSection.innerHTML = `
+                 <div class="teams-icon"><i class="fas fa-cog"></i></div>
+                 <h3 class="custom-plan-title">Paket Kustom</h3>
+                 <p class="custom-plan-description">Sempurna untuk Perusahaan dan organisasi besar yang membutuhkan solusi yang disesuaikan</p>
+                 <button class="subscribe-btn btn-outline" onclick="contactUs()">Hubungi Kami</button>
+                 <ul class="features-list">
+                     <li><i class="fas fa-check feature-icon"></i>Alokasi token kustom</li>
+                     <li><i class="fas fa-check feature-icon"></i>Tim dukungan khusus</li>
+                     <li><i class="fas fa-check feature-icon"></i>Solusi white-label</li>
+                     <li><i class="fas fa-check feature-icon"></i>Akses API & integrasi</li>
+                 </ul>
+             `;
+             
+             // Insert custom plan section after the pricing container (not inside the grid)
+             const pricingContainer = document.querySelector('.pricing-container');
+             pricingContainer.parentNode.insertBefore(customPlanSection, pricingContainer.nextSibling);
+            
+            // Initialize navigation dots and scroll behavior
+            if (isMobile) {
+                // Initialize navigation dots
+                updateNavDots(grid.children.length, centerIndex);
+                updateNavArrows();
+                
+                // Auto-scroll to center card (Best Offer) - only on mobile
+                setTimeout(() => {
+                    const centerCard = grid.children[centerIndex];
+                    if (centerCard) {
+                        const containerWidth = grid.offsetWidth;
+                        const cardWidth = centerCard.offsetWidth;
+                        const scrollPosition = centerCard.offsetLeft - (containerWidth / 2) + (cardWidth / 2);
+                        
+                        // Ensure we don't scroll beyond bounds
+                        const maxScroll = grid.scrollWidth - containerWidth;
+                        const finalScrollPosition = Math.max(0, Math.min(scrollPosition, maxScroll));
+                        
+                        // Try modern scrollTo first, fallback to scrollLeft
+                        if (grid.scrollTo) {
+                            try {
+                                grid.scrollTo({left: finalScrollPosition, behavior: 'smooth'});
+                                console.log('Auto-scroll successful at position:', finalScrollPosition);
+                            } catch (e) {
+                                // Fallback for browsers that don't support scrollTo with options
+                                console.log('Auto-scroll failed, using scrollLeft fallback');
+                                grid.scrollLeft = finalScrollPosition;
+                            }
+                        } else {
+                            console.log('Auto-scroll not supported, using scrollLeft');
+                            grid.scrollLeft = finalScrollPosition;
+                        }
+                    }
+                }, 200);
+            } else {
+                // Desktop: initialize navigation but hide it
+                updateNavDots(grid.children.length, 0);
+                updateNavArrows();
+            }
+        }
+
+        function getTargetUser(product) {
+            if (product.price === 0) return 'Kreator casual yang ingin menjelajahi seni AI';
+            if (product.kredit <= 100) return 'Penghobi dan penggemar yang berkarya secara teratur';
+            if (product.kredit <= 500) return 'Semi-profesional dan kreator aktif yang membutuhkan lebih banyak output';
+            if (product.kredit <= 1000) return 'Kreator profesional, bisnis kecil, dan produsen konten';
+            return 'Tim desain, studio, agensi, dan bisnis';
+        }
+
+        function getFeatures(product) {
+            const features = [];
+            
+            if (product.price === 0) {
+                features.push(
+                    `${product.kredit} Token Cepat harian`,
+                    'Semua gambar bersifat publik',
+                    'Gunakan Preset',
+                    'Model AI komunitas',
+                    'Pengaturan kualitas dasar',
+                    '1 koleksi pribadi'
+                );
+            } else {
+                features.push(
+                    `${product.kredit} Token Cepat Bulanan`,
+                    'Kreasi pribadi',
+                    // `${product.kredit * 3} Bank Token`,
+                    'Buka Generasi Kualitas yang Ditingkatkan & Upscaling',
+                    'Koleksi tak terbatas'
+                );
+            }
+            
+            return features;
+        }
+
+        function createOrder(productId, price) {
+            // Direct redirect to payment form
+            // Login check will be handled by the payment form route
+            window.location.href = `/payment/form/${productId}`;
+        }
+
+        function contactUs() {
+            // You can customize this function to redirect to contact page or open modal
+            alert('Terima kasih atas minat Anda! Silakan hubungi kami di questmd24@gmail.com atau telepon +62-831-9722-4519 untuk harga kustom.');
+            // Alternative: window.location.href = '/contact';
+            // Alternative: open contact modal
+        }
+
+        // Contact Functions
+        function openEmail() {
+            const subject = encodeURIComponent('INEMI Support - Pertanyaan Upgrade Akun');
+            const body = encodeURIComponent('Halo Tim Support INEMI,\n\nSaya ingin mendapatkan informasi lebih lanjut tentang upgrade akun saya.\n\nMohon berikan detail tentang:\n- Paket yang tersedia\n- Informasi harga\n- Perbandingan fitur\n\nTerima kasih!');
+            window.open(`mailto:questmd24@gmail.com?subject=${subject}&body=${body}`, '_blank');
+        }
+
+        function openPhone() {
+            window.open('tel:+62-831-9722-4519', '_self');
+        }
+
+        function openWhatsApp() {
+            const message = encodeURIComponent('Halo! Saya ingin mendapatkan informasi lebih lanjut tentang paket upgrade INEMI.');
+            window.open(`https://wa.me/6283197224519?text=${message}`, '_blank');
+        }
+
+        function openLiveChat() {
+            alert('Fitur live chat akan segera hadir! Untuk sementara, silakan gunakan email atau WhatsApp untuk bantuan langsung.');
+        }
+
+        function updateNavDots(count, activeIdx) {
+            const navDots = document.getElementById('nav-dots');
+            if (!navDots) return;
+            
+            navDots.innerHTML = '';
+            console.log(`Creating ${count} dots, active: ${activeIdx}`);
+            
+            for (let i = 0; i < count; i++) {
+                const dot = document.createElement('span');
+                dot.className = 'dot' + (i === activeIdx ? ' active' : '');
+                dot.addEventListener('click', () => {
+                    console.log(`Dot ${i} clicked`);
+                    scrollToCardSimple(i);
+                });
+                navDots.appendChild(dot);
+            }
+            
+            // Add visual feedback for dots
+            const dots = navDots.querySelectorAll('.dot');
+            dots.forEach((dot, index) => {
+                dot.style.cursor = 'pointer';
+                dot.style.transition = 'all 0.3s ease';
+            });
+        }
+
+        function scrollToCard(idx) {
+            const grid = document.getElementById('pricing-grid');
+            if (!grid) {
+                console.error('Grid not found!');
+                return;
+            }
+            
+            const card = grid.children[idx];
+            if (!card) {
+                console.error(`Card ${idx} not found!`);
+                return;
+            }
+            
+            console.log(`Scrolling to card ${idx}, total cards: ${grid.children.length}`);
+            
+            if (isMobile) {
+                // Calculate scroll position for better centering
+                const containerWidth = grid.offsetWidth;
+                const cardWidth = card.offsetWidth;
+                const cardLeft = card.offsetLeft;
+                
+                // More accurate scroll calculation
+                const scrollPosition = cardLeft - (containerWidth / 2) + (cardWidth / 2);
+                
+                // Get actual scroll bounds
+                const maxScroll = grid.scrollWidth - containerWidth;
+                const finalScrollPosition = Math.max(0, Math.min(scrollPosition, maxScroll));
+                
+                console.log(`Scroll calculation:`);
+                console.log(`- Container width: ${containerWidth}`);
+                console.log(`- Card width: ${cardWidth}`);
+                console.log(`- Card left: ${cardLeft}`);
+                console.log(`- Scroll position: ${scrollPosition}`);
+                console.log(`- Max scroll: ${maxScroll}`);
+                console.log(`- Final position: ${finalScrollPosition}`);
+                console.log(`- Current scroll: ${grid.scrollLeft}`);
+                
+                // Force scroll to position
+                grid.scrollLeft = finalScrollPosition;
+                
+                // Also try smooth scroll if supported
+                if (grid.scrollTo) {
+                    try {
+                        grid.scrollTo({
+                            left: finalScrollPosition,
+                            behavior: 'smooth'
+                        });
+                    } catch (e) {
+                        // Fallback already set above
+                    }
+                }
+            } else {
+                // Desktop: also enable scroll for better UX
+                const containerWidth = grid.offsetWidth;
+                const cardWidth = card.offsetWidth;
+                const cardLeft = card.offsetLeft;
+                const scrollPosition = cardLeft - (containerWidth / 2) + (cardWidth / 2);
+                
+                console.log(`Desktop scroll to card ${idx}`);
+                console.log(`Desktop scroll - Card left: ${cardLeft}, Container width: ${containerWidth}, Scroll position: ${scrollPosition}`);
+                
+                // Force scroll for desktop too
+                grid.scrollLeft = scrollPosition;
+                
+                // Also try smooth scroll if supported
+                if (grid.scrollTo) {
+                    try {
+                        grid.scrollTo({
+                            left: scrollPosition,
+                            behavior: 'smooth'
+                        });
+                    } catch (e) {
+                        // Fallback already set above
+                    }
+                }
+            }
+            
+            currentIndex = idx;
+            updateNavDots(grid.children.length, idx);
+            updateNavArrows();
+        }
+
+        function updateNavArrows() {
+            const navLeft = document.getElementById('nav-left');
+            const navRight = document.getElementById('nav-right');
+            const grid = document.getElementById('pricing-grid');
+            
+            if (navLeft) {
+                navLeft.disabled = (currentIndex === 0);
+                navLeft.style.opacity = (currentIndex === 0) ? '0.5' : '1';
+            }
+            
+            if (navRight) {
+                navRight.disabled = (currentIndex === grid.children.length-1);
+                navRight.style.opacity = (currentIndex === grid.children.length-1) ? '0.5' : '1';
+            }
+            
+            console.log(`Nav arrows updated - Left disabled: ${navLeft?.disabled}, Right disabled: ${navRight?.disabled}`);
+        }
+
+        // Initialize navigation event listeners
+        function initNavigation() {
+            const navLeft = document.getElementById('nav-left');
+            const navRight = document.getElementById('nav-right');
+            
+            console.log('Initializing navigation - Left:', !!navLeft, 'Right:', !!navRight);
+            
+            if (navLeft) {
+                navLeft.onclick = function() {
+                    console.log('Left arrow clicked, current index:', currentIndex);
+                    if (currentIndex > 0) {
+                        scrollToCardSimple(currentIndex-1);
+                    }
+                };
+            }
+            
+            if (navRight) {
+                navRight.onclick = function() {
+                    const grid = document.getElementById('pricing-grid');
+                    console.log('Right arrow clicked, current index:', currentIndex, 'max:', grid.children.length-1);
+                    if (currentIndex < grid.children.length-1) {
+                        scrollToCardSimple(currentIndex+1);
+                    }
+                };
+            }
+            
+            // Add keyboard support for testing
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                    scrollToCardSimple(currentIndex-1);
+                } else if (e.key === 'ArrowRight' && currentIndex < document.getElementById('pricing-grid').children.length-1) {
+                    scrollToCardSimple(currentIndex+1);
+                }
+            });
+        }
+
+        // Update scroll/active dot on mobile scroll
+        function handleMobileScroll() {
+            const grid = document.getElementById('pricing-grid');
+            if (!grid) return;
+            
+            const children = grid.children;
+            const len = children.length;
+            let minDist = Infinity, idx = 0;
+            
+            // Only process if we have cards
+            if (len === 0) return;
+            
+            // Calculate which card is most visible/centered
+            for (let i = 0; i < len; i++) {
+                const card = children[i];
+                const rect = card.getBoundingClientRect();
+                const cardCenter = rect.left + rect.width / 2;
+                const viewportCenter = window.innerWidth / 2;
+                const dist = Math.abs(cardCenter - viewportCenter);
+                
+                // Also check if card is at least 50% visible
+                const cardVisible = rect.right > 0 && rect.left < window.innerWidth;
+                const cardVisibility = Math.min(rect.right, window.innerWidth) - Math.max(rect.left, 0);
+                const visibilityPercent = cardVisibility / rect.width;
+                
+                if (cardVisible && visibilityPercent > 0.5 && dist < minDist) { 
+                    minDist = dist; 
+                    idx = i; 
+                }
+            }
+            
+            // Fallback: if no card is 50% visible, find the one closest to center
+            if (minDist === Infinity) {
+                for (let i = 0; i < len; i++) {
+                    const card = children[i];
+                    const rect = card.getBoundingClientRect();
+                    const cardCenter = rect.left + rect.width / 2;
+                    const viewportCenter = window.innerWidth / 2;
+                    const dist = Math.abs(cardCenter - viewportCenter);
+                    
+                    if (dist < minDist) { 
+                        minDist = dist; 
+                        idx = i; 
+                    }
+                }
+            }
+            
+            // Only update if the index actually changed
+            if (currentIndex !== idx) {
+                console.log(`Active card changed from ${currentIndex} to ${idx}`);
+                currentIndex = idx;
+                updateNavDots(len, idx);
+                updateNavArrows();
+            }
+        }
+        
+        // Alternative scroll method for testing
+        function scrollToCardSimple(idx) {
+            const grid = document.getElementById('pricing-grid');
+            if (!grid) {
+                console.error('Grid not found in simple scroll!');
+                return;
+            }
+            
+            const card = grid.children[idx];
+            if (!card) {
+                console.error(`Card ${idx} not found in simple scroll!`);
+                return;
+            }
+            
+            console.log(`Simple scroll to card ${idx} - Mode: ${isMobile ? 'Mobile' : 'Desktop'}`);
+            
+            if (isMobile) {
+                // Mobile: scroll to show the card with proper positioning
+                const cardLeft = card.offsetLeft;
+                const containerWidth = grid.offsetWidth;
+                const cardWidth = card.offsetWidth;
+                
+                // Calculate scroll position based on card index
+                let scrollPosition;
+                if (idx === 0) {
+                    // First card: scroll to very beginning
+                    scrollPosition = 0;
+                } else if (idx === grid.children.length - 1) {
+                    // Last card: scroll to show it fully
+                    scrollPosition = cardLeft - containerWidth + cardWidth;
+                } else {
+                    // Middle cards: center them
+                    scrollPosition = cardLeft - (containerWidth / 2) + (cardWidth / 2);
+                }
+                
+                // Ensure we don't scroll beyond bounds
+                const maxScroll = grid.scrollWidth - containerWidth;
+                const finalScrollPosition = Math.max(0, Math.min(scrollPosition, maxScroll));
+                
+                console.log(`Mobile scroll - Card left: ${cardLeft}, Container width: ${containerWidth}, Final position: ${finalScrollPosition}`);
+                
+                // Use smooth scroll for mobile
+                if (grid.scrollTo) {
+                    try {
+                        grid.scrollTo({
+                            left: finalScrollPosition,
+                            behavior: 'smooth'
+                        });
+                    } catch (e) {
+                        grid.scrollLeft = finalScrollPosition;
+                    }
+                } else {
+                    grid.scrollLeft = finalScrollPosition;
+                }
+            } else {
+                // Desktop: center the card
+                const cardLeft = card.offsetLeft;
+                const containerWidth = grid.offsetWidth;
+                const scrollPosition = cardLeft - (containerWidth / 2) + (card.offsetWidth / 2);
+                
+                console.log(`Desktop scroll - Card left: ${cardLeft}, Container width: ${containerWidth}, Scroll position: ${scrollPosition}`);
+                
+                grid.scrollLeft = scrollPosition;
+                
+                if (grid.scrollTo) {
+                    try {
+                        grid.scrollTo({
+                            left: scrollPosition,
+                            behavior: 'smooth'
+                        });
+                    } catch (e) {
+                        console.log('Smooth scroll failed, using direct scroll');
+                    }
+                }
+            }
+            
+            currentIndex = idx;
+            updateNavDots(grid.children.length, idx);
+            updateNavArrows();
+        }
+
+        // Load products from API
+        async function loadProducts() {
+            try {
+                const response = await fetch('/payment/products');
+                const data = await response.json();
+                
+                if (data.success) {
+                    products = data.products;
+                    renderProducts();
+                    return Promise.resolve();
+                } else {
+                    throw new Error(data.error || 'Failed to load products');
+                }
+            } catch (error) {
+                console.error('Error loading products:', error);
+                document.getElementById('pricing-grid').innerHTML = `<div class="error"><i class="fas fa-exclamation-triangle"></i><p>Gagal memuat produk: ${error.message}</p></div>`;
+                return Promise.reject(error);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for products to load first
+            loadProducts().then(() => {
+                console.log('Products loaded successfully');
+                setGridClass();
+                initNavigation();
+                setupScrollBehavior();
+            }).catch((error) => {
+                console.error('Failed to load products:', error);
+                // Still try to setup basic functionality
+                setGridClass();
+                initNavigation();
+                setupScrollBehavior();
+            });
+        });
+
+        function setupScrollBehavior() {
+            const grid = document.getElementById('pricing-grid');
+            if (!grid) {
+                console.error('Pricing grid not found!');
+                return;
+            }
+            
+            console.log('Setting up scroll behavior for mobile:', isMobile);
+            console.log('Grid children count:', grid.children.length);
+            
+            let isScrolling = false;
+            let startX = 0;
+            let scrollLeft = 0;
+            
+            // Add smooth scroll behavior
+            if (isMobile) {
+                grid.style.scrollBehavior = 'smooth';
+                console.log('Mobile scroll behavior enabled');
+            }
+            
+            if (isMobile) {
+                // Mobile: enable natural touch/swipe - let browser handle it
+                console.log('Mobile scroll behavior enabled - using native scroll');
+                
+                // Listen to scroll for updating dots
+                grid.addEventListener('scroll', function() {
+                    console.log('Scroll detected, current scrollLeft:', grid.scrollLeft);
+                    clearTimeout(grid._scrollTimer);
+                    grid._scrollTimer = setTimeout(handleMobileScroll, 100);
+                });
+            } else {
+                // Desktop: disable all scroll/touch
+                grid.addEventListener('wheel', e => e.preventDefault(), {passive:false});
+                grid.addEventListener('touchmove', e => e.preventDefault(), {passive:false});
+                grid.addEventListener('touchstart', e => e.preventDefault(), {passive:false});
+            }
+        }
+    </script>
+
+    <!-- Midtrans Snap -->
+    <script type="text/javascript" src="https://app.midtrans.com/snap/snap.js" data-client-key="Mid-client-LA7K9mpg25Yw2kR7"></script>
+</body>
+</html> 

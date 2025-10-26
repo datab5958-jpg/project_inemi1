@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  body, .bg-dark-grad {
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%) !important;
+    min-height: 100vh;
+  }
+  
+  .profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .profile-header {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+  }
+  
+  .profile-info {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 20px;
+  }
+  
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+  }
+  
+  .profile-details h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 10px;
+    font-family: 'Orbitron', monospace;
+  }
+  
+  .profile-stats {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 20px;
+  }
+  
+  .profile-stat {
+    text-align: center;
+  }
+  
+  .profile-stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #667eea;
+  }
+  
+  .profile-stat-label {
+    font-size: 0.9rem;
+    color: #a8b2d1;
+    margin-top: 5px;
+  }
+  
+  .profile-actions {
+    display: flex;
+    gap: 15px;
+  }
+  
+  .profile-follow-btn {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .profile-follow-btn.following {
+    background: linear-gradient(45deg, #28a745, #20c997);
+  }
+  
+  .profile-follow-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+  }
+  
+  .profile-message-btn {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 10px 25px;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .profile-message-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+  }
+  
+  .profile-transaction-btn {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: #fff;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 25px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .profile-transaction-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    color: #fff;
+    text-decoration: none;
+  }
+  
+  .content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+  }
+  
+  .content-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+  }
+  
+  .content-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  }
+  
+  .content-media {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+  }
+  
+  .content-media img,
+  .content-media video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .content-info {
+    padding: 15px;
+  }
+  
+  .content-caption {
+    font-size: 0.85rem;
+    color: #fff;
+    margin-bottom: 10px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .content-stats {
+    display: flex;
+    gap: 15px;
+    font-size: 0.75rem;
+    color: #a8b2d1;
+  }
+  
+  .stat-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .stat-item i {
+    color: #667eea;
+    font-size: 0.8rem;
+  }
+  
+  .section-title {
+    color: #fff;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .section-title i {
+    color: #667eea;
+    font-size: 1.3rem;
+  }
+  
+  @media (max-width: 768px) {
+    .profile-container {
+      padding: 15px;
+    }
+    
+    .profile-info {
+      flex-direction: column;
+      text-align: center;
+      gap: 20px;
+    }
+    
+    .profile-avatar {
+      width: 80px;
+      height: 80px;
+    }
+    
+    .profile-stats {
+      justify-content: center;
+    }
+    
+    .content-grid {
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+  }
+</style>
+
+<div class="profile-container">
+  <!-- Profile Header -->
+  <div class="profile-header">
+    <div class="profile-info">
+      <img src="{{ profile_user.avatar_url or '/static/assets/image/default.jpg' }}" class="profile-avatar" alt="{{ profile_user.username }}">
+      <div class="profile-details">
+        <h1>{{ profile_user.username }}</h1>
+        <div class="profile-stats">
+          <div class="profile-stat">
+            <div class="profile-stat-number">{{ image_count }}</div>
+            <div class="profile-stat-label">Images</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-number">{{ video_count }}</div>
+            <div class="profile-stat-label">Videos</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-number">{{ song_count }}</div>
+            <div class="profile-stat-label">Songs</div>
+          </div>
+        </div>
+        <div class="profile-actions">
+          {% if current_user and current_user.id != profile_user.id %}
+            <button class="profile-follow-btn {% if is_following %}following{% endif %}" onclick="followUser({{ profile_user.id }})">
+              {% if is_following %}Following{% else %}Follow{% endif %}
+            </button>
+            <button class="profile-message-btn" onclick="messageUser({{ profile_user.id }})">
+              Message
+            </button>
+          {% else %}
+            <a href="/transaction-history" class="profile-transaction-btn">
+              <i class="bi bi-receipt me-2"></i>
+              Riwayat Transaksi
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- User's Content -->
+  {% if images or videos or songs %}
+    <!-- Images -->
+    {% if images %}
+      <div class="content-section">
+        <h2 class="section-title">
+          <i class="bi bi-image"></i>
+          Images
+        </h2>
+        <div class="content-grid">
+          {% for image in images %}
+            <div class="content-card" data-type="image" data-id="{{ image.id }}" data-user-id="{{ image.user.id }}">
+              <div class="content-media">
+                <img src="{{ image.image_url }}" alt="{{ image.caption or 'Image' }}">
+              </div>
+              <div class="content-info">
+                <div class="content-caption">{{ image.caption[:50] }}{% if image.caption|length > 50 %}...{% endif %}</div>
+                <div class="content-stats">
+                  <div class="stat-item">
+                    <i class="bi bi-eye"></i>
+                    <span>{{ image.view_count or 0 }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <i class="bi bi-heart"></i>
+                    <span>{{ image.likes_count }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <i class="bi bi-chat"></i>
+                    <span>{{ image.comments_count }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+    
+    <!-- Videos -->
+    {% if videos %}
+      <div class="content-section">
+        <h2 class="section-title">
+          <i class="bi bi-camera-video"></i>
+          Videos
+        </h2>
+        <div class="content-grid">
+          {% for video in videos %}
+            <div class="content-card" data-type="video" data-id="{{ video.id }}" data-user-id="{{ video.user.id }}">
+              <div class="content-media">
+                <video muted loop poster="{{ video.thumbnail_url or '' }}">
+                  <source src="{{ video.video_url }}" type="video/mp4">
+                </video>
+              </div>
+              <div class="content-info">
+                <div class="content-caption">{{ video.caption[:50] }}{% if video.caption|length > 50 %}...{% endif %}</div>
+                <div class="content-stats">
+                  <div class="stat-item">
+                    <i class="bi bi-eye"></i>
+                    <span>{{ video.view_count or 0 }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <i class="bi bi-heart"></i>
+                    <span>{{ video.likes_count }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <i class="bi bi-chat"></i>
+                    <span>{{ video.comments_count }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+    
+    <!-- Songs -->
+    {% if songs %}
+      <div class="content-section">
+        <h2 class="section-title">
+          <i class="bi bi-music-note"></i>
+          Songs
+        </h2>
+        <div class="content-grid">
+          {% for song in songs %}
+            <div class="content-card" data-type="song" data-id="{{ song.id }}" data-user-id="{{ song.user.id }}">
+              <div class="content-media">
+                <img src="{{ song.image_url or '/static/images/default-music.jpg' }}" alt="{{ song.title or 'Music' }}">
+              </div>
+              <div class="content-info">
+                <div class="content-caption">{{ song.title[:50] }}{% if song.title|length > 50 %}...{% endif %}</div>
+                <div class="content-stats">
+                  <div class="stat-item">
+                    <i class="bi bi-eye"></i>
+                    <span>{{ song.view_count or 0 }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <i class="bi bi-heart"></i>
+                    <span>{{ song.likes_count }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <i class="bi bi-chat"></i>
+                    <span>{{ song.comments_count }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  {% else %}
+    <div style="text-align: center; padding: 50px; color: #a8b2d1;">
+      <i class="bi bi-inbox" style="font-size: 3rem; margin-bottom: 20px; display: block;"></i>
+      <h3>No content yet</h3>
+      <p>This user hasn't posted any content yet.</p>
+    </div>
+  {% endif %}
+</div>
+
+<script>
+// Follow user functionality
+function followUser(userId) {
+  fetch('/api/follow', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      user_id: parseInt(userId)
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      const followBtn = document.querySelector('.profile-follow-btn');
+      if (data.following) {
+        followBtn.textContent = 'Following';
+        followBtn.classList.add('following');
+      } else {
+        followBtn.textContent = 'Follow';
+        followBtn.classList.remove('following');
+      }
+    }
+  })
+  .catch(error => {
+    console.error('Error following user:', error);
+  });
+}
+
+// Message user functionality
+function messageUser(userId) {
+  // Redirect to chat or open chat modal
+  window.location.href = `/chat/${userId}`;
+}
+
+// Add click handlers for content cards (same as explore page)
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.content-card').forEach(card => {
+    card.addEventListener('click', function(e) {
+      const contentType = this.dataset.type;
+      const contentId = this.dataset.id;
+      const userId = this.dataset.userId;
+      
+      // Open preview modal (same function as explore page)
+      if (typeof openPreview === 'function') {
+        openPreview(contentType, contentId, userId);
+      }
+    });
+  });
+});
+</script>
+{% endblock %}
+
+
+
+
+

@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block title %}Notifikasi - INEMI AI{% endblock %}
+
+{% block content %}
+<style>
+  .notifications-page {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+  }
+
+  .notifications-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .notifications-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #a78bfa, #f472b6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .notifications-subtitle {
+    color: #cbd5e1;
+    font-size: 1.1rem;
+    opacity: 0.8;
+  }
+
+  .notifications-container {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    overflow: hidden;
+  }
+
+  .notification-item-page {
+    display: flex;
+    align-items: flex-start;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .notification-item-page:hover {
+    background: rgba(99, 102, 241, 0.05);
+  }
+
+  .notification-item-page:last-child {
+    border-bottom: none;
+  }
+
+  .notification-avatar-page {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 1rem;
+    flex-shrink: 0;
+    border: 2px solid rgba(99, 102, 241, 0.3);
+  }
+
+  .notification-avatar-page img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .notification-content-page {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .notification-text-page {
+    color: #e2e8f0;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+  }
+
+  .notification-text-page strong {
+    color: #a78bfa;
+    font-weight: 700;
+  }
+
+  .notification-time-page {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .notification-time-page i {
+    font-size: 0.8rem;
+  }
+
+  .notification-type-badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-left: 0.5rem;
+  }
+
+  .notification-type-like {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+  }
+
+  .notification-type-comment {
+    background: linear-gradient(135deg, #6366f1, #ec4899);
+    color: white;
+  }
+
+  .notification-type-follow {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+  }
+
+  .notification-type-reply {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+  }
+
+  .no-notifications-page {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #94a3b8;
+  }
+
+  .no-notifications-page i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+  }
+
+  .no-notifications-page h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #cbd5e1;
+  }
+
+  .no-notifications-page p {
+    font-size: 1rem;
+    opacity: 0.7;
+  }
+
+  .back-to-home {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.8rem 1.5rem;
+    background: linear-gradient(135deg, #6366f1, #ec4899);
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+
+  .back-to-home:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .notifications-page {
+      margin: 1rem auto;
+      padding: 0 0.5rem;
+    }
+
+    .notifications-title {
+      font-size: 2rem;
+    }
+
+    .notification-item-page {
+      padding: 1rem;
+    }
+
+    .notification-avatar-page {
+      width: 40px;
+      height: 40px;
+    }
+
+    .notification-text-page {
+      font-size: 0.9rem;
+    }
+  }
+</style>
+
+<div class="notifications-page">
+  <div class="notifications-header">
+    <h1 class="notifications-title">Notifikasi</h1>
+    <p class="notifications-subtitle">Lihat semua aktivitas terbaru</p>
+  </div>
+
+  <div class="notifications-container">
+    {% if notifications %}
+      {% for notification in notifications %}
+        <div class="notification-item-page" onclick="handleNotificationClick('{{ notification.content_type }}', '{{ notification.content_id }}')">
+          <div class="notification-avatar-page">
+            <img src="{{ notification.sender.avatar_url or '/static/assets/image/default.jpg' }}" 
+                 alt="{{ notification.sender.username }}"
+                 onerror="this.src='/static/assets/image/default.jpg'">
+          </div>
+          <div class="notification-content-page">
+            <div class="notification-text-page">
+              <strong>{{ notification.sender.username }}</strong>
+              {% if notification.notification_type == 'like' %}
+                menyukai 
+                {% if notification.content_type == 'image' %}foto
+                {% elif notification.content_type == 'video' %}video
+                {% elif notification.content_type == 'song' %}musik
+                {% elif notification.content_type == 'video_iklan' %}video iklan
+                {% else %}konten{% endif %} Anda
+                <span class="notification-type-badge notification-type-like">
+                  <i class="bi bi-heart-fill"></i> Like
+                </span>
+              {% elif notification.notification_type == 'comment' %}
+                mengomentari 
+                {% if notification.content_type == 'image' %}foto
+                {% elif notification.content_type == 'video' %}video
+                {% elif notification.content_type == 'song' %}musik
+                {% elif notification.content_type == 'video_iklan' %}video iklan
+                {% else %}konten{% endif %} Anda: "{{ notification.text }}"
+                <span class="notification-type-badge notification-type-comment">
+                  <i class="bi bi-chat-fill"></i> Komentar
+                </span>
+              {% elif notification.notification_type == 'comment_reply' %}
+                membalas komentar Anda: "{{ notification.text }}"
+                <span class="notification-type-badge notification-type-reply">
+                  <i class="bi bi-reply-fill"></i> Balasan
+                </span>
+              {% elif notification.notification_type == 'follow' %}
+                mulai mengikuti Anda
+                <span class="notification-type-badge notification-type-follow">
+                  <i class="bi bi-person-plus-fill"></i> Follow
+                </span>
+              {% endif %}
+            </div>
+            <div class="notification-time-page">
+              <i class="bi bi-clock"></i>
+              {{ notification.created_at|utc_to_wib|format_tanggal_id }}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="no-notifications-page">
+        <i class="bi bi-bell-slash"></i>
+        <h3>Tidak ada notifikasi</h3>
+        <p>Anda belum memiliki notifikasi apapun. Mulai berinteraksi dengan konten untuk mendapatkan notifikasi!</p>
+        <a href="/home" class="back-to-home">
+          <i class="bi bi-house"></i> Kembali ke Beranda
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+function handleNotificationClick(contentType, contentId) {
+  let url = '';
+  switch (contentType) {
+    case 'image':
+      url = `/post_image/${contentId}`;
+      break;
+    case 'video':
+      url = `/post_video/${contentId}`;
+      break;
+    case 'song':
+      url = `/post_musik/${contentId}`;
+      break;
+    case 'video_iklan':
+      url = `/post_video_iklan/${contentId}`;
+      break;
+  }
+  
+  if (url) {
+    window.location.href = url;
+  }
+}
+</script>
+{% endblock %}
+

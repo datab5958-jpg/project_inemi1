@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>I NEMI</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: black;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+    }
+
+    .layout {
+      display: flex;
+      height: 100vh;
+      width: 100%;
+    }
+
+    .sidebar-left {
+      display: none;
+      flex-direction: column;
+      background-color: #000;
+      color: white;
+      width: 220px;
+      padding: 20px 15px;
+      border-right: 1px solid #333;
+    }
+
+    .sidebar-left .nav-link {
+      color: white;
+      margin-bottom: 15px;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sidebar-left .nav-link.active {
+      color: #2e31ff;
+      font-weight: bold;
+    }
+
+    .feed-wrapper {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .feed-area {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+    }
+
+    @media (min-width: 768px) {
+      .feed-area {
+        width: 390px;
+      }
+    }
+
+    .feed-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .top-tabs {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0;
+      background-color: rgba(0, 0, 0, 0.6);
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 500;
+      z-index: 2;
+    }
+
+    .top-tabs span.active {
+      border-bottom: 2px solid white;
+    }
+
+    .user-info {
+      position: absolute;
+      left: 10px;
+      bottom: 90px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: white;
+      z-index: 2;
+    }
+
+    .user-info img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .username {
+      font-weight: bold;
+      margin-bottom: 2px;
+    }
+
+    .btn-has-follow {
+      background-color: #444444;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      padding: 3px 10px;
+    }
+
+    /* Bottom Nav (Mobile) */
+    .bottom-nav {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      background-color: #000;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 10px 0;
+      z-index: 2;
+    }
+
+    .bottom-nav i {
+      color: #2233ff;
+      font-size: 1.4rem;
+    }
+
+    /* Right Sidebar (Desktop) */
+    .sidebar-right {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: #000;
+      width: 80px;
+      color: white;
+      gap: 30px;
+    }
+
+    .sidebar-right i {
+      font-size: 1.5rem;
+      color: #2233ff;
+    }
+
+    .feed-actions {
+        position: absolute;
+        right: 10px;
+        bottom: 100px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        color: white;
+        z-index: 2;
+      }
+
+      .feed-actions i {
+        font-size: 1.6rem;
+      }
+
+
+    @media (min-width: 768px) {
+      .sidebar-left {
+        display: flex;
+      }
+
+      .sidebar-right {
+        display: flex;
+      }
+
+      .bottom-nav,
+      .top-tabs {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar Kiri (Desktop) -->
+    <div class="sidebar-left">
+      <h4 class="mb-4">I NEMI</h4>
+      <a href="lokal.html" class="nav-link"><i class="bi bi-house-door-fill"></i> Lokal</a>
+      <a href="untuk_kamu.html" class="nav-link"><i class="bi bi-fire"></i> Untuk Kamu</a>
+      <a href="saran.html" class="nav-link"><i class="bi bi-lightbulb"></i> Saran</a>
+      <a href="teman.html" class="nav-link active"><i class="bi bi-people"></i> Teman</a>
+      <hr class="text-secondary" />
+    </div>
+
+    <!-- Konten Feed -->
+    <div class="feed-wrapper">
+      <div class="feed-area">
+        <img src="assets/image/3.jpg" class="feed-img" alt="Feed" />
+
+        <!-- Top Tabs (Mobile) -->
+        <div class="top-tabs">
+          <span onclick="window.location.href='lokal.html'">lokal</span>
+          <span onclick="window.location.href='untuk_kamu.html'">untuk kamu</span>
+          <span onclick="window.location.href='saran.html'">saran</span>
+          <span class="active" onclick="window.location.href='teman.html'">teman</span>
+        </div>
+
+        <!-- User Info -->
+        <div class="user-info">
+          <img src="https://i.pravatar.cc/100?img=35" alt="Profile" />
+          <div>
+            <div class="username">joni_kocak <button class="btn-has-follow">mengikuti</button></div>
+            <small>teman seperjuangan tidak akan...</small>
+          </div>
+        </div>
+
+         <!-- Feed Action Buttons (Overlay) -->
+         <div class="feed-actions">
+          <div>
+            <i class="bi bi-heart-fill text-danger"></i>
+            <div>138.1K</div>
+          </div>
+          <div>
+            <i class="bi bi-chat-left-text"></i>
+            <div>2927</div>
+          </div>
+          <div>
+            <i class="bi bi-bookmark"></i>
+            <div>2859</div>
+          </div>
+          <div>
+            <i class="bi bi-share"></i>
+            <div>9972</div>
+          </div>
+        </div>
+
+        <!-- Bottom Nav (Mobile) -->
+        <div class="bottom-nav">
+          <i class="bi bi-house-door-fill" onclick="window.location.href='lokal.html'"></i>
+          <i class="bi bi-search" onclick="window.location.href='cari.html'"></i>
+          <i class="bi bi-plus-circle" onclick="window.location.href='generate.html'"></i>
+          <i class="bi bi-chat-dots" onclick="window.location.href='chat.html'"></i>
+          <i class="bi bi-person" onclick="window.location.href='profil.html'"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar Kanan (Desktop, ganti bottom nav) -->
+    <div class="sidebar-right">
+      <i class="bi bi-house-door-fill" onclick="window.location.href='lokal.html'"></i>
+      <i class="bi bi-search" onclick="window.location.href='cari.html'"></i>
+      <i class="bi bi-plus-circle" onclick="window.location.href='generate.html'"></i>
+      <i class="bi bi-chat-dots" onclick="window.location.href='chat.html'"></i>
+      <i class="bi bi-person" onclick="window.location.href='profil.html'"></i>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,4231 @@
+{% extends "base.html" %}
+
+{% block head %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<!-- Modern Futuristic AI Music Studio -->
+<div class="modern-studio" x-data="aiMusicApp()" x-init="init()">
+  <!-- Modern Tab Navigation -->
+  <div class="modern-nav">
+    <div class="nav-container">
+      <button class="nav-tab" :class="{ 'active': activeTab === 'lyrics' }" @click="activeTab = 'lyrics'">
+        <div class="nav-icon">
+          <i class="bi bi-pencil-square"></i>
+</div>
+        <span class="nav-label">Lirik ke Musik</span>
+    </button>
+      <button class="nav-tab" :class="{ 'active': activeTab === 'image' }" @click="activeTab = 'image'">
+        <div class="nav-icon">
+          <i class="bi bi-image"></i>
+        </div>
+        <span class="nav-label">Gambar ke Musik</span>
+    </button>
+      <button class="nav-tab" :class="{ 'active': activeTab === 'prompt' }" @click="activeTab = 'prompt'">
+        <div class="nav-icon">
+          <i class="bi bi-chat-text"></i>
+        </div>
+        <span class="nav-label">Prompt ke Musik</span>
+    </button>
+    </div>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="studio-grid">
+    <!-- Left Panel - AI Music Studio -->
+    <div class="studio-panel">
+      <div class="studio-card">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="bi bi-music-note-beamed"></i>
+          </div>
+          <h3 class="card-title">AI Music Studio</h3>
+          <p class="card-subtitle">Transformasi ide Anda menjadi masterpiece musik</p>
+        </div>
+        
+        <div class="card-content">
+          <!-- Lyrics Tab Content -->
+          <div x-show="activeTab === 'lyrics'" class="tab-content">
+            <!-- Song Title Input Section -->
+            <div class="form-section">
+              <label class="form-label">
+                <i class="bi bi-music-note-beamed me-2"></i>Song Title
+                <span class="char-counter" x-text="`${songTitleInput.length}/100`"></span>
+              </label>
+              <div class="form-row">
+                <div class="form-section">
+                  <input 
+                    type="text" 
+                    class="form-input focus-ring" 
+                    x-model="songTitleInput"
+                    placeholder="Masukkan judul lagu Anda... Contoh: 'Cinta di Senja Hari', 'Mimpi yang Terbang', 'Lagu untuk Mama'"
+                    maxlength="100">
+                </div>
+                <div class="form-section">
+                  <button 
+                    class="generate-lyrics-btn hover-lift focus-ring" 
+                    @click="generateLyricsFromTitle()" 
+                    :disabled="!songTitleInput.trim() || isGeneratingLyrics"
+                    title="Generate lirik otomatis dari judul">
+                    <span x-show="!isGeneratingLyrics">
+                      <i class="bi bi-magic me-2"></i>Generate Lirik
+                    </span>
+                    <span x-show="isGeneratingLyrics">
+                      <i class="bi bi-arrow-repeat spinner me-2"></i>Generating...
+                    </span>
+                  </button>
+                </div>
+              </div>
+              <div class="input-hint">
+                <i class="bi bi-lightbulb me-1"></i>
+                <small>AI akan membuat lirik lengkap berdasarkan judul yang Anda masukkan</small>
+              </div>
+            </div>
+            
+            <div class="form-section">
+              <label class="form-label">
+                <i class="bi bi-pencil me-2"></i>Song Lyrics
+                <span class="char-counter" x-text="`${lyricsInput.length}/5000`"></span>
+              </label>
+              <textarea 
+                class="form-textarea focus-ring" 
+                        x-model="lyricsInput" 
+                rows="6"
+                placeholder="Masukkan lirik lagu Anda di sini... Atau gunakan tombol 'Generate Lirik' di atas untuk membuat lirik otomatis dari judul!"
+                        maxlength="5000"></textarea>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-section">
+                <label class="form-label">
+                  <i class="bi bi-music-note me-2"></i>Genre Style
+                </label>
+                <select class="form-select focus-ring" x-model="selectedGenre">
+                  <option value="">Pilih Genre</option>
+                  <option value="pop">Pop</option>
+                  <option value="rock">Rock</option>
+                  <option value="jazz">Jazz</option>
+                  <option value="classical">Classical</option>
+                  <option value="electronic">Electronic</option>
+                  <option value="hip-hop">Hip Hop</option>
+                  <option value="r&b">R&B</option>
+                  <option value="country">Country</option>
+                  <option value="folk">Folk</option>
+                  <option value="blues">Blues</option>
+                  <option value="reggae">Reggae</option>
+                  <option value="latin">Latin</option>
+                  <option value="indie">Indie</option>
+                  <option value="alternative">Alternative</option>
+                  <option value="punk">Punk</option>
+                  <option value="metal">Metal</option>
+                  <option value="ambient">Ambient</option>
+                  <option value="lo-fi">Lo-Fi</option>
+                </select>
+              </div>
+              <div class="form-section">
+                <label class="form-label">
+                  <i class="bi bi-heart me-2"></i>Mood & Energy
+                </label>
+                <select class="form-select focus-ring" x-model="selectedMood">
+                  <option value="">Pilih Mood & Energy</option>
+                  <option value="happy">Happy & Uplifting</option>
+                  <option value="sad">Sad & Melancholic</option>
+                  <option value="energetic">Energetic & Powerful</option>
+                  <option value="calm">Calm & Peaceful</option>
+                  <option value="romantic">Romantic & Intimate</option>
+                  <option value="mysterious">Mysterious & Dark</option>
+                  <option value="nostalgic">Nostalgic & Retro</option>
+                  <option value="epic">Epic & Dramatic</option>
+                  <option value="funky">Funky & Groovy</option>
+                  <option value="dreamy">Dreamy & Ethereal</option>
+                  <option value="aggressive">Aggressive & Intense</option>
+                  <option value="melancholic">Melancholic & Reflective</option>
+                  <option value="joyful">Joyful & Celebratory</option>
+                  <option value="serene">Serene & Tranquil</option>
+                  <option value="passionate">Passionate & Emotional</option>
+                  <option value="playful">Playful & Whimsical</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-section">
+              <label class="form-label">
+                <i class="bi bi-person-voice me-2"></i>Voice & Performance
+              </label>
+              <select class="form-select focus-ring" x-model="selectedPersona">
+                <option value="">Pilih Voice Style</option>
+                <option value="male">Male Voice</option>
+                <option value="female">Female Voice</option>
+                <option value="choir">Choir</option>
+                <option value="instrumental">Instrumental</option>
+                <option value="duet">Duet (Male & Female)</option>
+                <option value="acapella">A Capella</option>
+                <option value="rap">Rap</option>
+                <option value="opera">Opera</option>
+                <option value="whisper">Whisper</option>
+                <option value="robotic">Robotic</option>
+                <option value="child">Child Voice</option>
+                <option value="elderly">Elderly Voice</option>
+                <option value="whisper">Whisper</option>
+                <option value="screaming">Screaming</option>
+                <option value="auto-tune">Auto-Tune</option>
+              </select>
+            </div>
+            </div>
+            
+          <!-- Image Tab Content -->
+          <div x-show="activeTab === 'image'" class="tab-content">
+            <div class="form-section">
+              <label class="form-label">
+                <i class="bi bi-image me-2"></i>Upload Image
+              </label>
+              <div class="upload-area hover-lift" @click="$refs.imageInput.click()">
+                <input 
+                  type="file" 
+                  x-ref="imageInput"
+                  accept="image/*" 
+                  @change="handleImageUpload($event)"
+                  style="display: none;">
+                
+                <div x-show="!uploadedImage" class="upload-placeholder">
+                  <i class="bi bi-cloud-upload upload-icon"></i>
+                  <h4>Upload Image</h4>
+                  <p>Choose an image to generate music from</p>
+                  <div class="upload-hint">Supports: JPG, PNG, GIF (Max: 10MB)</div>
+                </div>
+                
+                <div x-show="uploadedImage" class="image-preview">
+                  <img :src="uploadedImage" alt="Uploaded Image" class="preview-img">
+                  <button class="remove-image hover-lift" @click.stop="removeImage()">
+                    <i class="bi bi-x-circle"></i>
+            </button>
+          </div>
+              </div>
+            </div>
+            
+            <!-- AI Analysis Progress -->
+            <div x-show="uploadedImage && isAnalyzing" class="form-section">
+              <label class="form-label">
+                <i class="bi bi-cpu me-2"></i>Analisis AI Sedang Berlangsung
+              </label>
+              <div class="analysis-progress">
+                <div class="progress-info">
+                  <span class="progress-text" x-text="analysisStep"></span>
+                  <span class="progress-percent" x-text="`${Math.round(analysisProgress)}%`"></span>
+                </div>
+                                  <div class="progress-bar">
+                    <div class="progress-fill" :style="`width: ${Math.round(analysisProgress)}%`"></div>
+                  </div>
+                <div class="progress-steps">
+                  <div class="step" :class="{ 'active': Math.round(analysisProgress) >= 20 }">
+                    <i class="bi bi-eye"></i>
+                    <span>Menganalisis Gambar</span>
+                  </div>
+                  <div class="step" :class="{ 'active': Math.round(analysisProgress) >= 50 }">
+                    <i class="bi bi-lightbulb"></i>
+                    <span>Membuat Deskripsi</span>
+                  </div>
+                  <div class="step" :class="{ 'active': Math.round(analysisProgress) >= 80 }">
+                    <i class="bi bi-music-note"></i>
+                    <span>Menulis Lirik</span>
+                  </div>
+                  <div class="step" :class="{ 'active': Math.round(analysisProgress) >= 100 }">
+                    <i class="bi bi-check-circle"></i>
+                    <span>Selesai</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div x-show="uploadedImage" class="form-section">
+              <label class="form-label">
+                <i class="bi bi-magic me-2"></i>AI Description
+              </label>
+              <textarea 
+                class="form-textarea focus-ring" 
+                        x-model="aiDescription" 
+                :value="aiDescription"
+                rows="3"
+                placeholder="AI akan menganalisis dan mendeskripsikan gambar Anda untuk menghasilkan musik yang sesuai..."
+                        readonly></textarea>
+            </div>
+            
+            <div x-show="uploadedImage" class="form-section">
+              <label class="form-label">
+                <i class="bi bi-music-note-list me-2"></i>Generated Lyrics
+                <span class="char-counter" x-text="`${aiLyrics.length}/5000`"></span>
+              </label>
+              <textarea 
+                class="form-textarea focus-ring" 
+                        x-model="aiLyrics" 
+                :value="aiLyrics"
+                rows="4"
+                placeholder="AI akan menghasilkan lyrics musik berdasarkan gambar Anda..."
+                maxlength="5000"></textarea>
+            </div>
+            
+            <div x-show="uploadedImage" class="form-section">
+              <label class="form-label">
+                <i class="bi bi-toggles me-2"></i>Music Type
+              </label>
+              <div class="toggle-group">
+                <button 
+                  class="toggle-btn" 
+                  :class="{ 'active': !isInstrumental }"
+                  @click="isInstrumental = false">
+                  <i class="bi bi-mic"></i>
+                  With Vocals
+                </button>
+                <button 
+                  class="toggle-btn" 
+                  :class="{ 'active': isInstrumental }"
+                  @click="isInstrumental = true">
+                  <i class="bi bi-music-note"></i>
+                  Instrumental
+            </button>
+              </div>
+            </div>
+          </div>
+          
+          <div x-show="activeTab === 'prompt'" class="tab-content">
+            <!-- Custom Title Input Section -->
+            <div class="form-section">
+              <label class="form-label">
+                <i class="bi bi-music-note-beamed me-2"></i>Custom Title (Optional)
+                <span class="char-counter" x-text="`${customTitleInput.length}/100`"></span>
+              </label>
+              <input 
+                type="text" 
+                class="form-input focus-ring" 
+                x-model="customTitleInput"
+                placeholder="Masukkan judul custom (opsional)... Contoh: 'Lagu Cinta di Senja', 'Musik Relaksasi', 'Beat Energik'"
+                maxlength="100">
+              <div class="input-hint">
+                <i class="bi bi-lightbulb me-1"></i>
+                <small>Kosongkan untuk AI generate judul otomatis dari prompt</small>
+              </div>
+            </div>
+            
+            <div class="form-section">
+              <label class="form-label">
+                <i class="bi bi-chat-text me-2"></i>Simple Music Prompt
+                <span class="char-counter" x-text="`${promptInput.length}/400`"></span>
+              </label>
+              <textarea 
+                class="form-textarea focus-ring" 
+                        x-model="promptInput" 
+                rows="3"
+                placeholder="Masukkan judul atau deskripsi singkat musik yang ingin dibuat... Contoh: 'Lagu pop ceria tentang cinta', 'Musik ambient untuk relaksasi', 'Beat hip hop energik'"
+                maxlength="400"></textarea>
+            </div>
+            
+            <div class="form-section">
+              <label class="form-label">
+                <i class="bi bi-gear me-2"></i>Model & Duration
+              </label>
+              <div class="form-row">
+                <div class="form-section">
+                  <select class="form-select focus-ring" x-model="selectedModel">
+                    <option value="suno-v3.5">Suno V3.5 (Simple)</option>
+                    <option value="suno-v4.5">Suno V4.5 (Advanced)</option>
+                </select>
+              </div>
+                <div class="form-section">
+                  <select class="form-select focus-ring" x-model="selectedDuration">
+                    <option value="30">30 detik</option>
+                    <option value="60">1 menit</option>
+                    <option value="120">2 menit</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          
+            <div class="info-box hover-lift">
+              <div class="info-icon">
+                <i class="bi bi-info-circle"></i>
+            </div>
+              <div class="info-content">
+                <h6>💡 Tips untuk Prompt Sederhana:</h6>
+                <ul>
+                  <li>Gunakan bahasa Indonesia yang jelas</li>
+                  <li>Fokus pada genre, mood, dan tema</li>
+                  <li>Maksimal 400 karakter untuk hasil terbaik</li>
+                  <li>Contoh: "Lagu pop romantis dengan piano"</li>
+                </ul>
+            </div>
+            </div>
+            </div>
+            
+          <!-- Generate Button -->
+          <div class="generate-section">
+            <button class="generate-btn hover-lift focus-ring" @click="generateMusic()" :disabled="isGenerating || isAnalyzing">
+              <span x-show="!isGenerating && !isAnalyzing">
+                <i class="bi bi-soundwave me-2"></i>
+                <span x-text="activeTab === 'lyrics' ? 'GENERATE MUSIC' : activeTab === 'image' ? 'GENERATE MUSIC (CUSTOM)' : activeTab === 'prompt' ? 'GENERATE MUSIC (SIMPLE)' : 'GENERATE MUSIC'"></span>
+              </span>
+              <span x-show="isAnalyzing">
+                <i class="bi bi-hourglass-split spinner"></i>Menganalisis Gambar...
+              </span>
+              <span x-show="isGenerating && !isAnalyzing">
+                <i class="bi bi-arrow-repeat spinner"></i>
+                <span x-text="activeTab === 'lyrics' ? 'Generating Music...' : activeTab === 'image' ? 'Generating Custom Music...' : activeTab === 'prompt' ? 'Generating Simple Music...' : 'Generating Music...'"></span>
+              </span>
+            </button>
+            <div x-show="isAnalyzing || isGenerating" class="generate-status">
+              <small x-text="isAnalyzing ? 'Sedang menganalisis gambar...' : activeTab === 'lyrics' ? 'Sedang generate musik dari lirik...' : activeTab === 'image' ? 'Sedang generate musik custom dari gambar...' : activeTab === 'prompt' ? 'Sedang generate musik sederhana...' : 'Sedang generate musik dengan Suno AI...'"></small>
+          </div>
+            </div>
+        </div>
+      </div>
+            </div>
+            
+    <!-- Right Panel - Your AI Creations -->
+    <div class="creations-panel">
+      <div class="creations-card">
+        <div class="card-header">
+          <div class="card-icon">
+            <i class="bi bi-collection-play"></i>
+              </div>
+          <h3 class="card-title">Kreasi AI Anda</h3>
+          <p class="card-subtitle">Masterpiece musik Anda menanti</p>
+            </div>
+            
+        <div class="card-content">
+          <!-- Empty State -->
+          <div x-show="musicList.length === 0" class="empty-state hover-lift">
+            <div class="empty-icon">
+              <i class="bi bi-music-note-beamed"></i>
+              </div>
+            <h4>Ready to Create Magic?</h4>
+            <p>Start creating your first AI-generated music</p>
+            </div>
+            
+          <!-- Music Grid -->
+          <div x-show="musicList.length > 0" class="music-grid">
+            <template x-for="music in musicList" :key="music.id">
+              <div class="music-item hover-lift">
+                <div class="music-cover">
+                  <img 
+                    :src="music.cover_url || '/static/assets/image/default.jpg'" 
+                    :alt="music.title || 'Music Cover'"
+                    @error="handleImageError($event)"
+                    class="music-cover-img">
+                  
+                  <!-- Action Buttons Overlay -->
+                  <div class="music-actions">
+                    <!-- Download Button -->
+                    <button class="action-btn download-btn hover-lift" @click="universalDownload(music)" title="Download Music">
+                      <i class="bi bi-download"></i>
+            </button>
+          </div>
+                  
+                  <!-- Play Progress Overlay -->
+                  <div class="play-progress" x-show="music.isPlaying">
+                    <div class="progress-bar">
+                      <div class="progress-fill" :style="`width: ${music.progress || 0}%`"></div>
+        </div>
+    </div>
+
+                  <!-- Fallback icon if image fails to load -->
+                  <div class="music-cover-fallback" x-show="!music.image_url">
+                    <i class="bi bi-music-note-beamed"></i>
+      </div>
+    </div>
+
+                <div class="music-info">
+                  <h5 class="music-title" x-text="music.title || 'Untitled'"></h5>
+                  <p class="music-date" x-text="music.created_at"></p>
+                  
+                  <!-- Enhanced Spotify-Style Audio Player -->
+                  <div class="spotify-player" x-show="music.audio_url">
+                    <audio 
+                      :id="`audio-${music.id}`"
+                      :ref="`audio-${music.id}`" 
+                      :src="music.audio_url" 
+                      preload="metadata" 
+                      @loadedmetadata="initAudio(music)" 
+                      @timeupdate="updateTime(music)" 
+                      @ended="onAudioEnd(music)"
+                      @loadeddata="initAudio(music)"
+                      @canplay="initAudio(music)"
+                      @durationchange="initAudio(music)"
+                    ></audio>
+                    
+                    <!-- Time Display -->
+                    <div class="time-info">
+                      <span class="current-time" x-text="music.currentTime || '0:00'"></span>
+                      <span class="separator">/</span>
+                      <span class="total-time" x-text="music.duration || '0:00'"></span>
+            </div>
+                    
+                    <!-- Progress Bar (Outside Border) -->
+                    <div class="spotify-progress-bar" @click="seekTo(music, $event)">
+                      <div class="progress-track"></div>
+                      <div class="progress-fill" :style="`width: ${music.progress || 0}%`"></div>
+                      <div class="progress-thumb" :style="`left: ${music.progress || 0}%`" @mousedown="startDrag(music, $event)"></div>
+              </div>
+                    
+                    <!-- Player Controls Row -->
+                    <div class="spotify-controls">
+                      <!-- Previous Button -->
+                      <button class="control-btn-small hover-lift" @click="seekBackward(music)" title="Backward 10s">
+                        <i class="bi bi-skip-backward-fill"></i>
+            </button>
+                      
+                      <!-- Play/Pause Button -->
+                      <button class="spotify-play-btn hover-lift" @click="togglePlay(music)" :title="music.isPlaying ? 'Pause' : 'Play'">
+                        <i :class="music.isPlaying ? 'bi bi-pause-fill' : 'bi bi-play-fill'"></i>
+                          </button>
+                      
+                      <!-- Next Button -->
+                      <button class="control-btn-small hover-lift" @click="seekForward(music)" title="Forward 10s">
+                        <i class="bi bi-skip-forward-fill"></i>
+                          </button>
+                      
+                      <!-- Volume Control -->
+                      <div class="volume-control">
+                        <button class="volume-btn hover-lift" @click="toggleVolumeSlider(music)" :title="music.isMuted ? 'Unmute' : 'Mute'">
+                          <i :class="getVolumeIcon(music)"></i>
+                        </button>
+                        <div class="volume-slider" x-show="music.showVolumeSlider">
+                          <input type="range" min="0" max="100" :value="music.volume || 100" @input="setVolume(music, $event.target.value)">
+                        </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+<style>
+/* ===== MODERN FUTURISTIC AI MUSIC STUDIO ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Modern CSS Variables */
+:root {
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --dark-bg: #0a0a0f;
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --text-primary: #ffffff;
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-muted: rgba(255, 255, 255, 0.5);
+  --glow-primary: 0 0 20px rgba(102, 126, 234, 0.3);
+  --glow-secondary: 0 0 20px rgba(240, 147, 251, 0.3);
+  --glow-accent: 0 0 20px rgba(79, 172, 254, 0.3);
+  --border-radius: 16px;
+  --border-radius-lg: 24px;
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base Styles */
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--dark-bg);
+  background: linear-gradient(135deg, 
+    #0a0a0f 0%, 
+    #1a1a2e 25%, 
+    #16213e 50%, 
+    #0f3460 75%, 
+    #533483 100%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.2;
+}
+
+/* Fix icon sizing when line-height is 1 */
+i, .bi, .fa, [class*="icon"] {
+  line-height: 1 !important;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Ensure icons maintain proper sizing */
+.nav-icon i,
+.card-icon i,
+.upload-icon,
+.empty-icon i,
+.info-icon,
+.step i {
+  line-height: 1 !important;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Specific icon size fixes */
+.nav-icon {
+  line-height: 1 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem !important;
+}
+
+.nav-icon i {
+  font-size: inherit !important;
+  line-height: 1 !important;
+}
+
+.card-icon {
+  line-height: 1 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-icon {
+  line-height: 1 !important;
+  display: block;
+  text-align: center;
+}
+
+.empty-icon {
+  line-height: 1 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.info-icon {
+  line-height: 1 !important;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.step {
+  line-height: 1 !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.step i {
+  line-height: 1 !important;
+  display: block;
+  text-align: center;
+}
+
+/* Reset line-height for text elements to normal */
+h1, h2, h3, h4, h5, h6,
+p, span, div, label, button,
+.nav-label, .card-title, .card-subtitle,
+.form-label, .input-hint, .char-counter,
+.upload-hint, .empty-state h4, .empty-state p,
+.music-title, .music-date, .progress-text,
+.info-content h6, .info-content ul, .info-content li {
+  line-height: 1.4 !important;
+}
+
+/* Ensure buttons and interactive elements have proper line-height */
+button, .btn, .nav-tab, .generate-btn {
+  line-height: 1.2 !important;
+}
+
+/* Form elements */
+input, textarea, select, .form-control, .form-select {
+  line-height: 1.4 !important;
+}
+
+/* Modern Studio Layout */
+.modern-studio {
+  min-height: 100vh;
+  padding: 2rem;
+  background: radial-gradient(circle at 50% 50%, 
+    rgba(102, 126, 234, 0.1) 0%, 
+    rgba(240, 147, 251, 0.05) 50%, 
+    transparent 100%);
+  position: relative;
+}
+
+/* Animated Background Elements */
+.modern-studio::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(240, 147, 251, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(79, 172, 254, 0.05) 0%, transparent 50%);
+  z-index: -1;
+  animation: backgroundFloat 20s ease-in-out infinite;
+}
+
+@keyframes backgroundFloat {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(1deg); }
+}
+
+/* ===== MODERN NAVIGATION ===== */
+.modern-nav {
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.nav-container {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.nav-tab {
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  padding: 1.5rem 2rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 140px;
+  text-align: center;
+  user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Ensure nav-tab icons have consistent sizing */
+.nav-tab .nav-icon {
+  font-size: 1.1rem !important;
+  line-height: 1 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-tab .nav-icon i {
+  font-size: 1.1rem !important;
+  line-height: 1 !important;
+}
+
+.nav-tab::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.nav-tab:hover::before {
+  left: 100%;
+}
+
+.nav-tab:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  transform: translateY(-4px);
+  box-shadow: var(--glow-primary);
+}
+
+.nav-tab.active {
+  background: var(--primary-gradient);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+  box-shadow: var(--glow-primary);
+  transform: translateY(-2px);
+}
+
+.nav-icon {
+  font-size: 1.1rem;
+  transition: var(--transition);
+}
+
+.nav-tab:hover .nav-icon {
+  transform: scale(1.1);
+}
+
+.nav-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* ===== STUDIO GRID ===== */
+.studio-grid {
+  display: grid;
+  grid-template-columns: 50% 50%;
+  gap: 3rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.studio-panel {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.creations-panel {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+/* ===== MODERN CARD STYLES ===== */
+.studio-card,
+.creations-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(30px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
+  transition: var(--transition);
+  position: relative;
+}
+
+.studio-card::before,
+.creations-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--primary-gradient);
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.studio-card:hover::before,
+.creations-card:hover::before {
+  opacity: 1;
+}
+
+.studio-card:hover,
+.creations-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 35px 70px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.card-header {
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.05) 0%, 
+    rgba(255, 255, 255, 0.02) 100%);
+  border-bottom: 1px solid var(--card-border);
+  text-align: center;
+  position: relative;
+}
+
+.card-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 2px;
+  background: var(--primary-gradient);
+  border-radius: 1px;
+}
+
+.card-icon {
+  width: 100px;
+  height: 100px;
+  background: var(--primary-gradient);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.5rem;
+  font-size: 2.5rem;
+  color: white;
+  box-shadow: var(--glow-primary);
+  transition: var(--transition);
+  position: relative;
+}
+
+.card-icon::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: var(--primary-gradient);
+  border-radius: 50%;
+  z-index: -1;
+  opacity: 0.5;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.3; }
+}
+
+.card-title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+.card-content {
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* ===== MODERN FORM STYLES ===== */
+.form-section {
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Title Input Group */
+.title-input-group {
+  display: flex;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.form-input {
+  flex: 1;
+  width: 100%;
+  max-width: 100%;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  padding: 1.25rem;
+  color: var(--text-primary) !important;
+  font-size: 0.95rem;
+  transition: var(--transition);
+  font-family: 'Inter', sans-serif;
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+  background: rgba(255, 255, 255, 0.12) !important;
+  transform: translateY(-2px);
+}
+
+.form-input::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.generate-lyrics-btn {
+  background: var(--accent-gradient);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 1.25rem 1.75rem;
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  min-width: 150px;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+}
+
+.generate-lyrics-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+}
+
+.generate-lyrics-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: linear-gradient(135deg, #6b7280 0%, #9ca3af 100%);
+  box-shadow: none;
+}
+
+.input-hint {
+  margin-top: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+}
+
+.input-hint i {
+  color: #667eea;
+  margin-right: 0.5rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text-primary);
+  font-weight: 600;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+}
+
+.form-label i {
+  color: var(--text-secondary);
+  margin-right: 0.5rem;
+}
+
+.char-counter {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+}
+
+.form-textarea,
+.form-select {
+  width: 100%;
+  max-width: 100%;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  padding: 1.25rem;
+  color: var(--text-primary) !important;
+  font-size: 0.95rem;
+  transition: var(--transition);
+  appearance: none;
+  font-family: 'Inter', sans-serif;
+  backdrop-filter: blur(10px);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Modern form focus states */
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+  background: rgba(255, 255, 255, 0.12) !important;
+  transform: translateY(-2px);
+}
+
+.form-textarea::placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Modern select styling */
+.form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 1rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 3rem;
+}
+
+.form-select option {
+  background: #1a1a2e;
+  color: white;
+  padding: 12px 16px;
+  font-size: 0.95rem;
+}
+
+/* Modern upload area */
+.upload-area {
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition);
+  overflow: hidden;
+  position: relative;
+  min-height: 200px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.upload-area:hover {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.05);
+  transform: translateY(-2px);
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  height: 100%;
+  min-height: 200px;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  color: #667eea;
+  margin-bottom: 1rem;
+  transition: var(--transition);
+}
+
+.upload-area:hover .upload-icon {
+  transform: scale(1.1);
+}
+
+.upload-placeholder h4 {
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.upload-placeholder p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+}
+
+.upload-hint {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+}
+
+/* Modern empty state */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.empty-icon {
+  width: 120px;
+  height: 120px;
+  background: var(--primary-gradient);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 2rem;
+  font-size: 3rem;
+  color: white;
+  box-shadow: var(--glow-primary);
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.empty-state h4 {
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 700;
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+/* ===== MODERN GENERATE BUTTON ===== */
+.generate-section {
+  margin-top: 3rem;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--card-border);
+  position: relative;
+}
+
+.generate-section::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--primary-gradient);
+  opacity: 0.3;
+}
+
+.generate-btn {
+  width: 100%;
+  background: var(--primary-gradient);
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 1.5rem 2rem;
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: var(--glow-primary);
+  position: relative;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+.generate-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+.generate-btn:hover::before {
+  left: 100%;
+}
+
+.generate-btn:hover:not(:disabled) {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.4);
+}
+
+.generate-btn:active:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+.generate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+  box-shadow: none;
+}
+
+.generate-status {
+  text-align: center;
+  margin-top: 1rem;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Ensure textarea has proper background */
+textarea.form-textarea {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+/* Ensure input elements maintain their styling */
+input, textarea, select {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+.form-select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+.form-select option {
+  background: #1a1a2e !important;
+  background-color: #1a1a2e !important;
+  color: white !important;
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  border: none;
+  outline: none;
+}
+
+.form-select option:hover {
+  background: #2a2a4e !important;
+  background-color: #2a2a4e !important;
+  color: white !important;
+}
+
+.form-select option:checked {
+  background: #667eea !important;
+  background-color: #667eea !important;
+  color: white !important;
+  font-weight: 600;
+}
+
+.form-select option:disabled {
+  background: #0f0f1e !important;
+  background-color: #0f0f1e !important;
+  color: #666 !important;
+}
+
+/* Browser-specific dropdown styling */
+select {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+select option {
+  background: #1a1a2e !important;
+  background-color: #1a1a2e !important;
+  color: white !important;
+}
+
+/* Firefox specific */
+@-moz-document url-prefix() {
+.form-select {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  
+  .form-select option {
+    background: #1a1a2e !important;
+    color: white !important;
+  }
+}
+
+/* Safari specific fixes */
+@supports (-webkit-appearance: none) {
+  .form-select {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
+/* Chrome/Edge specific fixes */
+@supports (-webkit-appearance: none) and (not (-webkit-backdrop-filter: none)) {
+  .form-select {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
+/* Webkit/Chrome specific */
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+  .form-select {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: white !important;
+  }
+  
+  .form-select option {
+    background: #1a1a2e !important;
+    color: white !important;
+  }
+}
+
+/* ===== UPLOAD SECTION ===== */
+.upload-area {
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  cursor: pointer;
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+  min-height: 200px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.upload-area:hover {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .upload-area:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: transparent;
+  }
+}
+
+.upload-placeholder {
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  height: 100%;
+  min-height: 200px;
+}
+
+.upload-icon {
+  font-size: 3rem;
+  color: #667eea;
+  margin-bottom: 1rem;
+}
+
+.upload-placeholder h4 {
+  color: white;
+  margin-bottom: 0.5rem;
+  font-size: 1.25rem;
+}
+
+.upload-placeholder p {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1rem;
+}
+
+.upload-hint {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+}
+
+.image-preview {
+  position: relative;
+  width: 100%;
+  height: 200px;
+}
+
+.preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+.remove-image {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  cursor: pointer;
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.remove-image:hover {
+  background: rgba(220, 53, 69, 0.8);
+  -webkit-transform: scale(1.1);
+  transform: scale(1.1);
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .remove-image:hover {
+    -webkit-transform: none;
+    transform: none;
+  }
+}
+
+.status-indicator {
+  color: #667eea;
+  font-size: 0.75rem;
+  font-weight: 500;
+  -webkit-animation: pulse 1.5s infinite;
+  animation: pulse 1.5s infinite;
+}
+
+@-webkit-keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.toggle-group {
+  display: -webkit-flex;
+  display: flex;
+  gap: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 0.25rem;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.toggle-btn {
+  -webkit-flex: 1;
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.toggle-btn:hover {
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.toggle-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .toggle-btn:hover {
+    color: rgba(255, 255, 255, 0.7);
+    background: transparent;
+  }
+}
+
+/* Analysis Progress Bar - Desktop */
+.analysis-progress {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.progress-text {
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.progress-percent {
+  font-weight: 600;
+  color: #a855f7;
+  font-size: 1rem;
+  min-width: 50px;
+  text-align: right;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #a855f7, #8b5cf6);
+  border-radius: 4px;
+  transition: width 0.5s ease-out;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+}
+
+.progress-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.5rem;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  transition: color 0.3s ease;
+}
+
+.step.active {
+  color: #a855f7;
+}
+
+.step i {
+  font-size: 1.2rem;
+  margin-bottom: 0.25rem;
+}
+
+.step span {
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+
+
+  /* ===== MODERN AUDIO PLAYER ===== */
+  .spotify-player {
+    margin-top: 0.75rem;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    backdrop-filter: none;
+    border: none;
+    transition: var(--transition);
+  }
+
+.spotify-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: var(--border-radius);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  margin-top: 0.5rem;
+}
+
+.control-btn-small {
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.65rem;
+  flex-shrink: 0;
+}
+
+.control-btn-small:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  transform: scale(1.1);
+}
+
+.spotify-play-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.8rem;
+  box-shadow: var(--glow-primary);
+  flex-shrink: 0;
+}
+
+.spotify-play-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+}
+
+.spotify-progress {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.time-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.separator {
+  color: var(--text-muted);
+}
+
+.current-time {
+  color: #667eea;
+  font-weight: 600;
+}
+
+.spotify-progress-bar {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.1);
+  margin-bottom: 0.5rem;
+}
+
+.spotify-progress-bar .progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--primary-gradient);
+  border-radius: 4px;
+  transition: width 0.1s ease;
+}
+
+.progress-thumb {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  cursor: grab;
+  opacity: 0;
+  transition: var(--transition);
+}
+
+.spotify-progress-bar:hover .progress-thumb {
+    opacity: 1; 
+  }
+
+.volume-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.volume-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.8rem;
+}
+
+.volume-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  transform: scale(1.1);
+}
+
+.volume-slider {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--card-bg);
+  padding: 1rem 0.5rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 0.5rem;
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--card-border);
+}
+
+.volume-slider input[type="range"] {
+  width: 80px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  outline: none;
+  appearance: none;
+  transform: rotate(-90deg);
+}
+
+.volume-slider input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: #667eea;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.volume-slider input[type="range"]::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: #667eea;
+  border-radius: 50%;
+  border: none;
+}
+
+.play-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.play-progress .progress-bar {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 0;
+  margin: 0;
+}
+
+.play-progress .progress-fill {
+  background: var(--primary-gradient);
+  border-radius: 0;
+}
+
+/* ===== MODERN INFO BOX ===== */
+.info-box {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: var(--border-radius);
+  padding: 1.75rem;
+  margin-bottom: 2rem;
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+  backdrop-filter: blur(15px);
+  position: relative;
+  overflow: hidden;
+}
+
+.info-box::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--primary-gradient);
+  opacity: 0.5;
+}
+
+.info-icon {
+  color: #667eea;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.info-content h6 {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.info-content ul {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.info-content li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+/* ===== GENERATE BUTTON ===== */
+.generate-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.generate-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 16px;
+  padding: 1rem 2rem;
+  color: white;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.generate-btn:hover:not(:disabled) {
+  -webkit-transform: translateY(-2px);
+  transform: translateY(-2px);
+  box-shadow: 0 15px 40px rgba(102, 126, 234, 0.6);
+}
+
+.generate-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background: linear-gradient(135deg, #4b5563 0%, #6b7280 100%);
+}
+
+.generate-status {
+  text-align: center;
+  margin-top: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.875rem;
+}
+
+.spinner {
+  -webkit-animation: spin 1s linear infinite;
+  animation: spin 1s linear infinite;
+}
+
+@-webkit-keyframes spin {
+  from { -webkit-transform: rotate(0deg); }
+  to { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ===== MODERN MUSIC GRID ===== */
+  .music-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+.music-item {
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  transition: var(--transition);
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.music-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--primary-gradient);
+  opacity: 0;
+  transition: var(--transition);
+  z-index: 1;
+}
+
+.music-item:hover::before {
+  opacity: 0.05;
+}
+
+.music-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+  .music-cover {
+    position: relative;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: var(--border-radius);
+    height: 160px; /* Fixed height for full image display */
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    min-height: 160px; /* Ensure minimum height */
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+.music-cover img,
+.music-cover-img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  transition: var(--transition);
+  border-radius: var(--border-radius);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  min-height: 100% !important;
+  min-width: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 1;
+}
+
+.music-item:hover .music-cover img {
+  transform: scale(1.02);
+}
+
+  .music-info {
+    padding: 1rem;
+  position: relative;
+  z-index: 2;
+    background: rgba(255, 255, 255, 0.02);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+.music-title {
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.music-date {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1200px) {
+  .studio-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .modern-studio {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .nav-container {
+    gap: 1rem;
+  }
+  
+  .nav-tab {
+    min-width: 120px;
+    padding: 1.25rem 1.5rem;
+  }
+  
+  .nav-icon {
+    font-size: 0.9rem !important;
+  }
+  
+  .nav-icon i {
+    font-size: 0.9rem !important;
+  }
+  
+  .nav-tab .nav-icon {
+    font-size: 0.9rem !important;
+  }
+  
+  .nav-tab .nav-icon i {
+    font-size: 0.9rem !important;
+  }
+  
+  .nav-label {
+    font-size: 0.8rem;
+  }
+  
+  .card-header {
+    padding: 2rem 1.5rem;
+  }
+  
+  .card-content {
+    padding: 2rem 1.5rem;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Mobile responsive for title input group */
+  .title-input-group {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .generate-lyrics-btn {
+    min-width: auto;
+    width: 100%;
+    padding: 1rem 1.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .music-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  
+  /* Mobile responsive for music cover */
+  .music-cover {
+    height: 140px; /* Keep good height for full image on tablet */
+    min-height: 140px;
+  }
+  
+  .music-cover img,
+  .music-cover-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+  
+  /* Mobile responsive for music actions */
+  .music-actions {
+    top: 0.25rem;
+    right: 0.25rem;
+    opacity: 1 !important; /* Force show on mobile */
+  }
+  
+  .action-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+  }
+  
+  /* Always show download button on mobile */
+  .music-item .download-btn {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+  }
+  
+  .generate-btn {
+    padding: 1.25rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .modern-studio {
+    padding: 1rem;
+  }
+  
+  .nav-tab {
+    min-width: 100px;
+    padding: 1rem;
+  }
+  
+  .nav-tab .nav-icon {
+    font-size: 0.8rem !important;
+  }
+  
+  .nav-tab .nav-icon i {
+    font-size: 0.8rem !important;
+  }
+  
+  .card-header {
+    padding: 1.5rem 1rem;
+  }
+  
+  .card-content {
+    padding: 1.5rem 1rem;
+  }
+  
+  .form-textarea,
+  .form-select {
+    padding: 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .music-grid {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+  
+  /* Small mobile responsive for music cover */
+  .music-cover {
+    height: 130px !important; /* Keep good height for full image on small mobile */
+    min-height: 130px !important;
+  }
+  
+  .music-cover img,
+  .music-cover-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+  }
+  
+  /* Small mobile responsive for music actions */
+  .music-actions {
+    top: 0.25rem;
+    right: 0.25rem;
+    opacity: 1 !important; /* Force show on mobile */
+  }
+  
+  .action-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 0.75rem;
+  }
+  
+  /* Always show download button on small mobile */
+  .music-item .download-btn {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+  }
+}
+
+/* ===== MODERN ANALYSIS PROGRESS ===== */
+.analysis-progress {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--card-border);
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+}
+
+.progress-text {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.progress-percent {
+  font-weight: 700;
+  color: #a855f7;
+  font-size: 1.1rem;
+  min-width: 60px;
+  text-align: right;
+  background: rgba(168, 85, 247, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #a855f7, #8b5cf6);
+  border-radius: 5px;
+  transition: width 0.5s ease-out;
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.progress-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: var(--text-muted);
+  transition: var(--transition);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.step.active {
+  color: #a855f7;
+  background: rgba(168, 85, 247, 0.1);
+  transform: translateY(-2px);
+}
+
+.step i {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.step span {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* ===== MOBILE OPTIMIZATIONS ===== */
+@media (max-width: 768px) {
+  .progress-steps {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+  
+  .step {
+    padding: 0.75rem;
+  }
+  
+  .step i {
+    font-size: 1.25rem;
+  }
+  
+  .step span {
+    font-size: 0.7rem;
+  }
+}
+
+/* ===== TOUCH DEVICE OPTIMIZATIONS ===== */
+@media (hover: none) and (pointer: coarse) {
+  .nav-tab:hover,
+  .music-item:hover,
+  .studio-card:hover,
+  .creations-card:hover {
+    transform: none;
+  }
+  
+  .nav-tab:hover .nav-icon,
+  .upload-area:hover .upload-icon {
+    transform: none;
+  }
+  
+  .music-item:hover .music-cover img {
+    transform: none;
+  }
+  
+  .generate-btn:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* ===== MODERN NOTIFICATION SYSTEM ===== */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  padding: 1.25rem 1.75rem;
+  color: var(--text-primary);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  z-index: 9999;
+  max-width: 400px;
+  font-size: 1rem;
+  font-weight: 500;
+  animation: slideIn 0.3s ease-out;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: 'Inter', sans-serif;
+}
+
+.notification:hover {
+  transform: translateX(-5px) translateY(-2px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.notification-success:hover {
+  box-shadow: 0 20px 50px rgba(16, 185, 129, 0.3);
+}
+
+.notification-error:hover {
+  box-shadow: 0 20px 50px rgba(239, 68, 68, 0.3);
+}
+
+.notification-warning:hover {
+  box-shadow: 0 20px 50px rgba(245, 158, 11, 0.3);
+}
+
+.notification-info:hover {
+  box-shadow: 0 20px 50px rgba(59, 130, 246, 0.3);
+}
+
+.notification-success {
+  border-left: 4px solid #10b981;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+  box-shadow: 0 15px 40px rgba(16, 185, 129, 0.2);
+}
+
+.notification-error {
+  border-left: 4px solid #ef4444;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%);
+  box-shadow: 0 15px 40px rgba(239, 68, 68, 0.2);
+}
+
+.notification-warning {
+  border-left: 4px solid #f59e0b;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(245, 158, 11, 0.05) 100%);
+  box-shadow: 0 15px 40px rgba(245, 158, 11, 0.2);
+}
+
+.notification-info {
+  border-left: 4px solid #3b82f6;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%);
+  box-shadow: 0 15px 40px rgba(59, 130, 246, 0.2);
+}
+
+/* ===== MODERN NOTIFICATION ANIMATIONS ===== */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%) scale(0.9);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* ===== MODERN TOGGLE GROUP ===== */
+.toggle-group {
+  display: flex;
+  gap: 0.5rem;
+  border: 1px solid var(--card-border);
+  border-radius: var(--border-radius);
+  padding: 0.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(10px);
+}
+
+.toggle-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  border-radius: calc(var(--border-radius) - 4px);
+  padding: 0.875rem 1.25rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.toggle-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.toggle-btn:hover::before {
+  left: 100%;
+}
+
+.toggle-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.toggle-btn.active {
+  background: var(--primary-gradient);
+  color: white;
+  box-shadow: var(--glow-primary);
+  transform: translateY(-1px);
+}
+
+/* Modern info box */
+.info-box {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  backdrop-filter: blur(10px);
+}
+
+.info-icon {
+  color: #667eea;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.info-content h6 {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.info-content ul {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.info-content li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+/* ===== ENHANCED INFO BOX STYLES ===== */
+.info-icon {
+  color: #667eea;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 0.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+}
+
+.info-content h6 {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  letter-spacing: 0.5px;
+}
+
+.info-content ul {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+  padding-left: 1.5rem;
+  line-height: 1.6;
+}
+
+.info-content li {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+  position: relative;
+}
+
+.info-content li::before {
+  content: '•';
+  color: #667eea;
+  font-weight: bold;
+  position: absolute;
+  left: -1.2rem;
+}
+
+/* ===== MODERN ACTION BUTTONS ===== */
+.music-actions {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: var(--transition);
+  z-index: 10;
+  transform: scale(0.95);
+}
+
+/* Force show actions on mobile */
+@media (max-width: 768px) {
+  .music-actions {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+  }
+  
+  .music-item:hover .music-actions {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+  }
+  
+  /* Ensure full image display on mobile */
+  .music-cover {
+    height: 140px !important;
+    min-height: 140px !important;
+  }
+  
+  .music-cover img,
+  .music-cover-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+  }
+}
+
+.music-item:hover .music-actions {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  backdrop-filter: blur(10px);
+  font-size: 0.9rem;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.download-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+/* Force show download button on mobile */
+@media (max-width: 768px) {
+  .download-btn {
+    opacity: 1 !important;
+    transform: scale(1) !important;
+    visibility: visible !important;
+  }
+}
+
+.download-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.music-cover-fallback {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  color: var(--text-muted);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--border-radius);
+}
+
+/* ===== MODERN IMAGE PREVIEW ===== */
+.image-preview {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+}
+
+.remove-image {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  backdrop-filter: blur(10px);
+  font-size: 1.1rem;
+}
+
+.remove-image:hover {
+  background: rgba(220, 53, 69, 0.8);
+  transform: scale(1.1);
+}
+
+/* ===== MODERN STATUS INDICATOR ===== */
+.status-indicator {
+  color: #667eea;
+  font-size: 0.8rem;
+  font-weight: 600;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ===== MODERN LOADING STATES ===== */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  border-radius: var(--border-radius);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* ===== MODERN HOVER EFFECTS ===== */
+.hover-lift {
+  transition: var(--transition);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* ===== MODERN FOCUS STATES ===== */
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+}
+
+/* ===== MODERN SCROLLBAR ===== */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(102, 126, 234, 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(102, 126, 234, 0.7);
+}
+
+/* ===== MODERN SELECTION ===== */
+::selection {
+  background: rgba(102, 126, 234, 0.3);
+  color: white;
+}
+
+::-moz-selection {
+  background: rgba(102, 126, 234, 0.3);
+  color: white;
+}
+</style>
+
+<script>
+function aiMusicApp() {
+  return {
+    // State
+    activeTab: 'lyrics',
+    isGenerating: false,
+    isAnalyzing: false,
+    analysisProgress: 0,
+    analysisStep: 'Memulai analisis...',
+    
+    // Safari/iOS compatibility
+    isSafari: /^((?!chrome|android).)*safari/i.test(navigator.userAgent),
+    isIOS: /iPad|iPhone|iPod/.test(navigator.userAgent),
+    
+    // Form data - Lyrics Tab
+    songTitleInput: '',
+    lyricsInput: '',
+    selectedGenre: '',
+    selectedMood: '',
+    selectedPersona: '',
+    isGeneratingLyrics: false,
+    
+    // Form data - Image Tab
+    uploadedImage: null,
+    aiDescription: '',
+    aiLyrics: '',
+    isInstrumental: false,
+    
+    // Form data - Prompt Tab
+    promptInput: '',
+    customTitleInput: '',
+    selectedModel: 'suno-v3.5',
+    selectedDuration: '60',
+    
+    // Music list
+    musicList: [],
+
+    // Methods
+    init() {
+      this.loadMusicHistory();
+      this.setupSafariCompatibility();
+      
+      // Auto-refresh music list every 30 seconds
+      setInterval(() => {
+        this.loadMusicHistory();
+      }, 30000);
+    },
+    
+    setupSafariCompatibility() {
+      // Fix for iOS Safari viewport height
+      if (this.isIOS) {
+        const setVH = () => {
+          const vh = window.innerHeight * 0.01;
+          document.documentElement.style.setProperty('--vh', `${vh}px`);
+        };
+        
+        setVH();
+        window.addEventListener('resize', setVH);
+        window.addEventListener('orientationchange', setVH);
+      }
+      
+      // Fix iOS Safari background issue
+      if (this.isIOS || this.isSafari) {
+        // Force background redraw
+        const forceBackgroundRedraw = () => {
+          document.body.style.backgroundColor = '#1a1a2e';
+          setTimeout(() => {
+            document.body.style.backgroundColor = '';
+          }, 10);
+        };
+        
+        // Apply background fix on load and orientation change
+        window.addEventListener('load', forceBackgroundRedraw);
+        window.addEventListener('orientationchange', () => {
+          setTimeout(forceBackgroundRedraw, 100);
+        });
+        
+        // Ensure HTML element has background
+        document.documentElement.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #533483 75%, #7209b7 100%)';
+        document.documentElement.style.minHeight = '100%';
+      }
+      
+      // Prevent zoom on input focus for iOS
+      if (this.isIOS) {
+        const inputs = document.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+          input.addEventListener('focus', () => {
+            input.style.fontSize = '16px';
+          });
+        });
+      }
+    },
+    
+    async loadMusicHistory() {
+      try {
+        const response = await fetch('/musik/api/music/history');
+        const data = await response.json();
+        if (data.success) {
+          // Format duration for each music item
+          const formattedMusic = (data.music || []).map(music => {
+            if (music.duration && typeof music.duration === 'number') {
+              music.duration = this.formatTime(music.duration);
+            }
+            return music;
+          });
+          this.musicList = formattedMusic;
+        }
+      } catch (error) {
+        console.error('Error loading music history:', error);
+      }
+    },
+    
+    // Image Upload Functions
+    handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file');
+        return;
+      }
+      
+      // Validate file size (10MB max)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('Image size must be less than 10MB');
+        return;
+      }
+      
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        this.uploadedImage = e.target.result;
+        // Reset AI data for new image
+        this.aiDescription = '';
+        this.aiLyrics = '';
+        this.analyzeImage(file);
+      };
+      reader.readAsDataURL(file);
+    },
+    
+    removeImage() {
+      this.uploadedImage = null;
+      this.aiDescription = '';
+      this.aiLyrics = '';
+      this.isInstrumental = false;
+    },
+    
+    async analyzeImage(file) {
+      this.isAnalyzing = true;
+      this.analysisProgress = 0;
+      this.analysisStep = 'Memulai analisis...';
+      this.aiDescription = '';
+      this.aiLyrics = '';
+      
+      // Simulate progress updates with smoother increments
+      const progressInterval = setInterval(() => {
+        if (this.analysisProgress < 90) {
+          // Increment by 5-15% each time for smoother progress
+          const increment = Math.floor(Math.random() * 10) + 5;
+          this.analysisProgress = Math.min(this.analysisProgress + increment, 90);
+          
+          // Update step text based on progress
+          if (this.analysisProgress >= 20 && this.analysisProgress < 50) {
+            this.analysisStep = 'Menganalisis elemen visual...';
+          } else if (this.analysisProgress >= 50 && this.analysisProgress < 80) {
+            this.analysisStep = 'Membuat deskripsi detail...';
+          } else if (this.analysisProgress >= 80) {
+            this.analysisStep = 'Menulis lirik musik...';
+          }
+        }
+      }, 1000);
+      
+      try {
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        const response = await fetch('/musik/api/analyze-image', {
+          method: 'POST',
+          body: formData
+        });
+        
+        console.log('🔍 Response status:', response.status);
+        console.log('🔍 Response ok:', response.ok);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Debug: Log the received data
+        console.log('🔍 Frontend received data:', data);
+        console.log('🔍 Data success:', data.success);
+        console.log('🔍 Data description:', data.description);
+        console.log('🔍 Data lyrics length:', data.lyrics ? data.lyrics.length : 'null');
+        
+        // Complete progress
+        clearInterval(progressInterval);
+        this.analysisProgress = 100;
+        this.analysisStep = 'Analisis selesai!';
+        
+        if (data.success) {
+          // Always use the data from backend if success
+          const newDescription = data.description || '';
+          const newLyrics = data.lyrics || '';
+          
+          console.log('✅ Received AI data - Description:', newDescription.substring(0, 100));
+          console.log('✅ Received AI data - Lyrics:', newLyrics.substring(0, 100));
+          console.log('✅ Full description length:', newDescription.length);
+          console.log('✅ Full lyrics length:', newLyrics.length);
+          
+          // Force reactivity by using Alpine.js $nextTick and direct assignment
+          this.$nextTick(() => {
+            // Clear first to trigger reactivity
+            this.aiDescription = '';
+            this.aiLyrics = '';
+            
+            // Then set new values
+            setTimeout(() => {
+              this.aiDescription = newDescription;
+              this.aiLyrics = newLyrics;
+              
+              console.log('🔄 UI Updated - Description:', this.aiDescription.substring(0, 100));
+              console.log('🔄 UI Updated - Lyrics:', this.aiLyrics.substring(0, 100));
+              
+              // Force DOM update
+              this.$el.querySelectorAll('textarea').forEach(textarea => {
+                if (textarea.hasAttribute('x-model')) {
+                  textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+              });
+            }, 100);
+          });
+          
+          // Show success notification and enable manual generate
+          this.showNotification('🎵 Analisis AI selesai! Deskripsi dan lirik telah siap. Silakan klik tombol "GENERATE MUSIC" untuk membuat musik.', 'success');
+          
+          // Reset generating state to enable manual generate
+          this.isGenerating = false;
+          
+        } else {
+          // Fallback description in Indonesian
+          this.aiDescription = 'Komposisi kreatif ini menampilkan narasi visual yang menarik melalui pengaturan elemen yang penuh pertimbangan. Gambar menunjukkan prinsip artistik yang kuat dengan komposisi yang seimbang, palet warna yang menarik, dan subjek yang bermakna yang secara alami cocok untuk interpretasi musik, memberikan inspirasi yang kaya untuk pengembangan melodi dan ritme.';
+          this.aiLyrics = `[Verse 1]
+Gambar bercerita dalam lagu
+Setiap detail menyimpan melodi
+Dalam bingkai waktu yang tertangkap
+Musik mulai bermekaran
+
+[Chorus]
+Dari gambar ke inspirasi
+Musik mengalir seperti hujan lembut
+Setiap warna, setiap tekstur
+Berubah menjadi ritme, berubah menjadi refrain
+
+[Verse 2]
+Cahaya dan bayangan menari sebagai satu
+Menciptakan simfoni penglihatan
+Yang diam sekarang memiliki suara
+Dalam kegembiraan musik ini`;
+          this.showNotification('⚠️ Analisis parsial berhasil. Silakan klik tombol "GENERATE MUSIC" untuk membuat musik.', 'warning');
+          
+          // Reset generating state to enable manual generate
+          this.isGenerating = false;
+        }
+      } catch (error) {
+        console.error('❌ Error analyzing image:', error);
+        console.error('❌ Error details:', error.message);
+        console.error('❌ Error stack:', error.stack);
+        clearInterval(progressInterval);
+        this.analysisProgress = 100;
+        this.analysisStep = 'Error dalam analisis';
+        
+        // Fallback description in Indonesian
+        this.aiDescription = 'Gambar menangkap momen ekspresi artistik dengan elemen visual yang kaya yang diterjemahkan dengan indah ke dalam komposisi musik. Interaksi warna, tekstur, dan bentuk menciptakan ritme visual yang dinamis yang menginspirasi pola melodi dan progresi harmonik, sempurna untuk menghasilkan karya musik yang resonan secara emosional.';
+        this.aiLyrics = `[Verse 1]
+Warna menari dalam cahaya
+Bercerita tanpa kata
+Setiap bayangan dan setiap garis
+Berbicara tentang mimpi yang bisa didengar
+
+[Chorus]
+Dari piksel ke melodi
+Visi Anda menjadi hidup
+Dalam harmoni dan ritme
+Di mana seni dan musik bertemu
+
+[Verse 2]
+Bayangan berbisik melodi lembut
+Kecerahan bernyanyi dengan suara yang hidup
+Setiap momen tertangkap di sini
+Membuat hati yang sunyi bersukacita
+
+[Bridge]
+Apa yang mata bisa lihat
+Jiwa bisa rasakan
+Dalam simfoni visual ini
+Segalanya nyata
+
+[Outro]
+Gambar Anda berbicara dalam musik sekarang
+Lagu yang waktu tidak bisa hapus`;
+        this.showNotification('❌ Error analisis. Menggunakan data fallback. Silakan klik tombol "GENERATE MUSIC" untuk mencoba lagi.', 'error');
+        
+        // Reset generating state to enable manual generate
+        this.isGenerating = false;
+      } finally {
+        setTimeout(() => {
+        this.isAnalyzing = false;
+        }, 1000); // Show completion for 1 second
+      }
+    },
+    
+    // Generate Lyrics from Title Function
+    async generateLyricsFromTitle() {
+      if (!this.songTitleInput.trim()) {
+        this.showNotification('❌ Harap masukkan judul lagu terlebih dahulu', 'error');
+        return;
+      }
+      
+      if (this.songTitleInput.trim().length < 3) {
+        this.showNotification('❌ Judul lagu terlalu pendek. Minimal 3 karakter.', 'error');
+        return;
+      }
+      
+      this.isGeneratingLyrics = true;
+      this.showNotification('🎵 Memulai generate lirik dari judul...', 'info');
+      
+      try {
+        const payload = {
+          title: this.songTitleInput,
+          genre: this.selectedGenre || 'pop',
+          mood: this.selectedMood || 'happy',
+          persona: this.selectedPersona || 'female'
+        };
+
+        const response = await fetch('/musik/api/generate-lyrics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          // Set generated lyrics to textarea
+          this.lyricsInput = data.lyrics;
+          
+          // Auto-suggest genre, mood, and persona if not selected
+          if (!this.selectedGenre && data.suggested_genre) {
+            this.selectedGenre = data.suggested_genre;
+          }
+          if (!this.selectedMood && data.suggested_mood) {
+            this.selectedMood = data.suggested_mood;
+          }
+          if (!this.selectedPersona && data.suggested_persona) {
+            this.selectedPersona = data.suggested_persona;
+          }
+          
+          this.showNotification('✅ Lirik berhasil di-generate! Silakan review dan edit jika diperlukan.', 'success');
+        } else {
+          this.showNotification(`❌ ${data.message || 'Gagal generate lirik'}`, 'error');
+        }
+      } catch (error) {
+        console.error('Error generating lyrics:', error);
+        this.showNotification('❌ Error generate lirik. Silakan coba lagi.', 'error');
+      } finally {
+        this.isGeneratingLyrics = false;
+      }
+    },
+    
+    // Dynamic Generate Function
+    async generateMusic() {
+      if (this.activeTab === 'lyrics') {
+        await this.generateFromLyrics();
+      } else if (this.activeTab === 'image') {
+        await this.generateFromImage();
+      } else if (this.activeTab === 'prompt') {
+        await this.generateFromPrompt();
+      }
+    },
+    
+    async generateFromLyrics() {
+      if (!this.lyricsInput.trim()) {
+        this.showNotification('❌ Harap masukkan lirik lagu', 'error');
+        return;
+      }
+      
+      if (this.lyricsInput.trim().length < 10) {
+        this.showNotification('❌ Lirik terlalu pendek. Minimal 10 karakter.', 'error');
+        return;
+      }
+      
+      this.isGenerating = true;
+      this.showNotification('🎵 Memulai generate musik dari lirik...', 'info');
+      
+      try {
+        const payload = {
+          mode: 'lyrics',
+          lyrics: this.lyricsInput,
+          genre: this.selectedGenre || 'pop',
+          mood: this.selectedMood || 'happy',
+          persona: this.selectedPersona || 'male'
+        };
+
+        const response = await fetch('/musik/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          this.showNotification('✅ Request musik berhasil! Menunggu hasil dari Suno AI...', 'success');
+          
+          // If music is already completed (has audio_url), add to list immediately
+          if (data.music && data.music.audio_url) {
+            this.musicList.unshift(data.music);
+            this.showNotification('🎉 Musik berhasil di-generate! Silakan putar musik Anda.', 'success');
+          } else {
+            // Start polling for results
+            this.pollForMusicResults();
+          }
+        } else {
+          // Only show error if it's a real failure, not just waiting
+          if (data.message && !data.message.includes('waiting') && !data.message.includes('pending')) {
+            this.showNotification(`❌ ${data.message}`, 'error');
+          } else {
+            this.showNotification('⏳ Musik sedang diproses oleh Suno AI...', 'info');
+            // Start polling for results even on "waiting" status
+            this.pollForMusicResults();
+          }
+        }
+      } catch (error) {
+        console.error('Error generating music:', error);
+        // Only show error for network/technical issues, not for waiting
+        if (error.name === 'TypeError' || error.name === 'NetworkError') {
+          this.showNotification('❌ Error koneksi. Silakan coba lagi.', 'error');
+        } else {
+          this.showNotification('⏳ Musik sedang diproses...', 'info');
+          // Start polling anyway
+          this.pollForMusicResults();
+        }
+      } finally {
+        this.isGenerating = false;
+      }
+    },
+    
+    async generateFromImage() {
+      if (!this.uploadedImage) {
+        this.showNotification('❌ Harap upload gambar terlebih dahulu', 'error');
+        return;
+      }
+      
+      if (!this.aiDescription || !this.aiLyrics) {
+        this.showNotification('❌ Analisis gambar belum selesai atau data tidak lengkap', 'error');
+        return;
+      }
+      
+      // Validate that we have meaningful content
+      if (this.aiDescription.length < 20 || this.aiLyrics.length < 50) {
+        this.showNotification('❌ Data analisis terlalu pendek. Silakan upload gambar lagi.', 'error');
+        return;
+      }
+      
+      this.isGenerating = true;
+      this.showNotification('🎵 Memulai generate musik dari gambar...', 'info');
+      
+      try {
+        const payload = {
+          mode: 'image',
+          description: this.aiDescription,
+          lyrics: this.aiLyrics,
+          instrumental: this.isInstrumental
+        };
+        
+        const response = await fetch('/musik/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          this.showNotification('✅ Request musik berhasil! Menunggu hasil dari Suno AI...', 'success');
+          
+          // If music is already completed (has audio_url), add to list immediately
+          if (data.music && data.music.audio_url) {
+          this.musicList.unshift(data.music);
+            this.showNotification('🎉 Musik berhasil di-generate! Silakan putar musik Anda.', 'success');
+        } else {
+            // Start polling for results
+            this.pollForMusicResults();
+          }
+        } else {
+          // Only show error if it's a real failure, not just waiting
+          if (data.message && !data.message.includes('waiting') && !data.message.includes('pending')) {
+            this.showNotification(`❌ ${data.message}`, 'error');
+          } else {
+            this.showNotification('⏳ Musik sedang diproses oleh Suno AI...', 'info');
+            // Start polling for results even on "waiting" status
+            this.pollForMusicResults();
+          }
+        }
+      } catch (error) {
+        console.error('Error generating music:', error);
+        // Only show error for network/technical issues, not for waiting
+        if (error.name === 'TypeError' || error.name === 'NetworkError') {
+          this.showNotification('❌ Error koneksi. Silakan coba lagi.', 'error');
+        } else {
+          this.showNotification('⏳ Musik sedang diproses...', 'info');
+          // Start polling anyway
+          this.pollForMusicResults();
+        }
+      } finally {
+        this.isGenerating = false;
+      }
+    },
+    
+    async generateFromPrompt() {
+      if (!this.promptInput.trim()) {
+        this.showNotification('❌ Harap masukkan prompt musik', 'error');
+        return;
+      }
+      
+      if (this.promptInput.trim().length < 5) {
+        this.showNotification('❌ Prompt terlalu pendek. Minimal 5 karakter.', 'error');
+        return;
+      }
+      
+      if (this.promptInput.trim().length > 400) {
+        this.showNotification('❌ Prompt terlalu panjang. Maksimal 400 karakter.', 'error');
+        return;
+      }
+      
+      this.isGenerating = true;
+      this.showNotification('🎵 Memulai generate musik dari prompt sederhana...', 'info');
+      
+      try {
+        const payload = {
+          mode: 'prompt',
+          prompt: this.promptInput,
+          title: this.customTitleInput.trim() || null, // Send custom title if provided
+          model: this.selectedModel || 'suno-v3.5',
+          duration: this.selectedDuration || '60'
+        };
+        
+        const response = await fetch('/musik/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        
+        const data = await response.json();
+        if (data.success) {
+          this.showNotification('✅ Request musik berhasil! Menunggu hasil dari Suno AI...', 'success');
+          
+          // If music is already completed (has audio_url), add to list immediately
+          if (data.music && data.music.audio_url) {
+            this.musicList.unshift(data.music);
+            this.showNotification('🎉 Musik berhasil di-generate! Silakan putar musik Anda.', 'success');
+        } else {
+            // Start polling for results
+            this.pollForMusicResults();
+          }
+                } else {
+          // Only show error if it's a real failure, not just waiting
+          if (data.message && !data.message.includes('waiting') && !data.message.includes('pending')) {
+            this.showNotification(`❌ ${data.message}`, 'error');
+          } else {
+            this.showNotification('⏳ Musik sedang diproses oleh Suno AI...', 'info');
+            // Start polling for results even on "waiting" status
+            this.pollForMusicResults();
+          }
+        }
+      } catch (error) {
+        console.error('Error generating music:', error);
+        // Only show error for network/technical issues, not for waiting
+        if (error.name === 'TypeError' || error.name === 'NetworkError') {
+          this.showNotification('❌ Error koneksi. Silakan coba lagi.', 'error');
+        } else {
+          this.showNotification('⏳ Musik sedang diproses...', 'info');
+          // Start polling anyway
+          this.pollForMusicResults();
+        }
+      } finally {
+        this.isGenerating = false;
+      }
+    },
+    
+    async pollForMusicResults() {
+      const maxPolls = 60; // 5 minutes max
+      let pollCount = 0;
+      let lastMusicCount = this.musicList.length;
+      let hasShownSuccess = false; // Prevent multiple success notifications
+      
+      const poll = async () => {
+        try {
+          const response = await fetch('/musik/api/music/history');
+          const data = await response.json();
+          
+          if (data.success && data.music && data.music.length > 0) {
+            // Format duration for each music item
+            const formattedMusic = data.music.map(music => {
+              if (music.duration && typeof music.duration === 'number') {
+                music.duration = this.formatTime(music.duration);
+              }
+              return music;
+            });
+            // Update music list
+            this.musicList = formattedMusic;
+            
+            // Check if we have new music with audio_url (any mode)
+            const latestMusic = data.music[0];
+            
+            // Check for newly completed music - either by count increase or by finding completed music that wasn't there before
+            let foundNewMusic = false;
+            
+            if (latestMusic && latestMusic.audio_url) {
+              // Check if this is actually new music by comparing with what we had before
+              const existingMusic = this.musicList.find(m => m.id === latestMusic.id);
+              if (!existingMusic || !existingMusic.audio_url) {
+                foundNewMusic = true;
+              }
+            }
+            
+            // Alternative check: if music count increased and latest has audio_url
+            if (latestMusic && latestMusic.audio_url && data.music.length > lastMusicCount) {
+              foundNewMusic = true;
+            }
+            
+            // Show success notification for new completed music
+            if (foundNewMusic && !hasShownSuccess) {
+              this.showNotification('🎉 Musik berhasil di-generate! Silakan putar musik Anda.', 'success');
+              hasShownSuccess = true;
+              return;
+            }
+            
+            // Fallback: Check if any music has audio_url (completed) - for safety
+            const completedMusic = data.music.find(music => music.audio_url);
+            if (completedMusic && !hasShownSuccess && this.musicList.length === 0) {
+              // Only show this if we have no music in the list yet (first load)
+              this.showNotification('🎉 Musik berhasil di-generate! Silakan putar musik Anda.', 'success');
+              hasShownSuccess = true;
+              return;
+            }
+          }
+          
+          pollCount++;
+          if (pollCount < maxPolls) {
+            // Continue polling
+            setTimeout(poll, 5000); // Poll every 5 seconds
+            if (pollCount % 6 === 0 && !hasShownSuccess) { // Show notification every 30 seconds
+              this.showNotification(`⏳ Menunggu hasil musik dari Suno AI... (${Math.floor(pollCount/6)} menit)`, 'info');
+            }
+          } else {
+            // Timeout - only show if no success notification was shown
+            if (!hasShownSuccess) {
+              this.showNotification('⏰ Timeout menunggu hasil musik. Cek halaman history untuk hasil.', 'warning');
+            }
+          }
+        } catch (error) {
+          console.error('Error polling music results:', error);
+          pollCount++;
+          if (pollCount < maxPolls) {
+            setTimeout(poll, 5000);
+          } else if (!hasShownSuccess) {
+            this.showNotification('❌ Error polling hasil musik.', 'error');
+          }
+        }
+      };
+      
+      // Start polling
+      setTimeout(poll, 5000); // Wait 5 seconds before first poll
+    },
+
+    handleImageError(event) {
+      // Set fallback image if the original fails to load
+      event.target.style.display = 'none';
+      const fallback = event.target.parentElement.querySelector('.music-cover-fallback');
+      if (fallback) {
+        fallback.style.display = 'flex';
+      }
+    },
+    
+    showNotification(message, type = 'info') {
+      // Clear existing error notifications if showing success
+      if (type === 'success') {
+        this.clearErrorNotifications();
+      }
+      
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = `notification notification-${type}`;
+      notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : type === 'warning' ? '#f59e0b' : '#3b82f6'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 9999;
+        max-width: 300px;
+        font-size: 14px;
+        animation: slideIn 0.3s ease-out;
+      `;
+      
+      notification.textContent = message;
+      
+      // Add to body
+      document.body.appendChild(notification);
+      
+      // Auto remove after 5 seconds (shorter for errors)
+      const autoRemoveTime = type === 'error' ? 3000 : 5000;
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.style.animation = 'slideOut 0.3s ease-in';
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.parentNode.removeChild(notification);
+            }
+          }, 300);
+        }
+      }, autoRemoveTime);
+      
+      // Add click to dismiss
+      notification.addEventListener('click', () => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      });
+    },
+    
+    clearErrorNotifications() {
+      // Remove all existing error notifications
+      const errorNotifications = document.querySelectorAll('.notification-error');
+      errorNotifications.forEach(notification => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      });
+    },
+    
+    async refreshMusicList() {
+      try {
+        const response = await fetch('/musik/api/music/history');
+        const data = await response.json();
+        
+        if (data.success && data.music) {
+          // Format duration for each music item
+          const formattedMusic = data.music.map(music => {
+            if (music.duration && typeof music.duration === 'number') {
+              music.duration = this.formatTime(music.duration);
+            }
+            return music;
+          });
+          this.musicList = formattedMusic;
+        }
+      } catch (error) {
+        console.error('Error refreshing music list:', error);
+      }
+    },
+    
+    // Universal Download Function for All Devices
+    async universalDownload(music) {
+      if (!music.audio_url || !music.id) {
+        this.showNotification('❌ File audio tidak tersedia', 'error');
+        return;
+      }
+
+      const fileName = `${music.title || 'music'}.mp3`;
+      
+      // Detect device type
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      
+      console.log('📱 Device detected:', { isMobile, isIOS, isAndroid });
+      
+      try {
+        // Use backend download endpoint for better compatibility
+        const downloadUrl = `/musik/api/music/download/${music.id}`;
+        
+        if (isMobile) {
+          // Mobile devices
+          if (isIOS) {
+            // iOS Safari - Use iframe method (most reliable)
+            this.showNotification('📱 Memulai download untuk iOS...', 'info');
+            
+            // Create hidden iframe for iOS download
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = '0';
+            iframe.src = downloadUrl;
+            document.body.appendChild(iframe);
+            
+            // Remove iframe after 3 seconds
+            setTimeout(() => {
+              if (iframe.parentNode) {
+                document.body.removeChild(iframe);
+              }
+            }, 3000);
+            
+            this.showNotification('✅ Download dimulai di iOS!', 'success');
+            
+          } else if (isAndroid) {
+            // Android - Use iframe method (most reliable)
+            this.showNotification('📱 Memulai download untuk Android...', 'info');
+            
+            // Create hidden iframe for Android download
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = '0';
+            iframe.src = downloadUrl;
+            document.body.appendChild(iframe);
+            
+            // Remove iframe after 3 seconds
+            setTimeout(() => {
+              if (iframe.parentNode) {
+                document.body.removeChild(iframe);
+              }
+            }, 3000);
+            
+            this.showNotification('✅ Download dimulai di Android!', 'success');
+            
+        } else {
+            // Other mobile browsers
+            this.showNotification('📱 Memulai download...', 'info');
+            
+            // Use iframe method for other mobile browsers
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.style.width = '0';
+            iframe.style.height = '0';
+            iframe.style.border = '0';
+            iframe.src = downloadUrl;
+            document.body.appendChild(iframe);
+            
+            setTimeout(() => {
+              if (iframe.parentNode) {
+                document.body.removeChild(iframe);
+              }
+            }, 3000);
+            
+            this.showNotification('✅ Download dimulai!', 'success');
+          }
+          
+        } else {
+          // Desktop browsers - Fast download method
+          this.showNotification('💻 Memulai download...', 'info');
+          
+          try {
+            // Method 1: Direct download (fastest)
+            const downloadLink = document.createElement('a');
+            downloadLink.href = downloadUrl;
+            downloadLink.download = fileName;
+            downloadLink.style.display = 'none';
+            downloadLink.style.position = 'absolute';
+            downloadLink.style.left = '-9999px';
+            
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            
+            this.showNotification('✅ Download berhasil dimulai!', 'success');
+          } catch (directError) {
+            // Method 2: Blob download (fallback)
+            console.log('Direct download failed, trying blob...', directError);
+            const response = await fetch(downloadUrl);
+            if (!response.ok) throw new Error('Download failed');
+            
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            
+            const downloadLink = document.createElement('a');
+            downloadLink.href = blobUrl;
+            downloadLink.download = fileName;
+            downloadLink.style.display = 'none';
+            downloadLink.style.position = 'absolute';
+            downloadLink.style.left = '-9999px';
+            
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            
+            // Clean up blob URL
+            setTimeout(() => {
+              window.URL.revokeObjectURL(blobUrl);
+            }, 1000);
+            
+            this.showNotification('✅ Download berhasil dimulai (metode blob)!', 'success');
+          }
+        }
+        
+      } catch (error) {
+        console.error('Download error:', error);
+        
+        // Final fallback: iframe method
+        try {
+          this.showNotification('📥 Mencoba metode download terakhir...', 'info');
+          
+          const iframe = document.createElement('iframe');
+          iframe.style.display = 'none';
+          iframe.style.width = '0';
+          iframe.style.height = '0';
+          iframe.style.border = '0';
+          iframe.src = downloadUrl;
+          document.body.appendChild(iframe);
+          
+          setTimeout(() => {
+            if (iframe.parentNode) {
+              document.body.removeChild(iframe);
+            }
+          }, 3000);
+          
+          this.showNotification('📥 Download dimulai (metode iframe)', 'warning');
+        } catch (fallbackError) {
+          console.error('All download methods failed:', fallbackError);
+          this.showNotification('❌ Gagal download, coba lagi', 'error');
+        }
+      }
+    },
+
+    // Initialize Audio Metadata
+    initAudio(music) {
+      const audioElement = this.getAudioElement(music);
+      if (!audioElement) {
+        console.warn(`🎵 Audio element not found for music ID: ${music.id}`);
+        return;
+      }
+
+      // Initialize music properties
+      if (!music.volume) music.volume = 100;
+      if (!music.isMuted) music.isMuted = false;
+      if (!music.showVolumeSlider) music.showVolumeSlider = false;
+      if (!music.progress) music.progress = 0;
+      if (!music.currentTime) music.currentTime = '0:00';
+      if (!music.duration) music.duration = '0:00';
+      
+      // Set initial volume
+      audioElement.volume = music.volume / 100;
+      audioElement.muted = music.isMuted;
+      
+      // Get duration when metadata loads - with multiple fallbacks
+      const setDuration = () => {
+        if (audioElement.duration && !isNaN(audioElement.duration) && audioElement.duration > 0) {
+          const formattedDuration = this.formatTime(audioElement.duration);
+          if (music.duration !== formattedDuration) {
+            music.duration = formattedDuration;
+            console.log(`🎵 Audio ${music.title} duration set: ${music.duration}`);
+          }
+        } else {
+          // Retry after a short delay if duration is not available yet
+          setTimeout(() => {
+            if (audioElement.duration && !isNaN(audioElement.duration) && audioElement.duration > 0) {
+              music.duration = this.formatTime(audioElement.duration);
+              console.log(`🎵 Audio ${music.title} duration set (delayed): ${music.duration}`);
+            }
+          }, 100);
+        }
+      };
+      
+      // Call setDuration immediately and also set up additional listeners
+      setDuration();
+      
+      // Additional event listeners to ensure duration is captured
+      if (!audioElement.hasAttribute('data-duration-listeners-added')) {
+        audioElement.addEventListener('loadedmetadata', setDuration);
+        audioElement.addEventListener('loadeddata', setDuration);
+        audioElement.addEventListener('canplay', setDuration);
+        audioElement.addEventListener('durationchange', setDuration);
+        audioElement.setAttribute('data-duration-listeners-added', 'true');
+      }
+    },
+
+    // Helper function to get audio element reliably
+    getAudioElement(music) {
+      // Try multiple methods to get the audio element
+      let audioElement = null;
+      
+      // Method 1: Use $refs
+      if (this.$refs && this.$refs[`audio-${music.id}`]) {
+        audioElement = this.$refs[`audio-${music.id}`];
+      }
+      
+      // Method 2: Use getElementById
+      if (!audioElement) {
+        audioElement = document.getElementById(`audio-${music.id}`);
+      }
+      
+      // Method 3: Use querySelector with ref attribute
+      if (!audioElement) {
+        audioElement = document.querySelector(`audio[ref="audio-${music.id}"]`);
+      }
+      
+      // Method 4: Find by src URL
+      if (!audioElement && music.audio_url) {
+        const audioElements = document.querySelectorAll('audio');
+        audioElement = Array.from(audioElements).find(audio => audio.src === music.audio_url);
+      }
+      
+      return audioElement;
+    },
+
+    // Update time during playback
+    updateTime(music) {
+      const audioElement = this.getAudioElement(music);
+      if (!audioElement) {
+        console.warn(`🎵 Audio element not found for music ID: ${music.id}`);
+        return;
+      }
+
+      // Always update time and progress, regardless of playing state
+      // This ensures the progress bar updates even if isPlaying state is inconsistent
+      if (audioElement.duration && !isNaN(audioElement.duration) && audioElement.currentTime >= 0) {
+        const currentTime = audioElement.currentTime;
+        const duration = audioElement.duration;
+        
+        // Calculate progress percentage
+        music.progress = Math.min((currentTime / duration) * 100, 100);
+        music.currentTime = this.formatTime(currentTime);
+        
+        // Update duration if not set correctly
+        if (!music.duration || music.duration === '0:00') {
+          music.duration = this.formatTime(duration);
+        }
+        
+        // Debug logging for troubleshooting
+        if (music.isPlaying && currentTime > 0) {
+          console.log(`🎵 Time update: ${music.currentTime} / ${music.duration} (${music.progress.toFixed(1)}%)`);
+        }
+      }
+    },
+
+    // Handle audio end
+    onAudioEnd(music) {
+      music.isPlaying = false;
+      music.progress = 0;
+      music.currentTime = '0:00';
+      console.log('🎵 Music ended:', music.title);
+    },
+
+    // Fixed Play/Pause Toggle
+    async togglePlay(music) {
+      console.log('🎵 togglePlay called for music:', music.id, music.title);
+      
+      const audioElement = this.getAudioElement(music);
+      if (!audioElement) {
+        console.error('❌ Audio element not found for music:', music.id);
+        console.log('Available refs:', Object.keys(this.$refs || {}));
+        this.showNotification('❌ Error: Audio element tidak ditemukan', 'error');
+        return;
+      }
+      
+      console.log('✅ Found audio element:', audioElement);
+
+      try {
+        if (music.isPlaying) {
+          // Pause music
+          audioElement.pause();
+          music.isPlaying = false;
+          console.log('⏸️ Music paused');
+        } else {
+          // Stop all other audio first
+          this.musicList.forEach(m => {
+            if (m.id !== music.id && m.isPlaying) {
+              const otherAudio = this.getAudioElement(m);
+              if (otherAudio) {
+                otherAudio.pause();
+                m.isPlaying = false;
+                m.progress = 0;
+                m.currentTime = '0:00';
+              }
+            }
+          });
+
+          // Ensure audio is ready
+          if (audioElement.readyState === 0) {
+            audioElement.load();
+            await new Promise((resolve) => {
+              audioElement.addEventListener('loadeddata', resolve, { once: true });
+            });
+          }
+
+          // Play audio
+          await audioElement.play();
+          music.isPlaying = true;
+          
+          // Initialize duration if not set
+          if (audioElement.duration && !isNaN(audioElement.duration)) {
+            music.duration = this.formatTime(audioElement.duration);
+            console.log('🕐 Duration set:', music.duration);
+          }
+          
+          console.log('▶️ Music playing');
+        }
+      } catch (error) {
+        console.error('Audio playback error:', error);
+        
+        if (error.name === 'NotAllowedError') {
+          console.log('User interaction required for audio playback');
+        } else {
+          console.error('Playback failed:', error.message);
+        }
+        
+        music.isPlaying = false;
+      }
+    },
+
+    // Enhanced Mute/Unmute with Volume Icon
+    toggleMute(music) {
+      const audioElement = this.getAudioElement(music);
+      if (!audioElement) {
+        console.warn('🔊 Toggle mute failed: audio element not found');
+        return;
+      }
+
+      music.isMuted = !music.isMuted;
+      audioElement.muted = music.isMuted;
+      
+      const status = music.isMuted ? 'muted' : 'unmuted';
+      console.log(`🔊 Audio ${status}:`, music.title);
+      this.showNotification(`🔊 Audio ${status}`, 'info');
+    },
+
+    // Get Volume Icon Based on State
+    getVolumeIcon(music) {
+      if (music.isMuted || (music.volume && music.volume === 0)) {
+        return 'bi bi-volume-mute-fill';
+      } else if (music.volume && music.volume < 50) {
+        return 'bi bi-volume-down-fill';
+      } else {
+        return 'bi bi-volume-up-fill';
+      }
+    },
+
+    // Set Volume Level
+    setVolume(music, volume) {
+      const audioElement = this.getAudioElement(music);
+      if (!audioElement) {
+        console.warn('🔊 Set volume failed: audio element not found');
+        return;
+      }
+
+      music.volume = parseInt(volume);
+      audioElement.volume = music.volume / 100;
+      
+      // Unmute if volume is set above 0
+      if (music.volume > 0 && music.isMuted) {
+        music.isMuted = false;
+        audioElement.muted = false;
+      }
+      
+      console.log(`🔊 Volume set to: ${music.volume}%`);
+    },
+
+    // Toggle Volume Slider
+    toggleVolumeSlider(music) {
+      music.showVolumeSlider = !music.showVolumeSlider;
+      
+      // Auto-hide after 3 seconds
+      if (music.showVolumeSlider) {
+        setTimeout(() => {
+          music.showVolumeSlider = false;
+        }, 3000);
+      }
+    },
+
+    // Seek Forward 10 seconds
+    seekForward(music) {
+      const audioElement = this.getAudioElement(music);
+      if (!audioElement || !audioElement.duration) {
+        console.warn('⏭️ Seek forward failed: audio element or duration not available');
+        this.showNotification('❌ Tidak dapat seek forward', 'error');
+        return;
+      }
+
+      const newTime = Math.min(audioElement.currentTime + 10, audioElement.duration);
+      audioElement.currentTime = newTime;
+      music.progress = (newTime / audioElement.duration) * 100;
+      music.currentTime = this.formatTime(newTime);
+      
+      console.log('⏭️ Seek forward to:', this.formatTime(newTime));
+      this.showNotification(`⏭️ Forward 10s: ${this.formatTime(newTime)}`, 'info');
+    },
+
+    // Seek Backward 10 seconds
+    seekBackward(music) {
+      const audioElement = this.getAudioElement(music);
+      if (!audioElement || !audioElement.duration) {
+        console.warn('⏮️ Seek backward failed: audio element or duration not available');
+        this.showNotification('❌ Tidak dapat seek backward', 'error');
+        return;
+      }
+
+      const newTime = Math.max(audioElement.currentTime - 10, 0);
+      audioElement.currentTime = newTime;
+      music.progress = (newTime / audioElement.duration) * 100;
+      music.currentTime = this.formatTime(newTime);
+      
+      console.log('⏮️ Seek backward to:', this.formatTime(newTime));
+      this.showNotification(`⏮️ Backward 10s: ${this.formatTime(newTime)}`, 'info');
+    },
+
+    // Seek to Position (Click on Progress Bar)
+    seekTo(music, event) {
+      const audioElement = this.getAudioElement(music);
+      if (!audioElement || !audioElement.duration) {
+        console.warn('🎯 Seek to failed: audio element or duration not available');
+        this.showNotification('❌ Tidak dapat seek ke posisi', 'error');
+        return;
+      }
+
+      const progressBar = event.currentTarget;
+      const rect = progressBar.getBoundingClientRect();
+      const clickX = event.clientX - rect.left;
+      const percentage = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
+      
+      const newTime = (percentage / 100) * audioElement.duration;
+      audioElement.currentTime = newTime;
+      music.progress = percentage;
+      music.currentTime = this.formatTime(newTime);
+      
+      console.log('🎯 Seek to:', this.formatTime(newTime), `(${percentage.toFixed(1)}%)`);
+      this.showNotification(`🎯 Seek to: ${this.formatTime(newTime)}`, 'info');
+    },
+
+    // Start Dragging Progress Thumb
+    startDrag(music, event) {
+      const audioElement = this.getAudioElement(music);
+      if (!audioElement || !audioElement.duration) return;
+
+      event.preventDefault();
+      
+      const progressBar = event.currentTarget.parentElement;
+      const rect = progressBar.getBoundingClientRect();
+      
+      const handleDrag = (e) => {
+        const dragX = e.clientX - rect.left;
+        const percentage = Math.max(0, Math.min(100, (dragX / rect.width) * 100));
+        
+        const newTime = (percentage / 100) * audioElement.duration;
+        audioElement.currentTime = newTime;
+        music.progress = percentage;
+        music.currentTime = this.formatTime(newTime);
+      };
+      
+      const stopDrag = () => {
+        document.removeEventListener('mousemove', handleDrag);
+        document.removeEventListener('mouseup', stopDrag);
+      };
+      
+      document.addEventListener('mousemove', handleDrag);
+      document.addEventListener('mouseup', stopDrag);
+    },
+
+
+
+    formatTime(seconds) {
+      if (isNaN(seconds) || seconds === null || seconds === undefined) return '0:00';
+      
+      const totalSeconds = Math.floor(seconds);
+      const mins = Math.floor(totalSeconds / 60);
+      const secs = totalSeconds % 60;
+      
+      // Format as MM:SS (menit:detik)
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    },
+
+    // Enhanced Play Music Function
+    playMusic(audioUrl) {
+      if (audioUrl) {
+        const audio = new Audio(audioUrl);
+        
+        // Safari/iOS audio compatibility
+        if (this.isSafari || this.isIOS) {
+          // Safari requires user interaction for audio playback
+          audio.addEventListener('canplaythrough', () => {
+            audio.play().catch(error => {
+              console.log('Audio playback failed:', error);
+              this.showNotification('❌ Gagal memutar audio. Coba lagi.', 'error');
+            });
+          });
+        } else {
+          audio.play().catch(error => {
+            console.log('Audio playback failed:', error);
+            this.showNotification('❌ Gagal memutar audio. Coba lagi.', 'error');
+          });
+        }
+        
+        this.showNotification('🎵 Memutar musik...', 'success');
+      }
+    }
+  };
+}
+</script>
+{% endblock %}

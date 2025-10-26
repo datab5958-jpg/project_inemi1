@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="id" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 100)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kebijakan Privasi - Inemi</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            min-height: 100vh;
+            background: #181825 !important;
+            color: #e5e7eb;
+            font-family: 'Space Grotesk', 'Inter', Arial, sans-serif;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: #f1f5f9;
+            font-family: 'Space Grotesk', 'Inter', Arial, sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+        }
+        
+        .hero-title {
+            font-size: 2.8rem;
+            background: linear-gradient(to right, #ec4899, #a855f7, #3b82f6);
+            color: transparent;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            text-shadow: none;
+            margin-bottom: 0.7rem;
+        }
+        
+        @media (min-width: 768px) {
+            .hero-title {
+                font-size: 3.5rem;
+            }
+        }
+        
+        .hero-desc {
+            color: #fff;
+            font-size: 1.15rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-family: 'Inter', Arial, sans-serif;
+        }
+        
+        /* Navbar */
+        .navbar-inemi {
+            background: linear-gradient(90deg, #0a0f1c 60%, #1e293b 100%);
+            backdrop-filter: blur(6px);
+            box-shadow: 0 2px 16px 0 #a855f733;
+            padding: 0.7rem 0;
+        }
+        
+        .navbar-brand {
+            font-family: 'Space Grotesk', 'Inter', Arial, sans-serif;
+            font-size: 2rem;
+            color: #f1f5f9 !important;
+            letter-spacing: 0.04em;
+            font-weight: 700;
+        }
+        
+        .nav-link-custom {
+            color: #f1f5f9 !important;
+            font-weight: 600;
+            margin-left: 1rem;
+            border-radius: 999px;
+            padding: 0.55rem 1.5rem;
+            background: none;
+            border: 1px solid transparent;
+            font-size: 1.08rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link-custom:hover, .nav-link-custom:focus {
+            color: #a855f7 !important;
+            border: 1px solid #a855f7;
+            box-shadow: 0 0 10px #a855f7;
+            background: rgba(168,85,247,0.08);
+            transform: scale(1.05);
+        }
+        
+        .nav-link-custom.active, .nav-link-custom[aria-current="page"] {
+            color: #a855f7 !important;
+        }
+        
+        @media (max-width: 600px) {
+            .navbar-brand { font-size: 1.3rem; }
+            .nav-link-custom { font-size: 0.70rem; padding: 0.4rem 1rem; margin-left: 0.5rem; }
+        }
+        
+        /* Content Container */
+        .content-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.6s cubic-bezier(.4,0,.2,1);
+        }
+        
+        .content-container.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Section Cards */
+        .section-card {
+            background: #1e293b;
+            border-radius: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 24px 0 #a855f733 inset, 0 2px 24px 0 #111827;
+            border: 1px solid #a855f7;
+            padding: 2rem;
+            transition: all 0.35s cubic-bezier(.4,0,.2,1);
+            opacity: 0;
+            transform: translateY(40px) scale(0.98);
+        }
+        
+        .section-card.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+        
+        .section-card:hover {
+            box-shadow: 0 0 12px #a855f7;
+            border: 1px solid #3b82f6;
+            transform: scale(1.02) translateY(-2px);
+        }
+        
+        .section-title {
+            font-family: 'Space Grotesk', 'Inter', Arial, sans-serif;
+            color: #f1f5f9;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+        
+        .section-title i {
+            color: #a855f7;
+            font-size: 1.3rem;
+        }
+        
+        .section-subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .section-content {
+            color: #e5e7eb;
+            font-size: 1rem;
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+        
+        .section-list {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+        
+        .section-list li {
+            color: #e5e7eb;
+            margin-bottom: 0.8rem;
+            padding-left: 1.5rem;
+            position: relative;
+            line-height: 1.6;
+        }
+        
+        .section-list li::before {
+            content: "•";
+            color: #a855f7;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+            font-size: 1.2rem;
+        }
+        
+        .section-list li strong {
+            color: #f1f5f9;
+            font-weight: 600;
+        }
+        
+        /* Highlight Box */
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(168,85,247,0.1), rgba(59,130,246,0.1));
+            border: 1px solid #a855f7;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .highlight-box::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(to right, #ec4899, #a855f7, #3b82f6);
+        }
+        
+        .highlight-box p {
+            color: #f1f5f9;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        /* Contact Section */
+        .contact-section {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid #3b82f6;
+            border-radius: 2rem;
+            padding: 2rem;
+            text-align: center;
+            margin-top: 3rem;
+        }
+        
+        .contact-title {
+            color: #3b82f6;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .contact-info {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+        
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #e5e7eb;
+            font-size: 1rem;
+        }
+        
+        .contact-item i {
+            color: #a855f7;
+            font-size: 1.2rem;
+        }
+        
+        /* Back Button */
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(to right, #ec4899, #a855f7, #3b82f6);
+            color: white !important;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+            border: none;
+            box-shadow: 0 4px 15px rgba(168,85,247,0.3);
+        }
+        
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(168,85,247,0.4);
+            color: white !important;
+        }
+        
+        /* Last Updated */
+        .last-updated {
+            text-align: center;
+            color: #94a3b8;
+            font-style: italic;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #374151;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content-container {
+                padding: 1rem;
+            }
+            
+            .section-card {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .section-title {
+                font-size: 1.3rem;
+            }
+            
+            .contact-info {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .hero-title {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-inemi">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-magic me-2"></i>Inemi
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link-custom" href="/">
+                    <i class="fas fa-home me-1"></i>Dasbor
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="content-container" :class="{ 'show': loaded }">
+        <a href="/" class="back-button">
+            <i class="fas fa-arrow-left"></i>
+            Kembali ke Dasbor
+        </a>
+        
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="hero-title">Kebijakan Privasi</h1>
+            <p class="hero-desc">Inemi - Platform AI Image Generation</p>
+        </div>
+        
+        <!-- Introduction -->
+        <div class="section-card" x-data x-init="setTimeout(() => $el.classList.add('show'), 200)">
+            <h2 class="section-title">
+                <i class="fas fa-shield-alt"></i>
+                1. Pendahuluan
+            </h2>
+            <p class="section-content">
+                Selamat datang di Inemi. Kami berkomitmen untuk melindungi privasi dan data pribadi Anda. 
+                Kebijakan Privasi ini menjelaskan bagaimana kami mengumpulkan, menggunakan, dan melindungi 
+                informasi yang Anda berikan kepada kami saat menggunakan layanan AI image generation kami.
+            </p>
+        </div>
+        
+        <!-- Information Collection -->
+        <div class="section-card" x-data x-init="setTimeout(() => $el.classList.add('show'), 400)">
+            <h2 class="section-title">
+                <i class="fas fa-database"></i>
+                2. Informasi yang Kami Kumpulkan
+            </h2>
+            
+            <h3 class="section-subtitle">2.1 Informasi yang Anda Berikan</h3>
+            <ul class="section-list">
+                <li><strong>Gambar yang Diupload:</strong> Gambar yang Anda upload untuk diproses melalui fitur Generate Image, Fusigaya, dan Face Swap</li>
+                <li><strong>Data Akun:</strong> Informasi yang Anda berikan saat mendaftar atau menggunakan layanan kami</li>
+                <li><strong>Riwayat Penggunaan:</strong> Data tentang penggunaan fitur-fitur AI kami</li>
+            </ul>
+            
+            <h3 class="section-subtitle">2.2 Informasi yang Dikumpulkan Otomatis</h3>
+            <ul class="section-list">
+                <li><strong>Log Teknis:</strong> Alamat IP, jenis browser, sistem operasi, dan informasi teknis lainnya</li>
+                <li><strong>Data Penggunaan:</strong> Waktu akses, durasi penggunaan, dan fitur yang digunakan</li>
+                <li><strong>Cookies:</strong> Data kecil yang disimpan di perangkat Anda untuk meningkatkan pengalaman pengguna</li>
+            </ul>
+        </div>
+        
+        <!-- Information Usage -->
+        <div class="section-card" x-data x-init="setTimeout(() => $el.classList.add('show'), 600)">
+            <h2 class="section-title">
+                <i class="fas fa-cogs"></i>
+                3. Bagaimana Kami Menggunakan Informasi
+            </h2>
+            <ul class="section-list">
+                <li><strong>Pemrosesan AI:</strong> Menggunakan gambar Anda untuk menghasilkan hasil AI sesuai permintaan</li>
+                <li><strong>Peningkatan Layanan:</strong> Meningkatkan kualitas dan performa fitur AI kami</li>
+                <li><strong>Keamanan:</strong> Melindungi layanan dari penyalahgunaan dan aktivitas berbahaya</li>
+                <li><strong>Dukungan Pelanggan:</strong> Memberikan bantuan teknis dan dukungan pengguna</li>
+                <li><strong>Analisis:</strong> Menganalisis penggunaan untuk meningkatkan pengalaman pengguna</li>
+            </ul>
+        </div>
+        
+        <!-- Information Sharing -->
+        <div class="section-card" x-data x-init="setTimeout(() => $el.classList.add('show'), 800)">
+            <h2 class="section-title">
+                <i class="fas fa-share-alt"></i>
+                4. Berbagi Informasi
+            </h2>
+            <p class="section-content">
+                Kami tidak menjual, memperdagangkan, atau mentransfer data pribadi Anda kepada pihak ketiga 
+                tanpa persetujuan Anda, kecuali dalam situasi berikut:
+            </p>
+            <ul class="section-list">
+                <li><strong>Penyedia AI:</strong> Berbagi gambar dengan WavespeedAI untuk pemrosesan AI</li>
+                <li><strong>Kepatuhan Hukum:</strong> Jika diperlukan oleh hukum atau perintah pengadilan</li>
+                <li><strong>Keamanan:</strong> Untuk melindungi hak, properti, atau keamanan kami dan pengguna lain</li>
+            </ul>
+        </div>
+        
+        <!-- Data Security -->
+        <div class="section-card" x-data x-init="setTimeout(() => $el.classList.add('show'), 1000)">
+            <h2 class="section-title">
+                <i class="fas fa-lock"></i>
+                5. Keamanan Data
+            </h2>
+            <p class="section-content">
+                Kami menerapkan langkah-langkah keamanan teknis dan organisasi yang sesuai untuk melindungi data Anda:
+            </p>
+            <ul class="section-list">
+                <li>Enkripsi data dalam transit dan penyimpanan</li>
+                <li>Kontrol akses yang ketat</li>
+                <li>Pemantauan keamanan berkelanjutan</li>
+                <li>Pelatihan keamanan untuk tim kami</li>
+            </ul>
+        </div>
+        
+        <!-- Data Storage -->
+        <div class="section-card" x-data x-init="setTimeout(() => $el.classList.add('show'), 1200)">
+            <h2 class="section-title">
+                <i class="fas fa-hdd"></i>
+                6. Penyimpanan Data
+            </h2>
+            <p class="section-content">
+                Data Anda disimpan selama diperlukan untuk menyediakan layanan kami. Gambar yang diupload 
+                akan dihapus secara otomatis setelah pemrosesan selesai, kecuali Anda secara eksplisit 
+                memilih untuk menyimpannya.
+            </p>
+        </div>
+        
+        <!-- User Rights -->
+        <div class="section-card" x-data x-init="setTimeout(() => $el.classList.add('show'), 1400)">
+            <h2 class="section-title">
+                <i class="fas fa-user-shield"></i>
+                7. Hak Pengguna
+            </h2>
+            <p class="section-content">Anda memiliki hak untuk:</p>
+            <ul class="section-list">
+                <li><strong>Akses:</strong> Meminta salinan data pribadi Anda</li>
+                <li><strong>Perbaikan:</strong> Meminta perbaikan data yang tidak akurat</li>
+                <li><strong>Penghapusan:</strong> Meminta penghapusan data pribadi Anda</li>
+                <li><strong>Pembatasan:</strong> Meminta pembatasan pemrosesan data</li>
+                <li><strong>Portabilitas:</strong> Meminta transfer data ke penyedia layanan lain</li>
+            </ul>
+        </div>
+        
+        <!-- Children -->
+        <div class="section-card" x-data x-init="setTimeout(() => $el.classList.add('show'), 1600)">
+            <h2 class="section-title">
+                <i class="fas fa-child"></i>
+                8. Anak-Anak
+            </h2>
+            <div class="highlight-box">
+                <p><strong>Penting:</strong> Layanan kami tidak ditujukan untuk anak-anak di bawah 13 tahun. 
+                Kami tidak secara sadar mengumpulkan informasi pribadi dari anak-anak di bawah 13 tahun. 
+                Jika Anda adalah orang tua atau wali dan mengetahui bahwa anak Anda telah memberikan data 
+                pribadi kepada kami, silakan hubungi kami.</p>
+            </div>
+        </div>
+        
+        <!-- Policy Changes -->
+        <div class="section-card" x-data x-init="setTimeout(() => $el.classList.add('show'), 1800)">
+            <h2 class="section-title">
+                <i class="fas fa-edit"></i>
+                9. Perubahan Kebijakan
+            </h2>
+            <p class="section-content">
+                Kami dapat memperbarui Kebijakan Privasi ini dari waktu ke waktu. Perubahan akan diberitahukan 
+                melalui pemberitahuan di website atau email. Penggunaan berkelanjutan layanan kami setelah 
+                perubahan berarti Anda menyetujui kebijakan yang diperbarui.
+            </p>
+        </div>
+        
+        <!-- Contact Section -->
+        <div class="contact-section" x-data x-init="setTimeout(() => $el.classList.add('show'), 2000)">
+            <h3 class="contact-title">
+                <i class="fas fa-envelope me-2"></i>
+                Hubungi Kami
+            </h3>
+            <p class="section-content">
+                Jika Anda memiliki pertanyaan tentang Kebijakan Privasi ini atau praktik privasi kami, 
+                silakan hubungi kami:
+            </p>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>privacy@inemi.id</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-globe"></i>
+                    <span>https://inemi.id</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Indonesia</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Last Updated -->
+        <div class="last-updated">
+            <p>Terakhir diperbarui: 27 Juli 2025</p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

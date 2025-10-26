@@ -1,0 +1,24 @@
+# Environment Variables untuk Konfigurasi Aplikasi
+# Copy file ini ke .env dan sesuaikan nilai-nilainya
+
+# Callback Domain untuk Suno API
+# Ganti dengan URL ngrok Anda atau domain produksi
+CALLBACK_DOMAIN=https://f5844107cd9f.ngrok-free.app
+
+# Suno API Configuration
+SUNO_API_KEY=d866a4e0d9e278d118ef73d3124f57a7
+SUNO_BASE_URL=https://apibox.erweima.ai
+
+# Domain Public untuk upload gambar
+DOMAIN_PUBLIC=https://f5844107cd9f.ngrok-free.app
+
+# Flask Configuration
+SECRET_KEY=your-secret-key-here
+FLASK_DEBUG=True
+
+# Database Configuration
+# SQLALCHEMY_DATABASE_URI=mysql+mysqlconnector://root@localhost/inemi
+
+# API Keys
+WAVESPEED_API_KEY=abf3a7377dff18fcc22f499454e8fe99d79349ce65273099512ce388bbe91bf2
+ELEVENLABS_API_KEY=sk_3ed91a53b03551e1b22c7e4abee0c20532dbae7d06a343de 

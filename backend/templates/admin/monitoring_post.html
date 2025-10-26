@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="id" x-data="{ sidebarCollapsed: false, isMobile: false, loaded: false }" x-init="checkScreenSize(); window.addEventListener('resize', checkScreenSize); loaded = true;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoring Post - Admin Panel</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo/logo.png') }}">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a2e;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --space-lg: 1.5rem;
+            --space-md: 1rem;
+            --space-sm: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-md: 0.5rem;
+        }
+
+        * {
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+            text-rendering: optimizeLegibility !important;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            background: var(--bg-secondary);
+            min-height: 100vh;
+            border-right: 1px solid var(--border-color);
+            backdrop-filter: blur(20px);
+            width: 280px;
+            transition: all 0.3s ease;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: var(--space-md);
+            position: relative;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-gradient);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--primary-gradient);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-section {
+            padding: 0 var(--space-md);
+        }
+
+        .nav-item {
+            margin-bottom: var(--space-sm);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: var(--space-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-lg);
+            transition: all 0.3s ease;
+        }
+
+        .nav-link.active {
+            background: var(--primary-gradient);
+            color: white;
+        }
+
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: var(--space-md);
+        }
+
+        .admin-content {
+            flex: 1;
+            margin-left: 280px;
+            background: transparent;
+            min-height: 100vh;
+            padding: var(--space-lg);
+            transition: margin-left 0.3s ease;
+        }
+
+        .admin-top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-md) var(--space-lg);
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            position: fixed;
+            top: 0;
+            left: 280px;
+            right: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: var(--space-sm);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-section {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-lg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .filter-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+        }
+
+        .filter-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .filter-title::before {
+            content: '🔍';
+            font-size: 1.2rem;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: var(--space-md);
+            align-items: end;
+        }
+
+        .filter-label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: var(--space-sm);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-select {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: var(--radius-md);
+            padding: var(--space-sm) var(--space-md);
+            transition: all 0.3s ease;
+        }
+
+        .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+        }
+
+        .btn-filter {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            padding: var(--space-sm) var(--space-lg);
+            border-radius: var(--radius-md);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-filter:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .posts-table {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .table {
+            margin: 0;
+            color: var(--text-primary) !important;
+            background: transparent !important;
+        }
+
+        .table th {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(102, 126, 234, 0.1) 100%) !important;
+            border: none !important;
+            padding: var(--space-md);
+            font-weight: 600;
+            color: var(--text-primary) !important;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+        }
+
+        .table th::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary-gradient);
+        }
+
+        .table td {
+            border: none !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            padding: var(--space-md);
+            vertical-align: middle;
+            transition: background-color 0.3s ease;
+            color: var(--text-primary) !important;
+            background: transparent !important;
+        }
+
+        .table tbody tr {
+            background: transparent !important;
+            color: var(--text-primary) !important;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(102, 126, 234, 0.05) !important;
+        }
+
+        /* Override Bootstrap table styles */
+        .table.table-striped > tbody > tr:nth-of-type(odd) > td {
+            background-color: transparent !important;
+        }
+
+        .table.table-striped > tbody > tr:nth-of-type(even) > td {
+            background-color: transparent !important;
+        }
+
+        .table.table-hover > tbody > tr:hover > td {
+            background-color: rgba(102, 126, 234, 0.05) !important;
+        }
+
+        /* Force dark background for table container */
+        .posts-table .table-responsive {
+            background: var(--bg-card) !important;
+        }
+
+        .posts-table .table-responsive table {
+            background: var(--bg-card) !important;
+        }
+
+        .posts-table .table-responsive table tbody {
+            background: var(--bg-card) !important;
+        }
+
+        .posts-table .table-responsive table tbody tr {
+            background: var(--bg-card) !important;
+        }
+
+        .posts-table .table-responsive table tbody tr td {
+            background: var(--bg-card) !important;
+        }
+
+        /* Additional CSS to override Bootstrap white backgrounds */
+        .table > :not(caption) > * > * {
+            background-color: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .table > tbody > tr > td {
+            background-color: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+        }
+
+        .table > thead > tr > th {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(102, 126, 234, 0.1) 100%) !important;
+            color: var(--text-primary) !important;
+        }
+
+        /* Override any Bootstrap table classes */
+        .table.table-striped > tbody > tr:nth-of-type(odd) > td,
+        .table.table-striped > tbody > tr:nth-of-type(even) > td {
+            background-color: var(--bg-card) !important;
+        }
+
+        .table.table-hover > tbody > tr:hover > td {
+            background-color: rgba(102, 126, 234, 0.05) !important;
+        }
+
+        .pagination-container {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            margin-top: var(--space-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-md);
+        }
+
+        .pagination-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: var(--space-sm);
+            align-items: center;
+        }
+
+        .pagination-select {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: var(--radius-md);
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .pagination-button {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .pagination-button:hover:not(:disabled) {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: transparent;
+        }
+
+        .pagination-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-button.active {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: transparent;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-details h6 {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .user-details small {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-violating {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border: 1px solid #ff4757;
+        }
+
+        .status-good {
+            background: linear-gradient(135deg, #2ed573 0%, #1e90ff 100%);
+            color: white;
+            border: 1px solid #2ed573;
+        }
+
+        .status-recommended {
+            background: linear-gradient(135deg, #ffa726 0%, #ff7043 100%);
+            color: white;
+            border: 1px solid #ff9800;
+        }
+
+        .status-pending {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            color: white;
+            border: 1px solid #74b9ff;
+        }
+
+        .status-deactivated {
+            background: linear-gradient(135deg, #6c757d 0%, #343a40 100%);
+            color: white;
+            border: 1px solid #6c757d;
+        }
+
+        .status-reported {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            border: 1px solid #dc3545;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .btn-action {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: 1px solid #667eea;
+        }
+
+        .btn-delete {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            border: 1px solid #ff4757;
+        }
+
+        .btn-deactivate {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            color: white;
+            border: 1px solid #fdcb6e;
+        }
+
+        .btn-report {
+            background: linear-gradient(135deg, #e84393 0%, #fd79a8 100%);
+            color: white;
+            border: 1px solid #e84393;
+        }
+
+        .post-content {
+            max-width: 300px;
+        }
+
+        .post-content strong {
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .post-content small {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            line-height: 1.5;
+            opacity: 0.9;
+            display: block;
+        }
+
+        .content-type-indicator {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0.5px;
+        }
+
+        .content-type-image {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .content-type-video {
+            background: linear-gradient(135deg, #2ed573 0%, #1e90ff 100%);
+            color: white;
+        }
+
+        .content-type-song {
+            background: linear-gradient(135deg, #ffa726 0%, #ff7043 100%);
+            color: white;
+        }
+
+        .content-type-video_iklan {
+            background: linear-gradient(135deg, #e84393 0%, #fd79a8 100%);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .admin-sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .admin-content {
+                margin-left: 0;
+                padding: var(--space-md);
+            }
+            
+            .admin-top-navbar {
+                left: 0;
+                right: 0;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+
+            .pagination-container {
+                flex-direction: column;
+                gap: var(--space-md);
+            }
+        }
+    </style>
+</head>
+<body :class="{ 'loaded': loaded }">
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="admin-sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <img src="/static/assets/image/logo.png" alt="INEMI Logo" style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+                    <div class="logo-text">Admin</div>
+                </div>
+                <button class="btn-toggle" @click="toggleSidebar()">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
+                        <div class="nav-icon">
+                            <i class="bi bi-speedometer2"></i>
+                        </div>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.users') }}">
+                        <div class="nav-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <span>Manajemen User</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.payment') }}">
+                        <div class="nav-icon">
+                            <i class="bi bi-credit-card"></i>
+                        </div>
+                        <span>Payment</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link active" href="{{ url_for('admin.monitoring_post') }}">
+                        <div class="nav-icon">
+                            <i class="bi bi-eye"></i>
+                        </div>
+                        <span>Monitoring Post</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.favorite_management') }}">
+                        <div class="nav-icon">
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <span>Favorite Management</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.analytics') }}">
+                        <div class="nav-icon">
+                            <i class="bi bi-graph-up"></i>
+                        </div>
+                        <span>Analytics</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.products') }}">
+                        <div class="nav-icon">
+                            <i class="bi bi-box"></i>
+                        </div>
+                        <span>Manajemen Produk</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.settings') }}">
+                        <div class="nav-icon">
+                            <i class="bi bi-gear"></i>
+                        </div>
+                        <span>Pengaturan</span>
+                    </a>
+                </div>
+                
+                <!-- Divider -->
+                <div class="nav-divider" style="height: 1px; background: rgba(255, 255, 255, 0.1); margin: 20px 0;"></div>
+                
+                <div class="nav-item">
+                    <a class="nav-link" href="{{ url_for('web_pages.home') }}">
+                        <div class="nav-icon">
+                            <i class="bi bi-house"></i>
+                        </div>
+                        <span>Kembali ke Website</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="admin-content">
+            <!-- Top Navbar -->
+            <nav class="admin-top-navbar">
+                <div class="navbar-left">
+                    <div class="navbar-brand">
+                        <img src="/static/assets/image/logo.png" alt="INEMI Logo" class="navbar-logo" style="width: 30px; height: 30px;">
+                        <span class="navbar-title">Monitoring Post</span>
+                    </div>
+                </div>
+                <div class="navbar-right">
+                    <button class="btn btn-primary" onclick="exportData()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0, 0, 0, 0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0, 0, 0, 0.2)'">
+                        <i class="bi bi-download me-2"></i>Export
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Content -->
+            <div class="content-wrapper" style="margin-top: 80px;">
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.total_posts }}</div>
+                        <div class="stat-label">Total Post</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.violating_posts }}</div>
+                        <div class="stat-label">Melanggar</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.good_posts }}</div>
+                        <div class="stat-label">Bagus</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ stats.recommended_posts }}</div>
+                        <div class="stat-label">Rekomendasi</div>
+                    </div>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <h5 class="filter-title">Filter Post</h5>
+                    <form method="GET" action="{{ url_for('admin.monitoring_post') }}">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label class="filter-label">Status Post</label>
+                                <select name="status" class="form-select">
+                                    <option value="all">Semua Status</option>
+                                    <option value="violating">Melanggar</option>
+                                    <option value="good">Bagus</option>
+                                    <option value="recommended">Rekomendasi</option>
+                                    <option value="pending">Pending</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Jenis Konten</label>
+                                <select name="content_type" class="form-select">
+                                    <option value="all">Semua Jenis</option>
+                                    <option value="image">Image</option>
+                                    <option value="video">Video</option>
+                                    <option value="song">Song</option>
+                                    <option value="video_iklan">Video Iklan</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">User</label>
+                                <select name="user" class="form-select">
+                                    <option value="all">Semua User</option>
+                                    {% set unique_users = [] %}
+                                    {% for post in posts %}
+                                        {% if post.user.username not in unique_users %}
+                                            {% set _ = unique_users.append(post.user.username) %}
+                                            <option value="{{ post.user.username }}">{{ post.user.username }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label">Tanggal</label>
+                                <select name="date" class="form-select">
+                                    <option value="all">Semua Tanggal</option>
+                                    <option value="today">Hari Ini</option>
+                                    <option value="week">Minggu Ini</option>
+                                    <option value="month">Bulan Ini</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <button type="submit" class="btn-filter">Filter</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Posts Table -->
+                <div class="posts-table">
+                    <div class="table-responsive">
+                        <table class="table" style="background: var(--bg-card) !important; color: var(--text-primary) !important;">
+                            <thead>
+                                <tr style="background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(102, 126, 234, 0.1) 100%) !important;">
+                                    <th style="background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(102, 126, 234, 0.1) 100%) !important; color: var(--text-primary) !important; border: none !important;">User Info</th>
+                                    <th style="background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(102, 126, 234, 0.1) 100%) !important; color: var(--text-primary) !important; border: none !important;">Konten</th>
+                                    <th style="background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(102, 126, 234, 0.1) 100%) !important; color: var(--text-primary) !important; border: none !important;">Status</th>
+                                    <th style="background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(102, 126, 234, 0.1) 100%) !important; color: var(--text-primary) !important; border: none !important;">Tanggal</th>
+                                    <th style="background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(102, 126, 234, 0.1) 100%) !important; color: var(--text-primary) !important; border: none !important;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody style="background: var(--bg-card) !important;">
+                                {% if posts %}
+                                    {% for post in posts %}
+                                    <tr style="background: var(--bg-card) !important; color: var(--text-primary) !important;">
+                                        <td style="background: var(--bg-card) !important; color: var(--text-primary) !important; border: none !important; border-bottom: 1px solid var(--border-color) !important;">
+                                            <div class="user-info">
+                                                <div class="user-avatar">
+                                                    {{ post.user.username[0].upper() }}
+                                                </div>
+                                                <div class="user-details">
+                                                    <h6>{{ post.user.username }}</h6>
+                                                    <small>ID: {{ post.user.id }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="background: var(--bg-card) !important; color: var(--text-primary) !important; border: none !important; border-bottom: 1px solid var(--border-color) !important;">
+                                            <div class="post-content">
+                                                <span class="content-type-indicator content-type-{{ post.content_type }}">
+                                                    {{ post.content_type.upper() }}
+                                                </span>
+                                                <strong>{{ post.title or 'Untitled' }}</strong>
+                                                <small>{{ post.content[:100] + '...' if post.content and post.content|length > 100 else post.content or 'No content' }}</small>
+                                            </div>
+                                        </td>
+                                        <td style="background: var(--bg-card) !important; color: var(--text-primary) !important; border: none !important; border-bottom: 1px solid var(--border-color) !important;">
+                                            <span class="status-badge status-{{ post.status or 'pending' }}" id="status-{{ post.id }}">
+                                                {{ post.status or 'pending' }}
+                                            </span>
+                                        </td>
+                                        <td style="background: var(--bg-card) !important; color: var(--text-primary) !important; border: none !important; border-bottom: 1px solid var(--border-color) !important;">
+                                            <small>{{ post.created_at.strftime('%d %b %Y') if post.created_at else 'N/A' }}</small>
+                                        </td>
+                                        <td style="background: var(--bg-card) !important; color: var(--text-primary) !important; border: none !important; border-bottom: 1px solid var(--border-color) !important;">
+                                            <div class="action-buttons">
+                                                <button class="btn-action btn-edit" onclick="editPost('{{ post.id }}')" title="Edit"
+                                                        data-content-type="{{ post.content_type }}" data-content-id="{{ post.content_id }}">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button class="btn-action btn-deactivate" onclick="deactivatePost('{{ post.id }}')" title="Nonaktif"
+                                                        data-content-type="{{ post.content_type }}" data-content-id="{{ post.content_id }}">
+                                                    <i class="bi bi-pause-circle"></i>
+                                                </button>
+                                                <button class="btn-action btn-report" onclick="reportPost('{{ post.id }}')" title="Report"
+                                                        data-content-type="{{ post.content_type }}" data-content-id="{{ post.content_id }}">
+                                                    <i class="bi bi-flag"></i>
+                                                </button>
+                                                <button class="btn-action btn-delete" onclick="deletePost('{{ post.id }}')" title="Delete"
+                                                        data-content-type="{{ post.content_type }}" data-content-id="{{ post.content_id }}">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr style="background: var(--bg-card) !important; color: var(--text-primary) !important;">
+                                        <td colspan="5" class="text-center py-4" style="background: var(--bg-card) !important; color: var(--text-primary) !important; border: none !important;">
+                                            <div class="text-muted">
+                                                <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                                                <h5>Belum ada data Post</h5>
+                                                <p>Data postingan akan muncul di sini setelah user membuat konten AI</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        Menampilkan <span id="start-item">1</span> - <span id="end-item">10</span> dari <span id="total-items">{{ posts|length }}</span> post
+                    </div>
+                    <div class="pagination-controls">
+                        <select class="pagination-select" id="items-per-page" onchange="changeItemsPerPage()">
+                            <option value="10">10 per halaman</option>
+                            <option value="20">20 per halaman</option>
+                            <option value="50">50 per halaman</option>
+                            <option value="100">100 per halaman</option>
+                        </select>
+                        <button class="pagination-button" onclick="previousPage()" id="prev-btn">
+                            <i class="bi bi-chevron-left"></i> Sebelumnya
+                        </button>
+                        <div id="page-numbers" style="display: flex; gap: 0.5rem;">
+                            <!-- Page numbers will be generated here -->
+                        </div>
+                        <button class="pagination-button" onclick="nextPage()" id="next-btn">
+                            Selanjutnya <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editPostModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" style="background: var(--bg-secondary); color: var(--text-primary);">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Post</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editPostForm">
+                        <input type="hidden" name="content_type" id="edit_content_type" />
+                        <input type="hidden" name="content_id" id="edit_content_id" />
+                        <div class="mb-3">
+                            <label class="form-label">Judul</label>
+                            <input type="text" class="form-control" id="edit_title" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Caption/Isi</label>
+                            <textarea class="form-control" id="edit_caption" rows="4"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" id="saveEditBtn">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function checkScreenSize() {
+            const isMobile = window.innerWidth <= 768;
+            Alpine.store('isMobile', isMobile);
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.admin-sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+
+        // Post Actions
+        async function editPost(postId) {
+            const btn = event.currentTarget;
+            const contentType = btn.getAttribute('data-content-type');
+            const contentId = btn.getAttribute('data-content-id');
+
+            // Prefill via API
+            try {
+                const params = new URLSearchParams({content_type: contentType, content_id: contentId});
+                const res = await fetch(`/admin/api/content/detail?${params.toString()}`);
+                const json = await res.json();
+                if (!json.success) throw new Error(json.error || 'Gagal memuat data');
+
+                document.getElementById('edit_content_type').value = contentType;
+                document.getElementById('edit_content_id').value = contentId;
+                document.getElementById('edit_title').value = json.data.title || '';
+                document.getElementById('edit_caption').value = json.data.caption || '';
+
+                const modal = new bootstrap.Modal(document.getElementById('editPostModal'));
+                modal.show();
+
+                document.getElementById('saveEditBtn').onclick = async function(){
+                    try{
+                        const payload = {
+                            content_type: document.getElementById('edit_content_type').value,
+                            content_id: document.getElementById('edit_content_id').value,
+                            title: document.getElementById('edit_title').value,
+                            caption: document.getElementById('edit_caption').value
+                        };
+                        const saveRes = await fetch('/admin/api/content/update', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify(payload)
+                        });
+                        const saveJson = await saveRes.json();
+                        if(!saveJson.success) throw new Error(saveJson.error || 'Gagal menyimpan');
+                        modal.hide();
+                        // Simple refresh to reflect changes without altering other logic
+                        window.location.reload();
+                    }catch(err){
+                        alert(err.message);
+                    }
+                };
+            } catch(err){
+                alert(err.message);
+            }
+        }
+
+        async function deactivatePost(postId) {
+            const btn = event.currentTarget;
+            const contentType = btn.getAttribute('data-content-type');
+            const contentId = btn.getAttribute('data-content-id');
+            const statusElement = document.getElementById(`status-${postId}`);
+            const isCurrentlyActive = !statusElement.classList.contains('status-deactivated');
+
+            try{
+                const res = await fetch('/admin/api/content/deactivate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({content_type: contentType, content_id: contentId})
+                });
+                const json = await res.json();
+                if(!json.success) throw new Error(json.error || 'Gagal mengubah status');
+                
+                // Update status badge without reload
+                if (json.deactivated) {
+                    statusElement.textContent = 'NONAKTIF';
+                    statusElement.className = 'status-badge status-deactivated';
+                } else {
+                    statusElement.textContent = 'GOOD';
+                    statusElement.className = 'status-badge status-good';
+                }
+            }catch(err){
+                alert(err.message);
+            }
+        }
+
+        async function reportPost(postId) {
+            const btn = event.currentTarget;
+            const contentType = btn.getAttribute('data-content-type');
+            const contentId = btn.getAttribute('data-content-id');
+            const reason = prompt('Masukkan alasan report:');
+            if (!reason) return;
+            const statusElement = document.getElementById(`status-${postId}`);
+
+            try{
+                const res = await fetch('/admin/api/content/report', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({content_type: contentType, content_id: contentId, reason})
+                });
+                const json = await res.json();
+                if(!json.success) throw new Error(json.error || 'Gagal melaporkan');
+                
+                // Update status badge to reported
+                statusElement.textContent = 'REPORTED';
+                statusElement.className = 'status-badge status-reported';
+                alert('Report terkirim');
+            }catch(err){
+                alert(err.message);
+            }
+        }
+
+        async function deletePost(postId) {
+            const btn = event.currentTarget;
+            const contentType = btn.getAttribute('data-content-type');
+            const contentId = btn.getAttribute('data-content-id');
+            if (!confirm('Apakah Anda yakin ingin menghapus post ini?')) return;
+            try{
+                const res = await fetch('/admin/api/content/delete', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({content_type: contentType, content_id: contentId})
+                });
+                const json = await res.json();
+                if(!json.success) throw new Error(json.error || 'Gagal menghapus');
+                // Refresh to reflect deletion
+                window.location.reload();
+            }catch(err){
+                alert(err.message);
+            }
+        }
+
+        function exportData() {
+            alert('Export data akan segera tersedia');
+        }
+
+        // Pagination Variables
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let totalItems = {{ posts|length }};
+        let totalPages = Math.ceil(totalItems / itemsPerPage);
+
+        // Initialize pagination
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePagination();
+            showPage(1);
+        });
+
+        function initializePagination() {
+            totalItems = {{ posts|length }};
+            totalPages = Math.ceil(totalItems / itemsPerPage);
+            updatePaginationInfo();
+            generatePageNumbers();
+            updatePaginationButtons();
+        }
+
+        function showPage(page) {
+            currentPage = page;
+            
+            // Hide all rows
+            const rows = document.querySelectorAll('.table tbody tr');
+            rows.forEach(row => row.style.display = 'none');
+            
+            // Calculate start and end indices
+            const startIndex = (page - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+            
+            // Show rows for current page
+            for (let i = startIndex; i < endIndex; i++) {
+                if (rows[i]) {
+                    rows[i].style.display = 'table-row';
+                }
+            }
+            
+            updatePaginationInfo();
+            updatePaginationButtons();
+            generatePageNumbers();
+        }
+
+        function previousPage() {
+            if (currentPage > 1) {
+                showPage(currentPage - 1);
+            }
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                showPage(currentPage + 1);
+            }
+        }
+
+        function goToPage(page) {
+            if (page >= 1 && page <= totalPages) {
+                showPage(page);
+            }
+        }
+
+        function changeItemsPerPage() {
+            itemsPerPage = parseInt(document.getElementById('items-per-page').value);
+            totalPages = Math.ceil(totalItems / itemsPerPage);
+            currentPage = 1;
+            showPage(1);
+        }
+
+        function updatePaginationInfo() {
+            const startItem = (currentPage - 1) * itemsPerPage + 1;
+            const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+            
+            document.getElementById('start-item').textContent = startItem;
+            document.getElementById('end-item').textContent = endItem;
+            document.getElementById('total-items').textContent = totalItems;
+        }
+
+        function updatePaginationButtons() {
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+        }
+
+        function generatePageNumbers() {
+            const pageNumbersContainer = document.getElementById('page-numbers');
+            pageNumbersContainer.innerHTML = '';
+            
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            // Add first page if not visible
+            if (startPage > 1) {
+                addPageNumber(1);
+                if (startPage > 2) {
+                    addPageEllipsis();
+                }
+            }
+            
+            // Add visible page numbers
+            for (let i = startPage; i <= endPage; i++) {
+                addPageNumber(i);
+            }
+            
+            // Add last page if not visible
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    addPageEllipsis();
+                }
+                addPageNumber(totalPages);
+            }
+        }
+
+        function addPageNumber(page) {
+            const pageNumbersContainer = document.getElementById('page-numbers');
+            const pageBtn = document.createElement('button');
+            pageBtn.className = `pagination-button ${page === currentPage ? 'active' : ''}`;
+            pageBtn.textContent = page;
+            pageBtn.onclick = () => goToPage(page);
+            pageNumbersContainer.appendChild(pageBtn);
+        }
+
+        function addPageEllipsis() {
+            const pageNumbersContainer = document.getElementById('page-numbers');
+            const ellipsis = document.createElement('span');
+            ellipsis.textContent = '...';
+            ellipsis.style.color = 'var(--text-secondary)';
+            ellipsis.style.padding = '0.5rem';
+            pageNumbersContainer.appendChild(ellipsis);
+        }
+    </script>
+</body>
+</html>

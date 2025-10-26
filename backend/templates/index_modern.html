@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{ loaded: false, songPrompt: '', showLogin: false, showRegister: false, showModal: false }" x-init="setTimeout(() => loaded = true, 100)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INEMI - AI Advertising Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        :root {
+            --neon-purple: #a855f7;
+            --neon-blue: #3b82f6;
+            --neon-cyan: #06b6d4;
+            --dark-bg: #0a0a0f;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --gradient-primary: linear-gradient(135deg, #a855f7 0%, #3b82f6 50%, #06b6d4 100%);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--dark-bg);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(59, 130, 246, 0.15) 0%, transparent 50%);
+            animation: bgFloat 20s ease-in-out infinite;
+        }
+
+        @keyframes bgFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-30px, -30px) scale(1.1); }
+            66% { transform: translate(30px, -30px) scale(0.9); }
+        }
+
+        .navbar {
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.8rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-link {
+            color: #ffffff !important;
+            font-weight: 500;
+            margin: 0 0.5rem;
+            padding: 0.5rem 1rem !important;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: var(--gradient-primary);
+            color: white !important;
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+        }
+
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding-top: 80px;
+        }
+
+        .hero-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            0% { filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.5)); }
+            100% { filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.8)); }
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(168, 85, 247, 0.3);
+        }
+
+        .btn-glow {
+            background: var(--gradient-primary);
+            border: none;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+        }
+
+        .btn-glow:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(168, 85, 247, 0.6);
+            color: white;
+        }
+
+        .btn-secondary-glow {
+            background: transparent;
+            border: 2px solid var(--neon-purple);
+            color: var(--neon-purple);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary-glow:hover {
+            background: var(--neon-purple);
+            color: white;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+            transform: translateY(-3px);
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            border-radius: 15px;
+            color: #ffffff;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.3);
+            color: #ffffff;
+        }
+
+        .form-control::placeholder {
+            color: #a1a1aa;
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 1rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .feature-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(168, 85, 247, 0.3);
+        }
+
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: white;
+        }
+
+        /* Gallery Section */
+        .gallery-section {
+            padding: 5rem 0;
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+        }
+
+        .gallery-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+            height: 100%;
+        }
+
+        .gallery-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(168, 85, 247, 0.3);
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            transition: all 0.3s ease;
+        }
+
+        .gallery-card:hover .gallery-image {
+            transform: scale(1.1);
+        }
+
+        .gallery-info {
+            padding: 1.5rem;
+        }
+
+        .gallery-title {
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            color: #ffffff;
+        }
+
+        .gallery-user {
+            color: #a1a1aa;
+            font-size: 0.9rem;
+        }
+
+        .pricing-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            height: 100%;
+            position: relative;
+        }
+
+        .pricing-card.popular {
+            border: 2px solid var(--neon-purple);
+            box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
+        }
+
+        .pricing-card.popular::before {
+            content: 'POPULAR';
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(168, 85, 247, 0.3);
+        }
+
+        .price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--neon-purple);
+            margin: 1rem 0;
+        }
+
+        /* Modal Styling */
+        .modal-content {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            color: #ffffff;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: transparent;
+        }
+
+        .btn-close {
+            filter: invert(1);
+        }
+
+        /* Footer */
+        .footer {
+            background: rgba(5, 5, 8, 0.9);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(168, 85, 247, 0.2);
+            padding: 3rem 0 1rem;
+            color: #ffffff;
+        }
+
+        .footer h5, .footer h6 {
+            color: #ffffff;
+        }
+
+        .footer a {
+            color: #a1a1aa !important;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: var(--neon-purple) !important;
+        }
+
+        .footer .text-muted {
+            color: #a1a1aa !important;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            .glass-card {
+                padding: 1.5rem;
+            }
+            .btn-glow {
+                padding: 0.8rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="{{ url_for('static', filename='logo/logo.png') }}" alt="INEMI" height="40" class="me-2">
+                INEMI
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#gallery">Gallery</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#pricing">Pricing</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn-glow" href="#" @click.prevent="showLogin = true">Login</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section" id="home">
+        <div class="container">
+            <div class="hero-content fade-in">
+                <h1 class="hero-title">Buat Iklan dari Produkmu dengan AI</h1>
+                <p class="hero-subtitle">Platform AI canggih untuk membuat iklan yang menarik dan efektif dalam hitungan detik</p>
+                
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="glass-card">
+                            <form class="row g-3">
+                                <div class="col-md-8">
+                                    <input type="text" class="form-control" placeholder="Masukkan nama produkmu..." x-model="songPrompt">
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="button" class="btn btn-glow w-100" @click="showModal = true" :disabled="!songPrompt.trim()">
+                                        <i class="bi bi-magic me-2"></i>Buat Iklan
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <button class="btn btn-secondary-glow me-3">
+                        <i class="bi bi-play-circle me-2"></i>Lihat Demo
+                    </button>
+                    <button class="btn btn-glow" @click="showRegister = true">
+                        <i class="bi bi-person-plus me-2"></i>Daftar Gratis
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-5" id="features">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="section-title">Fitur Unggulan</h2>
+                    <p class="text-muted">Nikmati teknologi AI terdepan untuk membuat iklan yang memukau</p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-robot"></i>
+                        </div>
+                        <h4>AI-Powered Generation</h4>
+                        <p>Buat iklan dengan AI canggih yang memahami produk dan target audiens Anda</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-lightning"></i>
+                        </div>
+                        <h4>Instant Creation</h4>
+                        <p>Hasil iklan siap dalam hitungan detik dengan kualitas profesional</p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="feature-card fade-in">
+                        <div class="feature-icon">
+                            <i class="bi bi-palette"></i>
+                        </div>
+                        <h4>Customizable Design</h4>
+                        <p>Kustomisasi warna, font, dan layout sesuai brand Anda</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="gallery-section" id="gallery">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="section-title">Gallery Karya</h2>
+                    <p class="text-muted">Lihat hasil iklan yang dibuat oleh pengguna kami</p>
+                </div>
+            </div>
+            
+            <div class="row g-4" id="gallery-container">
+                <!-- Gallery items will be loaded dynamically -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="py-5" id="pricing" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.1) 0%, rgba(168, 85, 247, 0.1) 100%);">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center mb-5">
+                    <h2 class="section-title">Pilih Paket</h2>
+                    <p class="text-muted">Pilih paket yang sesuai dengan kebutuhan bisnis Anda</p>
+                </div>
+            </div>
+            
+            <div class="row g-4 justify-content-center">
+                <div class="col-md-4">
+                    <div class="pricing-card fade-in">
+                        <h4>Starter</h4>
+                        <div class="price">Rp 0</div>
+                        <p class="text-muted">Per bulan</p>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check text-success me-2"></i>5 iklan per bulan</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Template dasar</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Support email</li>
+                        </ul>
+                        <button class="btn btn-secondary-glow w-100 mt-3" @click="showRegister = true">Mulai Gratis</button>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="pricing-card popular fade-in">
+                        <h4>Pro</h4>
+                        <div class="price">Rp 99K</div>
+                        <p class="text-muted">Per bulan</p>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check text-success me-2"></i>50 iklan per bulan</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Template premium</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Priority support</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Analytics detail</li>
+                        </ul>
+                        <button class="btn btn-glow w-100 mt-3" @click="showRegister = true">Pilih Pro</button>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="pricing-card fade-in">
+                        <h4>Enterprise</h4>
+                        <div class="price">Rp 299K</div>
+                        <p class="text-muted">Per bulan</p>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check text-success me-2"></i>Iklan unlimited</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Template custom</li>
+                            <li><i class="bi bi-check text-success me-2"></i>Dedicated support</li>
+                            <li><i class="bi bi-check text-success me-2"></i>API access</li>
+                        </ul>
+                        <button class="btn btn-secondary-glow w-100 mt-3" @click="showRegister = true">Hubungi Sales</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5 class="mb-3">INEMI</h5>
+                    <p class="text-muted">Platform AI terdepan untuk membuat iklan yang memukau dan efektif.</p>
+                </div>
+                
+                <div class="col-md-2">
+                    <h6 class="mb-3">Product</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#pricing">Pricing</a></li>
+                        <li><a href="#">API</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-2">
+                    <h6 class="mb-3">Company</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#">About</a></li>
+                        <li><a href="#">Blog</a></li>
+                        <li><a href="#">Careers</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-2">
+                    <h6 class="mb-3">Support</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Status</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-md-2">
+                    <h6 class="mb-3">Legal</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#">Privacy</a></li>
+                        <li><a href="#">Terms</a></li>
+                        <li><a href="#">Security</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <hr class="my-4" style="border-color: rgba(255,255,255,0.1);">
+            
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 text-muted">&copy; 2024 INEMI. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="d-flex justify-content-center justify-content-md-end gap-3">
+                        <a href="#" class="text-muted"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-muted"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-muted"><i class="bi bi-linkedin"></i></a>
+                        <a href="#" class="text-muted"><i class="bi bi-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" x-show="showLogin" x-transition>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Login ke INEMI</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" @click="showLogin = false"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="/login">
+                        <div class="mb-3">
+                            <label class="form-label">Email atau Username</label>
+                            <input type="text" class="form-control" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" name="password" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="rememberMe">
+                            <label class="form-check-label" for="rememberMe">
+                                Ingat saya
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-glow w-100">Login</button>
+                    </form>
+                    <div class="text-center mt-3">
+                        <p class="mb-0">Belum punya akun? <a href="#" @click="showLogin = false; showRegister = true" class="text-decoration-none" style="color: var(--neon-purple);">Daftar disini</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1" x-show="showRegister" x-transition>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Daftar ke INEMI</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" @click="showRegister = false"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="/register">
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" name="password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Konfirmasi Password</label>
+                            <input type="password" class="form-control" name="confirm_password" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                            <label class="form-check-label" for="agreeTerms">
+                                Saya setuju dengan <a href="#" class="text-decoration-none" style="color: var(--neon-purple);">syarat dan ketentuan</a>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-glow w-100">Daftar</button>
+                    </form>
+                    <div class="text-center mt-3">
+                        <p class="mb-0">Sudah punya akun? <a href="#" @click="showRegister = false; showLogin = true" class="text-decoration-none" style="color: var(--neon-purple);">Login disini</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Load gallery from database
+        async function loadGallery() {
+            try {
+                const response = await fetch('/api/gallery/latest');
+                const data = await response.json();
+                
+                if (data.success && data.items) {
+                    const container = document.getElementById('gallery-container');
+                    const items = data.items.slice(0, 6); // Show first 6 items
+                    
+                    items.forEach((item, index) => {
+                        const col = document.createElement('div');
+                        col.className = 'col-md-4 col-lg-4';
+                        col.style.animationDelay = `${index * 0.1}s`;
+                        
+                        col.innerHTML = `
+                            <div class="gallery-card fade-in">
+                                <img src="${item.url}" alt="${item.title || 'Gallery Item'}" class="gallery-image">
+                                <div class="gallery-info">
+                                    <h5 class="gallery-title">${item.title || 'Untitled'}</h5>
+                                    <p class="gallery-user">${item.user || 'Anonymous'}</p>
+                                </div>
+                            </div>
+                        `;
+                        
+                        container.appendChild(col);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading gallery:', error);
+                // Show placeholder if no data
+                const container = document.getElementById('gallery-container');
+                container.innerHTML = `
+                    <div class="col-12 text-center">
+                        <p class="text-muted">Belum ada karya yang ditampilkan</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Scroll animations
+        function initScrollAnimations() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('show');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.fade-in').forEach(el => {
+                observer.observe(el);
+            });
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            initScrollAnimations();
+            loadGallery();
+
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+        });
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.style.background = 'rgba(10, 10, 15, 0.95)';
+                navbar.style.boxShadow = '0 2px 20px rgba(168, 85, 247, 0.2)';
+            } else {
+                navbar.style.background = 'rgba(10, 10, 15, 0.9)';
+                navbar.style.boxShadow = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

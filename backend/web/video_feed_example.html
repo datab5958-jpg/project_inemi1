@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Feed dengan Lazy Loading - Contoh Penggunaan API</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+
+        .video-feed {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .video-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: #000;
+        }
+
+        .video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .play-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .play-button:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .play-button::after {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 20px solid #000;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            margin-left: 4px;
+        }
+
+        .video-info {
+            padding: 15px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+            object-fit: cover;
+        }
+
+        .user-details h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .user-details p {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .video-caption {
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 15px;
+        }
+
+        .video-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #999;
+        }
+
+        .stat-item span {
+            margin-left: 5px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+            transition: color 0.3s ease;
+        }
+
+        .action-btn:hover {
+            color: #ff6b6b;
+        }
+
+        .action-btn.liked {
+            color: #ff6b6b;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+        }
+
+        .error {
+            text-align: center;
+            padding: 20px;
+            color: #ff6b6b;
+        }
+
+        .load-more {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .load-more-btn {
+            background: #ff6b6b;
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+
+        .load-more-btn:hover {
+            background: #ff5252;
+        }
+
+        .load-more-btn:disabled {
+            background: #333;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="video-feed">
+        <h1 style="text-align: center; margin-bottom: 30px;">Video Feed dengan Lazy Loading</h1>
+        
+        <div id="video-container">
+            <!-- Video cards will be loaded here -->
+        </div>
+        
+        <div id="loading" class="loading" style="display: none;">
+            Memuat video...
+        </div>
+        
+        <div id="error" class="error" style="display: none;">
+            Terjadi kesalahan saat memuat video
+        </div>
+        
+        <div id="load-more" class="load-more" style="display: none;">
+            <button id="load-more-btn" class="load-more-btn">Muat Lebih Banyak</button>
+        </div>
+    </div>
+
+    <script>
+        class VideoFeed {
+            constructor() {
+                this.videos = [];
+                this.nextCursor = null;
+                this.isLoading = false;
+                this.hasMore = true;
+                this.container = document.getElementById('video-container');
+                this.loadingEl = document.getElementById('loading');
+                this.errorEl = document.getElementById('error');
+                this.loadMoreEl = document.getElementById('load-more');
+                this.loadMoreBtn = document.getElementById('load-more-btn');
+                
+                this.init();
+            }
+            
+            init() {
+                this.loadVideos();
+                this.setupEventListeners();
+            }
+            
+            setupEventListeners() {
+                this.loadMoreBtn.addEventListener('click', () => {
+                    this.loadVideos();
+                });
+                
+                // Intersection Observer untuk lazy loading otomatis
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting && this.hasMore && !this.isLoading) {
+                            this.loadVideos();
+                        }
+                    });
+                });
+                
+                observer.observe(this.loadMoreEl);
+            }
+            
+            async loadVideos() {
+                if (this.isLoading || !this.hasMore) return;
+                
+                this.isLoading = true;
+                this.showLoading();
+                this.hideError();
+                
+                try {
+                    const url = this.buildApiUrl();
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.videos = [...this.videos, ...data.data];
+                        this.nextCursor = data.pagination.next_cursor;
+                        this.hasMore = data.pagination.has_more;
+                        
+                        this.renderVideos(data.data);
+                        this.updateLoadMoreButton();
+                    } else {
+                        throw new Error(data.error || 'Gagal memuat video');
+                    }
+                } catch (error) {
+                    console.error('Error loading videos:', error);
+                    this.showError();
+                } finally {
+                    this.isLoading = false;
+                    this.hideLoading();
+                }
+            }
+            
+            buildApiUrl() {
+                const baseUrl = '/api/feed/videos/cursor';
+                const params = new URLSearchParams({
+                    limit: '5'
+                });
+                
+                if (this.nextCursor) {
+                    params.append('cursor', this.nextCursor);
+                }
+                
+                return `${baseUrl}?${params.toString()}`;
+            }
+            
+            renderVideos(newVideos) {
+                newVideos.forEach(video => {
+                    const videoCard = this.createVideoCard(video);
+                    this.container.appendChild(videoCard);
+                });
+            }
+            
+            createVideoCard(video) {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.dataset.videoId = video.id;
+                
+                card.innerHTML = `
+                    <div class="video-container">
+                        <img src="${video.thumbnail_url}" alt="${video.title}" class="video-thumbnail" onclick="videoFeed.playVideo(this)">
+                        <div class="play-button" onclick="videoFeed.playVideo(this)"></div>
+                        <video style="display: none;" preload="none" onclick="videoFeed.togglePlay(this)">
+                            <source src="${video.video_url}" type="video/mp4">
+                        </video>
+                    </div>
+                    <div class="video-info">
+                        <div class="user-info">
+                            <img src="${video.user.avatar_url}" alt="${video.user.username}" class="user-avatar">
+                            <div class="user-details">
+                                <h3>${video.user.username}</h3>
+                                <p>${this.formatDate(video.created_at)}</p>
+                            </div>
+                        </div>
+                        <div class="video-caption">${video.caption}</div>
+                        <div class="video-stats">
+                            <div class="stat-item">
+                                <span>👁️ ${video.stats.views}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>❤️ ${video.stats.likes}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>💬 ${video.stats.comments}</span>
+                            </div>
+                            <div class="stat-item">
+                                <span>📤 ${video.stats.shares}</span>
+                            </div>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="action-btn ${video.interactions.is_liked ? 'liked' : ''}" onclick="videoFeed.toggleLike(${video.id}, this)">
+                                ❤️ Like
+                            </button>
+                            <button class="action-btn" onclick="videoFeed.showComments(${video.id})">
+                                💬 Comment
+                            </button>
+                            <button class="action-btn" onclick="videoFeed.shareVideo(${video.id})">
+                                📤 Share
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                return card;
+            }
+            
+            playVideo(element) {
+                const container = element.closest('.video-container');
+                const thumbnail = container.querySelector('.video-thumbnail');
+                const playButton = container.querySelector('.play-button');
+                const video = container.querySelector('video');
+                
+                thumbnail.style.display = 'none';
+                playButton.style.display = 'none';
+                video.style.display = 'block';
+                video.play();
+            }
+            
+            togglePlay(video) {
+                if (video.paused) {
+                    video.play();
+                } else {
+                    video.pause();
+                }
+            }
+            
+            async toggleLike(videoId, button) {
+                try {
+                    const response = await fetch(`/api/feed/video/${videoId}/like`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        button.classList.toggle('liked', data.is_liked);
+                        const statItem = button.closest('.video-card').querySelector('.stat-item:nth-child(2) span');
+                        statItem.textContent = `❤️ ${data.likes_count}`;
+                    }
+                } catch (error) {
+                    console.error('Error toggling like:', error);
+                }
+            }
+            
+            showComments(videoId) {
+                alert(`Menampilkan komentar untuk video ${videoId}`);
+                // Implementasi modal komentar di sini
+            }
+            
+            shareVideo(videoId) {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Video Menarik',
+                        text: 'Lihat video ini!',
+                        url: window.location.href
+                    });
+                } else {
+                    // Fallback untuk browser yang tidak mendukung Web Share API
+                    const url = window.location.href;
+                    navigator.clipboard.writeText(url).then(() => {
+                        alert('Link video telah disalin ke clipboard!');
+                    });
+                }
+            }
+            
+            formatDate(dateString) {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffInSeconds = Math.floor((now - date) / 1000);
+                
+                if (diffInSeconds < 60) {
+                    return 'Baru saja';
+                } else if (diffInSeconds < 3600) {
+                    const minutes = Math.floor(diffInSeconds / 60);
+                    return `${minutes} menit yang lalu`;
+                } else if (diffInSeconds < 86400) {
+                    const hours = Math.floor(diffInSeconds / 3600);
+                    return `${hours} jam yang lalu`;
+                } else {
+                    const days = Math.floor(diffInSeconds / 86400);
+                    return `${days} hari yang lalu`;
+                }
+            }
+            
+            showLoading() {
+                this.loadingEl.style.display = 'block';
+            }
+            
+            hideLoading() {
+                this.loadingEl.style.display = 'none';
+            }
+            
+            showError() {
+                this.errorEl.style.display = 'block';
+            }
+            
+            hideError() {
+                this.errorEl.style.display = 'none';
+            }
+            
+            updateLoadMoreButton() {
+                if (this.hasMore) {
+                    this.loadMoreEl.style.display = 'block';
+                    this.loadMoreBtn.disabled = false;
+                    this.loadMoreBtn.textContent = 'Muat Lebih Banyak';
+                } else {
+                    this.loadMoreEl.style.display = 'none';
+                }
+            }
+        }
+        
+        // Inisialisasi VideoFeed saat halaman dimuat
+        let videoFeed;
+        document.addEventListener('DOMContentLoaded', () => {
+            videoFeed = new VideoFeed();
+        });
+    </script>
+</body>
+</html>

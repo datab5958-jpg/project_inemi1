@@ -1,0 +1,1818 @@
+<!DOCTYPE html>
+<html lang="id" x-data="{ 
+    loaded: false, 
+    sidebarOpen: false, 
+    isMobile: false
+}" x-init="
+    checkScreenSize();
+    setTimeout(() => loaded = true, 100);
+    $watch('isMobile', value => {
+        if (!value) sidebarOpen = false;
+    });
+">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Admin INEMI</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo/logo.png') }}">
+    
+    <!-- Modern CSS Framework -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        :root {
+            /* Futuristic Color Palette */
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            
+            /* Dark Theme Colors */
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #16213e;
+            --bg-card: rgba(26, 26, 46, 0.8);
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            --bg-glass-hover: rgba(255, 255, 255, 0.1);
+            
+            /* Text Colors */
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #6b7280;
+            
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-warning: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --gradient-danger: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --gradient-chart: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-chart2: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-chart3: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-chart4: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            
+            /* Shadows & Effects */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+            --shadow-glow-hover: 0 0 30px rgba(99, 102, 241, 0.5);
+            
+            /* Border Radius */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            
+            /* Spacing */
+            --space-xs: 0.5rem;
+            --space-sm: 1rem;
+            --space-md: 1.5rem;
+            --space-lg: 2rem;
+            --space-xl: 3rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
+            z-index: -1;
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(-10px, -10px) scale(1.05); }
+            50% { transform: translate(10px, -5px) scale(1.02); }
+            75% { transform: translate(-5px, 10px) scale(1.03); }
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { top: 60%; left: 80%; animation-delay: 2s; }
+        .particle:nth-child(3) { top: 40%; left: 50%; animation-delay: 4s; }
+        .particle:nth-child(4) { top: 80%; left: 20%; animation-delay: 1s; }
+        .particle:nth-child(5) { top: 10%; left: 70%; animation-delay: 3s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+
+        /* Main Layout */
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        .sidebar-header {
+            padding: var(--space-lg);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sidebar-nav {
+            padding: var(--space-md);
+        }
+
+        .nav-item {
+            margin-bottom: var(--space-xs);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .nav-link:hover::before,
+        .nav-link.active::before {
+            left: 0;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+            padding: var(--space-md) var(--space-lg);
+        }
+
+        .top-nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .mobile-toggle {
+            display: none;
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: var(--radius-md);
+            width: 44px;
+            height: 44px;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .mobile-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow-hover);
+        }
+
+        .mobile-toggle:active {
+            transform: translateY(0);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: var(--space-lg);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-primary);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.users { background: var(--gradient-primary); }
+        .stat-icon.active { background: var(--gradient-success); }
+        .stat-icon.premium { background: var(--gradient-warning); }
+        .stat-icon.revenue { background: var(--gradient-secondary); }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Search and Filters */
+        .filters-section {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-xl);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .filters-section:hover {
+            box-shadow: var(--shadow-xl);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        .filter-label {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-input {
+            background: var(--bg-glass);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            padding: var(--space-sm) var(--space-md);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+        
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+        }
+
+        .filter-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .filter-button {
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: var(--radius-md);
+            color: white;
+            padding: var(--space-sm) var(--space-lg);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .filter-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow-hover);
+        }
+
+        /* Users Table */
+        .table-section {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .table-section:hover {
+            box-shadow: var(--shadow-xl);
+        }
+
+        .table-header {
+            padding: var(--space-lg);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .action-button {
+            background: var(--gradient-success);
+            border: none;
+            border-radius: var(--radius-md);
+            color: white;
+            padding: var(--space-sm) var(--space-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            min-width: fit-content;
+            white-space: nowrap;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .action-button:active {
+            transform: translateY(0);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: left;
+            padding: var(--space-md);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .table td {
+            padding: var(--space-md);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+        }
+
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: scale(1.01);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent);
+        }
+
+        .user-details h6 {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .user-details small {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .badge {
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-primary { background: var(--gradient-primary); color: white; }
+        .badge-success { background: var(--gradient-success); color: white; }
+        .badge-warning { background: var(--gradient-warning); color: white; }
+        .badge-danger { background: var(--gradient-danger); color: white; }
+        .badge-info { background: var(--gradient-secondary); color: white; }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .btn-sm {
+            padding: var(--space-xs) var(--space-sm);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+        }
+
+        .btn-sm:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-sm:active {
+            transform: translateY(0);
+        }
+
+        .btn-edit {
+            background: var(--gradient-warning);
+            color: white;
+        }
+
+        .btn-delete {
+            background: var(--gradient-danger);
+            color: white;
+        }
+
+        .btn-sm:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .mobile-toggle {
+                display: flex !important;
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+                border-radius: var(--radius-sm);
+            }
+
+            .page-title {
+                font-size: 1.1rem;
+                margin-left: var(--space-sm);
+            }
+
+            .nav-left {
+                gap: var(--space-sm);
+            }
+
+            .nav-right {
+                gap: var(--space-xs);
+            }
+
+            .action-button {
+                padding: var(--space-xs) var(--space-sm);
+                font-size: 0.85rem;
+                min-width: auto;
+            }
+
+            .content-area {
+                padding: var(--space-sm);
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-sm);
+                margin-bottom: var(--space-lg);
+            }
+
+            .stat-card {
+                padding: var(--space-md);
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .stat-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+
+            .filters-section {
+                padding: var(--space-md);
+                margin-bottom: var(--space-lg);
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-sm);
+            }
+
+            .filter-group {
+                gap: var(--space-xs);
+            }
+
+            .filter-label {
+                font-size: 0.8rem;
+            }
+
+            .filter-input {
+                padding: var(--space-sm);
+                font-size: 0.9rem;
+            }
+
+            .filter-button {
+                padding: var(--space-sm) var(--space-md);
+                font-size: 0.9rem;
+                width: 100%;
+            }
+
+            .table-section {
+                border-radius: var(--radius-md);
+            }
+
+            .table-header {
+                padding: var(--space-md);
+                flex-direction: column;
+                gap: var(--space-sm);
+                align-items: flex-start;
+            }
+
+            .table-title {
+                font-size: 1.1rem;
+            }
+
+            .table-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .action-button {
+                padding: var(--space-xs) var(--space-sm);
+                font-size: 0.85rem;
+            }
+
+            .table-container {
+                font-size: 0.8rem;
+                overflow-x: auto;
+            }
+
+            .table {
+                min-width: 600px;
+            }
+
+            .table th,
+            .table td {
+                padding: var(--space-xs) var(--space-sm);
+                white-space: nowrap;
+            }
+
+            .table th {
+                font-size: 0.75rem;
+                padding: var(--space-sm);
+            }
+
+            .user-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-xs);
+                min-width: 120px;
+            }
+
+            .user-avatar {
+                width: 32px;
+                height: 32px;
+            }
+
+            .user-details h6 {
+                font-size: 0.85rem;
+            }
+
+            .user-details small {
+                font-size: 0.7rem;
+            }
+
+            .badge {
+                padding: var(--space-xs);
+                font-size: 0.7rem;
+                white-space: nowrap;
+            }
+
+            .action-buttons {
+                display: flex;
+                gap: var(--space-xs);
+                flex-wrap: wrap;
+            }
+
+            .btn-sm {
+                padding: var(--space-xs);
+                font-size: 0.75rem;
+                min-width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Pagination responsive */
+            .pagination {
+                flex-wrap: wrap;
+                gap: var(--space-xs);
+            }
+
+            .page-link {
+                padding: var(--space-xs) var(--space-sm);
+                font-size: 0.85rem;
+            }
+
+            /* Top nav responsive */
+            .top-nav {
+                padding: var(--space-sm) var(--space-md);
+            }
+
+            .top-nav-content {
+                gap: var(--space-sm);
+            }
+        }
+
+        /* Extra small devices */
+        @media (max-width: 480px) {
+            .content-area {
+                padding: var(--space-xs);
+            }
+
+            .stats-grid {
+                gap: var(--space-xs);
+            }
+
+            .stat-card {
+                padding: var(--space-sm);
+            }
+
+            .stat-value {
+                font-size: 1.25rem;
+            }
+
+            .filters-section {
+                padding: var(--space-sm);
+            }
+
+            .table-header {
+                padding: var(--space-sm);
+            }
+
+            .mobile-toggle {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+
+            .page-title {
+                font-size: 1rem;
+            }
+
+            .action-button {
+                padding: var(--space-xs);
+                font-size: 0.8rem;
+            }
+
+            /* Analytics mobile responsive */
+            .analytics-filters-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-sm);
+            }
+
+            .analytics-filter-group {
+                gap: var(--space-xs);
+            }
+
+            .analytics-filter-label {
+                font-size: 0.8rem;
+            }
+
+            .analytics-filter-input {
+                padding: var(--space-sm);
+                font-size: 0.9rem;
+            }
+
+            .analytics-filter-button {
+                padding: var(--space-sm) var(--space-md);
+                font-size: 0.9rem;
+                width: 100%;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-sm);
+            }
+
+            .metric-card {
+                padding: var(--space-md);
+            }
+
+            .metric-value {
+                font-size: 1.5rem;
+            }
+
+            .metric-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-md);
+            }
+
+            .chart-row {
+                grid-template-columns: 1fr;
+                gap: var(--space-md);
+            }
+
+            .chart-card {
+                padding: var(--space-md);
+            }
+
+            .chart-container {
+                height: 250px;
+            }
+
+            .chart-title {
+                font-size: 1rem;
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .loaded .loading {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Chart Styles */
+        .chart-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .chart-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-chart);
+        }
+
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .chart-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-md);
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .chart-container canvas {
+            max-height: 100%;
+            max-width: 100%;
+        }
+
+        /* Analytics Filters */
+        .analytics-filters {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-xl);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .analytics-filters:hover {
+            box-shadow: var(--shadow-xl);
+        }
+
+        .analytics-filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .analytics-filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        .analytics-filter-label {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .analytics-filter-input {
+            background: var(--bg-glass);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            padding: var(--space-sm) var(--space-md);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .analytics-filter-input option {
+            color: var(--text-primary) !important;
+            background: var(--bg-secondary) !important;
+            padding: var(--space-sm) var(--space-md) !important;
+            margin: 0 !important;
+            border: none !important;
+            border-radius: var(--radius-md) !important;
+            font-size: 0.95rem !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+        }
+
+        .analytics-filter-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+        }
+
+        .analytics-filter-button {
+            background: var(--gradient-chart);
+            border: none;
+            border-radius: var(--radius-md);
+            color: white;
+            padding: var(--space-sm) var(--space-lg);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .analytics-filter-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow-hover);
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
+        }
+
+        .metric-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-chart);
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .metric-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .metric-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            position: relative;
+        }
+
+        .metric-icon i {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            font-size: inherit;
+        }
+
+        .metric-icon.users { background: var(--gradient-chart); }
+        .metric-icon.content { background: var(--gradient-chart2); }
+        .metric-icon.revenue { background: var(--gradient-chart3); }
+        .metric-icon.engagement { background: var(--gradient-chart4); }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-change {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            font-size: 0.8rem;
+            margin-top: var(--space-xs);
+        }
+
+        .metric-change.positive {
+            color: var(--success);
+        }
+
+        .metric-change.negative {
+            color: var(--danger);
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-lg);
+        }
+    </style>
+</head>
+<body :class="{ 'loaded': loaded }">
+    <!-- Floating Particles -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" :class="{ 'show': sidebarOpen }" @click="sidebarOpen = false"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" :class="{ 'open': sidebarOpen }">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <img src="/static/assets/image/logo.png" alt="INEMI Logo" style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+                    <div class="logo-text">Admin Panel</div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-item">
+                    <a href="{{ url_for('admin.dashboard') }}" class="nav-link">
+                        <i class="bi bi-speedometer2 nav-icon"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="{{ url_for('admin.users') }}" class="nav-link">
+                        <i class="bi bi-people nav-icon"></i>
+                        <span>Manajemen User</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.payment') }}">
+                        <div class="nav-icon">
+                            <i class="bi bi-credit-card"></i>
+                        </div>
+                        <span>Payment</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.monitoring_post') }}">
+                        <div class="nav-icon">
+                            <i class="bi bi-eye"></i>
+                        </div>
+                        <span>Monitoring Post</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.favorite_management') }}">
+                        <div class="nav-icon">
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <span>Favorite Management</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="{{ url_for('admin.analytics') }}" class="nav-link active">
+                        <i class="bi bi-graph-up nav-icon"></i>
+                        <span>Analytics</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="{{ url_for('admin.products') }}" class="nav-link">
+                        <i class="bi bi-box nav-icon"></i>
+                        <span>Manajemen Produk</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="{{ url_for('admin.settings') }}" class="nav-link">
+                        <i class="bi bi-gear nav-icon"></i>
+                        <span>Pengaturan</span>
+                    </a>
+                </div>
+                
+                <!-- Divider -->
+                <div class="nav-divider" style="height: 1px; background: rgba(255, 255, 255, 0.1); margin: 20px 0;"></div>
+                
+                <div class="nav-item">
+                    <a href="{{ url_for('web_pages.home') }}" class="nav-link">
+                        <i class="bi bi-house nav-icon"></i>
+                        <span>Kembali ke Website</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Navigation -->
+            <nav class="top-nav">
+                <div class="top-nav-content">
+                    <div class="nav-left">
+                        <button class="mobile-toggle" @click="sidebarOpen = !sidebarOpen">
+                            <i class="bi bi-list mx-auto my-auto"></i>
+                        </button>
+                        <h1 class="page-title">Analytics Dashboard</h1>
+                    </div>
+                    <div class="nav-right">
+                        <button class="action-button" onclick="exportAnalytics()">
+                            <i class="bi bi-download"></i>
+                            Export Report
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Stats Cards -->
+                <!-- Analytics Filters -->
+                <div class="analytics-filters loading">
+                    <form class="analytics-filters-grid">
+                        <div class="analytics-filter-group">
+                            <label class="analytics-filter-label">Rentang Waktu</label>
+                            <select class="analytics-filter-input" id="dateRange" onchange="updateCharts()">
+                                <option value="30">30 Hari Terakhir</option>
+                                <option value="7">7 Hari Terakhir</option>
+                                <option value="90">90 Hari Terakhir</option>
+                                <option value="365">1 Tahun Terakhir</option>
+                            </select>
+                        </div>
+                        <div class="analytics-filter-group">
+                            <label class="analytics-filter-label">Tipe Chart</label>
+                            <select class="analytics-filter-input" id="chartType" onchange="updateCharts()">
+                                <option value="line">Line Chart</option>
+                                <option value="bar">Bar Chart</option>
+                                <option value="area">Area Chart</option>
+                            </select>
+                        </div>
+                        <div class="analytics-filter-group">
+                            <label class="analytics-filter-label">Group By</label>
+                            <select class="analytics-filter-input" id="groupBy" onchange="updateCharts()">
+                                <option value="day">Per Hari</option>
+                                <option value="week">Per Minggu</option>
+                                <option value="month">Per Bulan</option>
+                            </select>
+                        </div>
+                        <div class="analytics-filter-group">
+                            <label class="analytics-filter-label">&nbsp;</label>
+                            <button type="button" class="analytics-filter-button" onclick="updateCharts()">
+                                <i class="bi bi-funnel"></i>
+                                Terapkan Filter
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Metrics Cards -->
+                <div class="metrics-grid loading">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon users">
+                                <i class="bi bi-people"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value">{{ users.total if users else 0 }}</div>
+                        <div class="metric-label">Total Users</div>
+                        <div class="metric-change positive">
+                            <i class="bi bi-arrow-up"></i>
+                            +12.5% dari bulan lalu
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon content">
+                                <i class="bi bi-collection"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value">{{ content_data.images + content_data.videos + content_data.songs if content_data else 0 }}</div>
+                        <div class="metric-label">Total Content</div>
+                        <div class="metric-change positive">
+                            <i class="bi bi-arrow-up"></i>
+                            +8.3% dari bulan lalu
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon revenue">
+                                <i class="bi bi-currency-dollar"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value">Rp {{ "{:,}".format(orders.items | map(attribute='total_amount') | sum if orders else 0) }}</div>
+                        <div class="metric-label">Total Revenue</div>
+                        <div class="metric-change positive">
+                            <i class="bi bi-arrow-up"></i>
+                            +15.2% dari bulan lalu
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon engagement">
+                                <i class="bi bi-graph-up"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value">89.2%</div>
+                        <div class="metric-label">Engagement Rate</div>
+                        <div class="metric-change positive">
+                            <i class="bi bi-arrow-up"></i>
+                            +5.7% dari bulan lalu
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-grid loading">
+                    <!-- User Growth Chart -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="bi bi-people me-2"></i>
+                                Pertumbuhan User
+                            </h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="userGrowthChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Revenue Chart -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="bi bi-currency-dollar me-2"></i>
+                                Revenue Trend
+                            </h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Distribution Charts -->
+                <div class="chart-row loading">
+                    <!-- Content Distribution -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="bi bi-pie-chart me-2"></i>
+                                Distribusi Content
+                            </h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="contentDistributionChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- User Activity -->
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3 class="chart-title">
+                                <i class="bi bi-activity me-2"></i>
+                                Aktivitas User
+                            </h3>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="userActivityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Content Statistics -->
+                <div class="metrics-grid loading">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon content">
+                                <i class="bi bi-image"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value">{{ content_data.images if content_data else 0 }}</div>
+                        <div class="metric-label">Total Images</div>
+                        <div class="metric-change positive">
+                            <i class="bi bi-arrow-up"></i>
+                            +18.2% dari bulan lalu
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon content">
+                                <i class="bi bi-camera-video"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value">{{ content_data.videos if content_data else 0 }}</div>
+                        <div class="metric-label">Total Videos</div>
+                        <div class="metric-change positive">
+                            <i class="bi bi-arrow-up"></i>
+                            +22.1% dari bulan lalu
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon content">
+                                <i class="bi bi-music-note"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value">{{ content_data.songs if content_data else 0 }}</div>
+                        <div class="metric-label">Total Songs</div>
+                        <div class="metric-change positive">
+                            <i class="bi bi-arrow-up"></i>
+                            +14.7% dari bulan lalu
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <div class="metric-icon content">
+                                <i class="bi bi-play-circle"></i>
+                            </div>
+                        </div>
+                        <div class="metric-value">{{ content_data.video_iklan if content_data else 0 }}</div>
+                        <div class="metric-label">Video Iklan</div>
+                        <div class="metric-change positive">
+                            <i class="bi bi-arrow-up"></i>
+                            +9.3% dari bulan lalu
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Check screen size and set mobile state
+        function checkScreenSize() {
+            const isMobile = window.innerWidth <= 768;
+            const app = document.querySelector('[x-data]').__x.$data;
+            if (app) {
+                app.isMobile = isMobile;
+            }
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            checkScreenSize();
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkScreenSize();
+        });
+        
+        // Export analytics function
+        function exportAnalytics() {
+            alert('Export analytics report functionality will be implemented here');
+        }
+        
+        // Update charts function
+        function updateCharts() {
+            const dateRange = document.getElementById('dateRange').value;
+            const chartType = document.getElementById('chartType').value;
+            const groupBy = document.getElementById('groupBy').value;
+            
+            // Here you would typically make an AJAX call to get new data
+            // For now, we'll just reinitialize the charts
+            initializeCharts();
+        }
+        
+        // Initialize all charts
+        function initializeCharts() {
+            initializeUserGrowthChart();
+            initializeRevenueChart();
+            initializeContentDistributionChart();
+            initializeUserActivityChart();
+        }
+        
+        // User Growth Chart
+        function initializeUserGrowthChart() {
+            const ctx = document.getElementById('userGrowthChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'New Users',
+                        data: [65, 78, 90, 105, 125, 140, 160, 180, 200, 220, 240, 260],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#ffffff'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#a0a0a0' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            ticks: { color: '#a0a0a0' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Revenue Chart
+        function initializeRevenueChart() {
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Revenue (Rp)',
+                        data: [1200000, 1500000, 1800000, 2100000, 2400000, 2700000, 3000000, 3300000, 3600000, 3900000, 4200000, 4500000],
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: '#667eea',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#ffffff'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#a0a0a0' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            ticks: { color: '#a0a0a0' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Content Distribution Chart
+        function initializeContentDistributionChart() {
+            const ctx = document.getElementById('contentDistributionChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Images', 'Videos', 'Songs', 'Video Iklan'],
+                    datasets: [{
+                        data: [35, 25, 20, 20],
+                        backgroundColor: [
+                            '#667eea',
+                            '#f093fb',
+                            '#4facfe',
+                            '#fa709a'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#ffffff',
+                                padding: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // User Activity Chart
+        function initializeUserActivityChart() {
+            const ctx = document.getElementById('userActivityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Active Users',
+                        data: [1200, 1350, 1100, 1400, 1600, 1800, 1500],
+                        borderColor: '#4facfe',
+                        backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#ffffff'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#a0a0a0' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            ticks: { color: '#a0a0a0' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Add staggered loading animation and initialize charts
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingElements = document.querySelectorAll('.loading');
+            loadingElements.forEach((element, index) => {
+                setTimeout(() => {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+            
+            // Initialize charts after a short delay to ensure DOM is ready
+            setTimeout(() => {
+                initializeCharts();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

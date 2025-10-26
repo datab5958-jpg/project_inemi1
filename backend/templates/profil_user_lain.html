@@ -1,0 +1,818 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  body, .profile-bg {
+    background: rgba(30,32,44,0.72);
+    min-height: 100vh;
+  }
+  .profile-main-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    gap: 0;
+  }
+  .profile-blur {
+    width: 100%;
+    max-width: 100%;
+    margin: 0 auto 1.5rem auto;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(12px);
+    border-radius: 2.2rem;
+    box-shadow: 0 8px 32px 0 #181c2b55;
+    padding: 2.2rem 1.2rem 1.2rem 1.2rem;
+    animation: fadeInUp 0.8s cubic-bezier(.39,.575,.565,1) both;
+  }
+  .profile-gallery-col {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    margin: 0 auto;
+  }
+  @keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(40px) scale(0.98); }
+    100% { opacity: 1; transform: none; }
+  }
+  .profile-photo {
+    width: 208px;
+    height: 208px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3.5px solid #6c63ff;
+    box-shadow: 0 4px 24px 0 #6c63ff33;
+    margin-bottom: 0.7rem;
+    background: #232946;
+    transition: box-shadow 0.22s, transform 0.22s;
+  }
+  .profile-photo:hover {
+    box-shadow: 0 8px 32px 0 #ff4ecd44;
+    transform: scale(1.06) rotate(-2deg);
+  }
+  .nav-profile{
+    margin-bottom: 40px;
+  }
+  .profile-name {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.2px;
+  }
+  .profile-username {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.2px;
+  }
+  .profile-handle {
+    color: #bcbcbc;
+    font-size: 1.05rem;
+    text-align: center;
+    margin-bottom: 0.2rem;
+  }
+  .profile-bio {
+    color: #bcbcbc;
+    font-size: 1.02rem;
+    text-align: center;
+    margin-bottom: 0.7rem;
+    min-height: 1.2em;
+  }
+  .profile-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 1.1rem;
+    margin-bottom: 1.1rem;
+    margin-top: 1.1rem;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+  }
+  .profile-actions .btn {
+    width: 33.3%;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 12px 0 #6c63ff22;
+    transition: background 0.18s, transform 0.18s, box-shadow 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+  .profile-actions .btn:focus, .profile-actions .btn:hover {
+    background: linear-gradient(90deg, #6c63ff 0%, #ff4ecd 100%) !important;
+    color: #fff !important;
+    transform: scale(1.07);
+    box-shadow: 0 4px 24px 0 #ff4ecd33;
+    z-index: 2;
+  }
+  .profile-stats {
+    display: flex;
+    justify-content: start;
+    gap: 2.5rem;
+    margin-bottom: 1.2rem;
+    margin-top: 0.5rem;
+  }
+  .profile-stats > div {
+    text-align: center;
+  }
+  .profile-stats .fw-bold {
+    font-size: 1.18rem;
+    color: #fff;
+  }
+  .profile-stats .small {
+    color: #bcbcbc;
+    font-size: 0.97rem;
+  }
+  .tabs {
+    display: flex;
+    justify-content: center;
+    gap: 2.2rem;
+    margin-bottom: 1.2rem;
+    margin-top: 0.2rem;
+  }
+  .tabs span {
+    font-size: 1.08rem;
+    font-weight: 600;
+    color: #bcbcbc;
+    cursor: pointer;
+    padding: 0.3rem 1.2rem;
+    border-radius: 1.2rem;
+    transition: background 0.18s, color 0.18s;
+    position: relative;
+  }
+  .tabs .active, .tabs span:hover {
+    color: #fff;
+    background: linear-gradient(90deg, #6c63ff 0%, #ff4ecd 100%);
+    box-shadow: 0 2px 12px 0 #6c63ff22;
+  }
+  .gallery {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0 auto 2.5rem auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    padding: 0 0.5rem;
+    animation: fadeIn 1.1s cubic-bezier(.39,.575,.565,1) both;
+  }
+  .gallery img, .gallery video, .gallery .music-card {
+    width: 100%;
+    aspect-ratio: 1/1;
+    object-fit: cover;
+    border-radius: 1.1rem;
+    box-shadow: 0 2px 12px 0 #23294633;
+    transition: transform 0.22s, box-shadow 0.22s;
+    cursor: pointer;
+    background: #232946;
+    position: relative;
+  }
+  .gallery img:hover, .gallery video:hover, .gallery .music-card:hover {
+    transform: scale(1.07) rotate(-2deg);
+    box-shadow: 0 8px 32px 0 #ff4ecd44;
+    z-index: 2;
+  }
+  .music-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.1rem 0.5rem 0.7rem 0.5rem;
+    background: rgba(108,99,255,0.08);
+    border: 1.5px solid #6c63ff33;
+  }
+  .music-card img {
+    width: 60px;
+    height: 60px;
+    border-radius: 0.7rem;
+    margin-bottom: 0.5rem;
+    object-fit: cover;
+    box-shadow: 0 2px 8px 0 #6c63ff22;
+  }
+  .music-title {
+    color: #fff;
+    font-size: 1.01rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+    text-align: center;
+  }
+  .music-caption {
+    color: #bcbcbc;
+    font-size: 0.93rem;
+    text-align: center;
+    margin-bottom: 0.3rem;
+  }
+  .music-audio {
+    width: 100%;
+    margin-top: 0.2rem;
+  }
+  @media (max-width: 900px) {
+    .profile-main-row {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .profile-blur, .profile-gallery-col {
+      max-width: 100%;
+      width: 100%;
+      margin-left: 0;
+      margin-right: 0;
+    }
+    .gallery {
+      max-width: 100%;
+    }
+    .profile-actions {
+      flex-direction: row;
+      justify-content: center;
+      align-items: center;
+      gap: 0.7rem;
+    }
+  }
+  @media (max-width: 576px) {
+    .nav-profile{ margin-bottom: 0 !important; }
+    .profile-blur { padding: 1.2rem 0.3rem 1.2rem 0.3rem; }
+    .profile-photo { width: 108px; height: 108px;  align-items: center; justify-content: center; margin-top: 30px;}
+    .gallery { gap: 7px; }
+    .profile-stats {gap: 10px; font-size: 1rem !important;}
+    .tabs {gap: 0;}
+  }
+  .profile-btn {
+    text-decoration: none;
+    border: none;
+    outline: none;
+    border-radius: 2.5rem;
+    font-size: 1.13rem;
+    font-weight: 600;
+    padding: 0.85rem 0;
+    background: rgba(108,99,255,0.13);
+    color: #fff;
+    box-shadow: 0 2px 16px 0 #6c63ff33, 0 1.5px 8px 0 #ff4ecd22;
+    transition: background 0.22s, color 0.22s, box-shadow 0.22s, transform 0.18s;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    letter-spacing: 0.2px;
+    backdrop-filter: blur(2px);
+    cursor: pointer;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+  }
+  .profile-btn.profile-btn-main {
+    background: linear-gradient(90deg, #6c63ff 0%, #ff4ecd 100%);
+    color: #fff;
+    box-shadow: 0 4px 24px 0 #6c63ff55, 0 2px 12px 0 #ff4ecd33;
+  }
+  .profile-btn.profile-btn-main:hover, .profile-btn.profile-btn-main:focus {
+    background: linear-gradient(90deg, #ff4ecd 0%, #6c63ff 100%);
+    color: #fff;
+    transform: scale(1.04);
+    box-shadow: 0 8px 32px 0 #ff4ecd55;
+    z-index: 2;
+  }
+  .profile-btn:not(.profile-btn-main):hover, .profile-btn:not(.profile-btn-main):focus {
+    background: linear-gradient(90deg, #232946 0%, #6c63ff 100%);
+    color: #fff;
+    transform: scale(1.04);
+    box-shadow: 0 4px 24px 0 #6c63ff33;
+    z-index: 2;
+  }
+  .profile-btn svg {
+    margin-right: 0.5rem;
+    font-size: 1.2em;
+  }
+  .profile-btn-logout {
+    background: rgba(255, 78, 205, 0.13);
+    color: #ff4ecd;
+    border: 1.5px solid #ff4ecd55;
+  }
+  .profile-btn-logout:hover, .profile-btn-logout:focus {
+    background: linear-gradient(90deg, #ff4ecd 0%, #232946 100%);
+    color: #fff;
+    box-shadow: 0 4px 24px 0 #ff4ecd55;
+    transform: scale(1.04);
+  }
+  .masonry {
+    column-count: 3 !important;
+    column-gap: 2rem;
+    width: 100%;
+    margin: 2.5rem auto 0 auto;
+    padding: 0 1vw;
+  }
+  @media (max-width: 1200px) { .masonry { column-count: 3; } }
+  @media (max-width: 900px) { .masonry { column-count: 2; } }
+  @media (max-width: 600px) { .masonry { column-count: 2 !important; } }
+  .masonry-card {
+    background: rgba(24,24,47,0.93);
+    border-radius: 1.3rem;
+    box-shadow: 0 4px 24px 0 #0004;
+    margin-bottom: 2rem;
+    display: inline-block;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    break-inside: avoid;
+    transition: box-shadow 0.18s, transform 0.18s;
+  }
+  .masonry-card:hover {
+    box-shadow: 0 12px 32px 0 #6366f199;
+    transform: translateY(-4px) scale(1.025);
+  }
+  .masonry-img {
+    width: 100%;
+    display: block;
+    border-top-left-radius: 1.3rem;
+    border-top-right-radius: 1.3rem;
+    object-fit: cover;
+    background: #23233a;
+  }
+  .masonry-video {
+    width: 100%;
+    display: block;
+    border-top-left-radius: 1.3rem;
+    border-top-right-radius: 1.3rem;
+    background: #23233a;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+  }
+  .masonry-overlay {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    background: linear-gradient(0deg,rgba(24,24,47,0.92) 70%,rgba(24,24,47,0.1) 100%);
+    padding: 1.1rem 1.2rem 0.7rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .masonry-title {
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.08rem;
+    margin-bottom: 0.1rem;
+    letter-spacing: 0.2px;
+  }
+  .masonry-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    color: #a5b4fc;
+    font-size: 0.97rem;
+  }
+  .masonry-creator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .masonry-creator-avatar {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #6366f1;
+  }
+  .masonry-likes, .masonry-views {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .masonry-likes i, .masonry-views i {
+    color: #ec4899;
+    font-size: 1.1rem;
+  }
+  .tags-bar {
+    display: flex;
+    gap: 1.1rem;
+    margin: 2.2rem auto 1.5rem auto;
+    max-width: 1400px;
+    padding: 0 1vw;
+    flex-wrap: wrap;
+  }
+  .tag-btn {
+    background: rgba(99,102,241,0.13);
+    color: #a5b4fc;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.4rem 1.3rem;
+    font-size: 1.01rem;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: background 0.2s, color 0.2s, border 0.2s;
+    user-select: none;
+    text-decoration: none;
+  }
+  .tag-btn.active, .tag-btn:hover {
+    background: linear-gradient(90deg,#6366f1,#ec4899);
+    color: #fff;
+    border: 1.5px solid #ec4899;
+  }
+  .creative-top-cards {
+    display: flex;
+    gap: 2rem;
+    margin: 2.5rem auto 2rem auto;
+    max-width: 1200px;
+    justify-content: center;
+  }
+  .creative-card {
+    flex: 1 1 0;
+    min-width: 260px;
+    background: linear-gradient(120deg, rgba(99,102,241,0.7), rgba(236,72,153,0.6));
+    border-radius: 1.5rem;
+    box-shadow: 0 8px 32px 0 #0006;
+    padding: 2rem 2rem 1.5rem 2rem;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(8px) saturate(1.2);
+    border: 1.5px solid rgba(236,72,153,0.18);
+    transition: transform 0.18s cubic-bezier(.4,2,.6,1);
+  }
+  .creative-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 16px 48px 0 #ec489966;
+  }
+  .creative-card-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+  }
+  .creative-card-desc {
+    font-size: 1.05rem;
+    color: #e0e7ef;
+    margin-bottom: 1.2rem;
+    opacity: 0.85;
+  }
+  .creative-card-btn {
+    background: linear-gradient(90deg,#6366f1,#ec4899);
+    color: #fff;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.6rem 2.2rem;
+    border: none;
+    font-size: 1.08rem;
+    box-shadow: 0 0 12px #6366f199;
+    transition: background 0.3s;
+    text-decoration: none;
+    margin-top: auto;
+  }
+  .creative-card-btn:hover {
+    background: linear-gradient(90deg,#ec4899,#6366f1);
+    color: #fff;
+    box-shadow: 0 0 18px #ec4899cc;
+  }
+  @media (max-width: 900px) { .creative-top-cards { flex-direction: column; gap: 1.2rem; max-width: 98vw; } }
+  @media (max-width: 600px) {
+    .music-list-item{
+      display: block !important;
+    }
+    .creative-top-cards {
+      flex-direction: column;
+      gap: 1.2rem;
+      align-items: center;
+      margin-top: 1.2rem;
+    }
+    .creative-card {
+      width: 95vw;
+      min-width: unset;
+      max-width: 99vw;
+      border-radius: 2rem;
+      padding: 1.2rem 1.2rem 1.2rem 1.2rem;
+      box-shadow: 0 4px 24px 0 #ec489955;
+      margin: 0 auto;
+      background: linear-gradient(90deg, #6366f1 0%, #60a5fa 50%, #ec4899 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .creative-card-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 2px 8px #23233a99;
+      letter-spacing: 0.5px;
+      text-align: center;
+      width: 100%;
+    }
+    .creative-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 32px 0 #ec4899aa;
+      background: linear-gradient(90deg, #ec4899 0%, #6366f1 100%);
+    }
+    .creative-card-desc, .creative-card-btn {
+      display: none !important;
+    }
+  }
+  .no-content {
+    text-align: center;
+    color: #a5b4fc;
+    font-size: 1.2rem;
+    margin: 3rem 0;
+    padding: 2rem;
+  }
+  @media (min-width: 900px) {
+    .masonry {
+      column-count: 5;
+      column-gap: 0;
+      padding: 0;
+      max-width: 100vw;
+      margin: 0 auto;
+    }
+    .masonry-card {
+      display: inline-block;
+      width: 100%;
+      margin: 0;
+      background: none;
+      border-radius: 0;
+      box-shadow: none;
+      overflow: hidden;
+      break-inside: avoid;
+      transition: none;
+    }
+    .masonry-card:hover {
+      box-shadow: none;
+      transform: none;
+    }
+    .masonry-img, .masonry-video {
+      width: 100%;
+      aspect-ratio: 1/1;
+      height: auto;
+      object-fit: cover;
+      border-radius: 0;
+      min-height: 0;
+      max-height: none;
+      display: block;
+      background: #23233a;
+    }
+  }
+</style>
+<div class="container pb-5">
+  <div class="profile-main-row">
+    <div class="profile-blur">
+      <div class="text-center w-100">
+        <div class="row nav-profile">
+          <div class="col-6">
+            <div class="profile-username text-start"><i class="bi bi-lock"></i> @{{ user.username }}</div>
+          </div>
+          <div class="col-6 text-end">
+              <i class="bi bi-plus-circle sidebar-menu-icon" style="cursor:pointer;" id="tambah-generate-btn" data-bs-toggle="modal" data-bs-target="#generateModal"></i>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-4">
+            <img src="{{ user.avatar_url or '/static/assets/image/default.jpg' }}" alt="Profile" class="profile-photo mb-2"/>
+          </div>
+          <div class="col-8 text-start">
+            <div class="profile-name text-start">{{ user.username }}</div>
+            {% if user.role == 'premium' %}
+              <div class="badge" style="display:inline-block;background:linear-gradient(90deg,#fbbf24,#a21caf);color:#fff;font-weight:700;padding:0.3em 1.2em;border-radius:999px;font-size:1.05em;margin-bottom:0.5em;box-shadow:0 2px 12px #a21caf55;letter-spacing:0.04em;"><i class="bi bi-gem me-1"></i> Premium User</div>
+            {% elif user.role == 'premier' %}
+              <div class="badge" style="display:inline-block;background:linear-gradient(90deg,#fbbf24,#a21caf);color:#fff;font-weight:700;padding:0.3em 1.2em;border-radius:999px;font-size:1.05em;margin-bottom:0.5em;box-shadow:0 2px 12px #a21caf55;letter-spacing:0.04em;"><i class="bi bi-gem me-1"></i> Premier User</div>
+            {% else %}
+              <div class="badge" style="display:inline-block;background:linear-gradient(90deg,#6366f1,#60a5fa);color:#fff;font-weight:700;padding:0.3em 1.2em;border-radius:999px;font-size:1.05em;margin-bottom:0.5em;box-shadow:0 2px 12px #6366f155;letter-spacing:0.04em;"><i class="bi bi-person me-1"></i> Free User</div>
+            {% endif %}
+            {% if user.bio %}
+            <div class="profile-bio text-start">{{ user.bio }}</div>
+            {% endif %}
+            <div class="profile-stats mb-3 mt-3 text-start">
+              <div>
+                <div class="fw-bold">{{ follower_count }}</div>
+                <div class="small">Followers</div>
+              </div>
+              <div>
+                <div class="fw-bold">{{ following_count }}</div>
+                <div class="small">Following</div>
+              </div>
+              <div>
+                <div class="fw-bold">{{ media_items|length }}</div>
+                <div class="small">Posts</div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+        <div class="profile-actions">
+          {% if is_following %}
+            <form method="post" action="{{ url_for('web_pages.unfollow_user', username=user.username) }}" style="display:inline;width: 100%;">
+              <button type="submit" class="profile-btn"><i class="bi bi-person-dash"></i></i> Unfollow</button>
+            </form>
+          {% else %}
+            <form method="post" action="{{ url_for('web_pages.follow_user', username=user.username) }}" style="display:inline;width: 100%">
+              <button type="submit" class="profile-btn profile-btn-main"><i class="bi bi-person-add"></i> Follow</button>
+            </form>
+          {% endif %}
+          <a href="{{ url_for('web_pages.isi_chat') }}?user_name={{ user.username }}" class="profile-btn profile-btn-main">
+            <span>💬 Chat</span>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="profile-gallery-col">
+      <div class="tabs mb-3 mt-4">
+        <span class="active" data-filter="all">All</span>
+        <span data-filter="image">Foto</span>
+        <span data-filter="video">Video</span>
+        <span data-filter="music">Musik</span>
+      </div>
+      <div class="gallery" id="profile-gallery">
+        <div class="masonry">
+          {% if media_items %}
+            {% for item in media_items %}
+              <div class="masonry-card" data-type="{{ item.type }}">
+                {% if item.type == 'video' %}
+                <div style="position: relative;" onclick="handleRedirect(event, '{{ item.id }}')">
+                  <video class="masonry-video" muted loop>
+                    <source src="{{ item.url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                  </video>
+                  <button class="music-play-btn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:2;">
+                    <span id="icon-{{ item.id }}" style="color:white;font-size:2rem;" class="bi bi-play-fill"></span>
+                  </button>
+                </div>
+                {% elif item.type == 'music' %}
+                <div style="position: relative;" onclick="window.location.href='/post_musik/{{ item.id }}'">
+                  <img src="{{ item.image_url or '/static/assets/image/default.jpg' }}" class="masonry-img" alt="Music Cover">
+                  <button class="music-play-btn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:2;">
+                    <span id="icon-{{ item.id }}" style="color:white;font-size:2rem;" class="bi bi-play-fill"></span>
+                  </button>
+                </div>
+                {% else %}
+                  <img src="{{ item.url }}" class="masonry-img" alt="Image" onclick="window.location.href='/post_image/{{ item.id }}'">
+                {% endif %}
+                
+                <div class="masonry-overlay">
+                  <div class="masonry-meta">
+                    <div class="masonry-likes" data-content-type="{{ item.type }}" data-content-id="{{ item.id }}" style="cursor:pointer;">
+                      <i class="bi bi-heart"></i>
+                      <span class="like-count">0</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          {% else %}
+            <div class="no-content">
+              <p>Tidak ada konten yang tersedia saat ini.</p>
+              <p>Mulai membuat konten baru dengan mengklik tombol di atas!</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+<script>
+  function handleRedirect(event, postId) {
+    event.preventDefault();
+    window.location.href = '/post_video/' + postId;
+  }
+// Helper format waktu
+function formatTime(sec) {
+  sec = Math.floor(sec);
+  const m = Math.floor(sec/60).toString().padStart(2,'0');
+  const s = (sec%60).toString().padStart(2,'0');
+  return `${m}:${s}`;
+}
+
+</script>
+
+<script>
+  // Update active filter based on current URL
+  document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    const tagButtons = document.querySelectorAll('.tag-btn');
+    
+    tagButtons.forEach(btn => {
+      if (btn.getAttribute('href') === currentPath) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    // Add like functionality to gallery
+    document.querySelectorAll('.masonry-likes').forEach(likeBtn => {
+      likeBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const contentType = this.getAttribute('data-content-type');
+        const contentId = this.getAttribute('data-content-id');
+        const likeIcon = this.querySelector('i');
+        const likeCount = this.querySelector('.like-count');
+        
+        fetch('/like', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `content_type=${contentType}&content_id=${contentId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Update like count
+            likeCount.textContent = data.like_count;
+            
+            // Toggle heart icon
+            if (data.liked) {
+              likeIcon.className = 'bi bi-heart-fill';
+              likeIcon.style.color = '#ff4757';
+            } else {
+              likeIcon.className = 'bi bi-heart';
+              likeIcon.style.color = '#ffffff';
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+      });
+    });
+  });
+</script>
+    </div>
+  </div>
+</div>
+<script>
+  // Tab filter logic
+  document.addEventListener('DOMContentLoaded', function() {
+    const tabs = document.querySelectorAll('.tabs span');
+    const items = document.querySelectorAll('.masonry-card');
+    tabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        tabs.forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        const filter = this.getAttribute('data-filter');
+        items.forEach(item => {
+          if (filter === 'all' || item.getAttribute('data-type') === filter) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    });
+  });
+</script>
+
+<style>
+  .masonry-likes {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: white;
+    font-size: 14px;
+    padding: 5px 10px;
+    background: rgba(0,0,0,0.7);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+  }
+
+  .masonry-likes:hover {
+    background: rgba(255,71,87,0.8);
+    transform: scale(1.05);
+  }
+
+  .masonry-likes i {
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+
+  .masonry-likes.liked i {
+    color: #ff4757;
+  }
+
+  .masonry-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    padding: 20px 15px 15px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .masonry-card:hover .masonry-overlay {
+    opacity: 1;
+  }
+
+  .masonry-meta {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+</style>
+{% endblock %}

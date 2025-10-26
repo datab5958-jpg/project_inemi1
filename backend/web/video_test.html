@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Test - Debug</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-video {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            background: #333;
+            margin: 20px 0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .test-video video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .test-info {
+            background: #222;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success { background: #4caf50; }
+        .status.error { background: #f44336; }
+        .status.loading { background: #ff9800; }
+        button {
+            background: #ff6b6b;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #ff5252;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Video Loading Test</h1>
+        
+        <div class="test-info">
+            <h3>Test 1: Dummy Video URLs</h3>
+            <p>Testing with sample video URLs from Google's test bucket</p>
+        </div>
+        
+        <div class="test-video">
+            <video controls preload="metadata" id="testVideo1">
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+        
+        <div class="status loading" id="status1">Loading...</div>
+        
+        <div class="test-info">
+            <h3>Test 2: API Endpoint Test</h3>
+            <p>Testing API endpoints for video data</p>
+        </div>
+        
+        <button onclick="testAPI()">Test API Endpoints</button>
+        <div class="status" id="apiStatus">Click button to test API</div>
+        
+        <div class="test-info">
+            <h3>Test 3: Video Element Creation</h3>
+            <p>Testing dynamic video element creation</p>
+        </div>
+        
+        <button onclick="createTestVideo()">Create Test Video</button>
+        <div id="testVideoContainer"></div>
+        
+        <div class="test-info">
+            <h3>Debug Information</h3>
+            <div id="debugInfo"></div>
+        </div>
+    </div>
+
+    <script>
+        // Test 1: Basic video loading
+        const testVideo1 = document.getElementById('testVideo1');
+        const status1 = document.getElementById('status1');
+        
+        testVideo1.addEventListener('loadstart', () => {
+            status1.textContent = 'Loading started...';
+            status1.className = 'status loading';
+        });
+        
+        testVideo1.addEventListener('loadeddata', () => {
+            status1.textContent = 'Video data loaded successfully!';
+            status1.className = 'status success';
+        });
+        
+        testVideo1.addEventListener('error', (e) => {
+            status1.textContent = 'Error loading video: ' + e.message;
+            status1.className = 'status error';
+        });
+        
+        // Test 2: API endpoint testing
+        async function testAPI() {
+            const apiStatus = document.getElementById('apiStatus');
+            apiStatus.textContent = 'Testing API endpoints...';
+            apiStatus.className = 'status loading';
+            
+            const endpoints = [
+                '/api/feed/videos/cursor?limit=5',
+                '/api/feed/videos?page=1&per_page=5',
+                '/api/videos?page=1&per_page=5'
+            ];
+            
+            let results = [];
+            
+            for (let i = 0; i < endpoints.length; i++) {
+                try {
+                    const response = await fetch(endpoints[i]);
+                    const data = await response.json();
+                    results.push({
+                        endpoint: endpoints[i],
+                        status: response.status,
+                        success: data.success,
+                        dataLength: data.data ? data.data.length : 0,
+                        error: data.error || null
+                    });
+                } catch (error) {
+                    results.push({
+                        endpoint: endpoints[i],
+                        status: 'error',
+                        success: false,
+                        error: error.message
+                    });
+                }
+            }
+            
+            let statusText = 'API Test Results:\n';
+            results.forEach(result => {
+                statusText += `${result.endpoint}: ${result.success ? 'SUCCESS' : 'FAILED'} (${result.status})\n`;
+                if (result.dataLength > 0) {
+                    statusText += `  - Found ${result.dataLength} videos\n`;
+                }
+                if (result.error) {
+                    statusText += `  - Error: ${result.error}\n`;
+                }
+            });
+            
+            apiStatus.textContent = statusText;
+            apiStatus.className = 'status ' + (results.some(r => r.success) ? 'success' : 'error');
+        }
+        
+        // Test 3: Dynamic video creation
+        function createTestVideo() {
+            const container = document.getElementById('testVideoContainer');
+            container.innerHTML = '';
+            
+            const testVideo = {
+                id: 999,
+                title: "Test Video",
+                caption: "This is a test video created dynamically",
+                video_url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                thumbnail_url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg",
+                user: {
+                    username: "Test User",
+                    avatar_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
+                },
+                stats: {
+                    likes: 50,
+                    comments: 10,
+                    views: 500,
+                    shares: 5
+                },
+                interactions: {
+                    is_liked: false
+                },
+                created_at: new Date().toISOString()
+            };
+            
+            const videoElement = createVideoElement(testVideo, 0);
+            container.appendChild(videoElement);
+        }
+        
+        // Copy of createVideoElement function from explore.html
+        function createVideoElement(video, index) {
+            const videoContainer = document.createElement('div');
+            videoContainer.className = 'video-item';
+            videoContainer.id = `video-${video.id}`;
+            videoContainer.style.cssText = `
+                position: relative;
+                width: 100%;
+                height: 300px;
+                background: #000;
+                border-radius: 10px;
+                overflow: hidden;
+                margin: 10px 0;
+            `;
+            
+            const videoUrl = video.video_url || video.videoUrl;
+            const thumbnail = video.thumbnail_url || video.thumbnail || '/static/assets/image/default.jpg';
+            const title = video.title || 'Untitled Video';
+            const caption = video.caption || video.description || '';
+            const username = video.user?.username || video.username || video.author || 'Unknown User';
+            const userAvatar = video.user?.avatar_url || video.user_avatar || video.authorAvatar || '/static/assets/image/default.jpg';
+            const viewCount = video.stats?.views || video.view_count || 0;
+            const likesCount = video.stats?.likes || 0;
+            const commentsCount = video.stats?.comments || 0;
+            const sharesCount = video.stats?.shares || 0;
+            const isLiked = video.interactions?.is_liked || false;
+            
+            videoContainer.innerHTML = `
+                <div style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 5px; font-size: 12px;">
+                    Loading: <span id="loading-${video.id}">Yes</span> | Error: <span id="error-${video.id}">No</span>
+                </div>
+                
+                <video 
+                    style="width: 100%; height: 100%; object-fit: cover;"
+                    preload="metadata"
+                    poster="${thumbnail}"
+                    muted
+                    playsinline
+                    loop
+                    onloadstart="document.getElementById('loading-${video.id}').textContent='Yes'"
+                    onloadeddata="document.getElementById('loading-${video.id}').textContent='No'"
+                    oncanplay="document.getElementById('loading-${video.id}').textContent='No'"
+                    onerror="document.getElementById('error-${video.id}').textContent='Yes'"
+                >
+                    <source src="${videoUrl}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                
+                <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(transparent, rgba(0,0,0,0.8)); padding: 20px; color: white;">
+                    <h4 style="margin: 0 0 5px 0;">${title}</h4>
+                    <p style="margin: 0 0 10px 0; font-size: 14px;">${caption}</p>
+                    <div style="display: flex; align-items: center; gap: 15px; font-size: 12px;">
+                        <span>👁️ ${viewCount}</span>
+                        <span>❤️ ${likesCount}</span>
+                        <span>💬 ${commentsCount}</span>
+                        <span>📤 ${sharesCount}</span>
+                    </div>
+                </div>
+            `;
+            
+            return videoContainer;
+        }
+        
+        // Debug information
+        function updateDebugInfo() {
+            const debugInfo = document.getElementById('debugInfo');
+            debugInfo.innerHTML = `
+                <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+                <p><strong>Video Support:</strong> ${document.createElement('video').canPlayType('video/mp4') ? 'Yes' : 'No'}</p>
+                <p><strong>Current URL:</strong> ${window.location.href}</p>
+                <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
+            `;
+        }
+        
+        // Initialize debug info
+        updateDebugInfo();
+        
+        // Auto-test API on load
+        setTimeout(() => {
+            testAPI();
+        }, 1000);
+    </script>
+</body>
+</html>

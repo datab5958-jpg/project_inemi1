@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+body, html {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0b0e1a 0%, #181c2b 100%) !important;
+    font-family: 'Inter', Arial, sans-serif;
+}
+.bg-inemi-card {
+    background: rgba(23, 25, 39, 0.93);
+    border: 1.5px solid #374151;
+    border-radius: 1.5rem;
+    box-shadow: 0 4px 32px 0 #a855f71a;
+    backdrop-filter: blur(8px);
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2.2rem 1.5rem 2rem 1.5rem;
+    position: relative;
+    transition: box-shadow 0.3s;
+}
+.bg-inemi-card:focus-within, .bg-inemi-card:hover {
+    box-shadow: 0 8px 40px 0 #a855f755;
+}
+.profile-pic-edit {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #a855f7;
+    box-shadow: 0 2px 16px #a855f733;
+    background: #232946;
+    margin-bottom: 0.5rem;
+    transition: box-shadow 0.3s, border 0.3s;
+}
+.change-btn {
+    font-size: 0.92rem;
+    padding: 0.18rem 0.9rem;
+    border-radius: 1rem;
+    background: linear-gradient(90deg, #a855f7 60%, #ec4899 100%);
+    color: #fff;
+    border: none;
+    margin-top: -0.7rem;
+    margin-bottom: 1.2rem;
+    margin-left: 0.5rem;
+    transition: filter 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px #a855f733;
+}
+.change-btn:hover, .change-btn:focus {
+    filter: brightness(1.1) drop-shadow(0 0 8px #ec4899cc);
+}
+.form-label {
+    color: #9ca3af;
+    font-weight: 500;
+    margin-bottom: 0.3rem;
+}
+.form-control {
+    background: rgba(23, 25, 39, 0.92);
+    border: 1.5px solid #374151;
+    color: #fff;
+    border-radius: 1rem;
+    font-size: 1.08rem;
+    transition: border 0.2s, box-shadow 0.2s;
+    box-shadow: none;
+}
+.form-control:focus {
+    border: 1.5px solid #a855f7;
+    box-shadow: 0 0 0 2px #a855f733;
+    background: rgba(23, 25, 39, 0.98);
+    color: #fff;
+}
+.save-btn {
+    background: linear-gradient(90deg, #a855f7 60%, #ec4899 100%);
+    color: #fff;
+    border: none;
+    border-radius: 2rem;
+    padding: 0.7rem 2.2rem;
+    font-size: 1.13rem;
+    font-weight: 600;
+    margin-top: 1.2rem;
+    box-shadow: 0 2px 12px #a855f733;
+    transition: all 0.18s cubic-bezier(.4,2,.6,1);
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    justify-content: center;
+    width: 100%;
+}
+.save-btn:hover, .save-btn:focus {
+    filter: brightness(1.1) drop-shadow(0 0 10px #ec4899cc);
+    transform: scale(1.04);
+    box-shadow: 0 4px 24px #a855f7cc;
+}
+.spinner-border {
+    width: 1.3rem;
+    height: 1.3rem;
+    border-width: 0.18em;
+}
+.toast-success {
+    position: absolute;
+    left: 50%;
+    bottom: -2.5rem;
+    transform: translateX(-50%);
+    background: linear-gradient(90deg, #a855f7 60%, #ec4899 100%);
+    color: #fff;
+    border-radius: 1.2rem;
+    padding: 0.7rem 1.7rem;
+    font-size: 1.08rem;
+    font-weight: 500;
+    box-shadow: 0 2px 16px #a855f7cc;
+    z-index: 9999;
+    opacity: 0.97;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    animation: fadeInUp 0.7s cubic-bezier(.4,2,.6,1) both;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 0.97; transform: translateY(0); }
+}
+@media (max-width: 600px) {
+    .bg-inemi-card { padding: 1.2rem 0.5rem 1.2rem 0.5rem; }
+    .profile-pic-edit { width: 72px; height: 72px; }
+}
+</style>
+<div class="container min-vh-100 d-flex align-items-center justify-content-center">
+  <div class="row w-100 justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+      <div class="bg-inemi-card px-3 px-md-5 py-4" x-data="editProfile()" x-init="initProfile()" x-show="show" x-transition:enter="transition-all duration-500" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100">
+        <form x-ref="formEdit" method="post" enctype="multipart/form-data" @submit.prevent="saveProfile">
+          <div class="d-flex flex-column align-items-center mb-4">
+            <img :src="profilePic" class="profile-pic-edit shadow" alt="Profile Picture">
+            <label class="change-btn mt-2" style="cursor:pointer;">
+              Change
+              <input type="file" name="profile_pic" class="d-none" x-ref="profilePicInput" @change="onPicChange">
+            </label>
+          </div>
+          <div class="mb-3 position-relative">
+            <label class="form-label">Username</label>
+            <input type="text" class="form-control w-100" name="username" x-model="username" required pattern="^\S+$" @input="username = username.replace(/\s/g, '')">
+            <div class="invalid-feedback" x-show="/\s/.test(username)">Username tidak boleh mengandung spasi.</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control w-100" name="email" x-model="email" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Bio</label>
+            <textarea class="form-control w-100" name="bio" x-model="bio" rows="2" placeholder="Tulis bio singkat..." style="min-height:48px;max-height:160px;transition:max-height 0.4s cubic-bezier(.4,2,.6,1);"></textarea>
+          </div>
+          <button type="submit" class="save-btn mt-3" :disabled="loading" x-on:click="showToast=false">
+            <template x-if="loading">
+              <span class="spinner-border spinner-border-sm"></span>
+            </template>
+            <template x-if="!loading">
+              <span><i class="bi bi-check-circle"></i> Save Changes</span>
+            </template>
+          </button>
+        </form>
+        <template x-if="showToast">
+          <div class="toast-success mt-2"><i class="bi bi-check2-circle"></i> Profile updated!</div>
+        </template>
+        <div class="toast-fail mt-2" x-show="error" x-transition x-text="error" style="position:absolute;left:50%;bottom:-2.5rem;transform:translateX(-50%);background:linear-gradient(90deg,#ec4899 60%,#a855f7 100%);color:#fff;border-radius:1.2rem;padding:0.7rem 1.7rem;font-size:1.08rem;font-weight:500;box-shadow:0 2px 16px #ec4899cc;z-index:9999;opacity:0.97;display:flex;align-items:center;gap:0.7rem;"><i class='bi bi-x-circle'></i> </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function editProfile() {
+    return {
+        show: true,
+        profilePic: {{ (user.avatar_url if user.avatar_url else '/static/assets/image/default.jpg')|tojson }},
+        username: {{ (user.username if user.username else '')|tojson }},
+        email: {{ (user.email if user.email else '')|tojson }},
+        bio: {{ (user.bio if user.bio else '')|tojson }},
+        loading: false,
+        showToast: false,
+        error: '',
+        initProfile() {
+            // Initialization logic if needed
+        },
+        onPicChange(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    this.profilePic = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        },
+        async saveProfile() {
+            this.loading = true;
+            this.error = '';
+            this.showToast = false;
+
+            const formData = new FormData(this.$refs.formEdit);
+            if (this.$refs.profilePicInput && this.$refs.profilePicInput.files[0]) {
+                formData.set('profile_pic', this.$refs.profilePicInput.files[0]);
+            }
+
+            try {
+                const response = await fetch('/profil_edit', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    this.loading = false;
+                    this.showToast = true;
+                    setTimeout(() => this.showToast = false, 2000);
+                    // Optionally reload page or update profilePic with new URL from backend
+                } else {
+                    const errorText = await response.text();
+                    this.loading = false;
+                    this.error = errorText || 'Gagal update profil';
+                }
+            } catch (err) {
+                this.loading = false;
+                this.error = 'Terjadi error jaringan';
+            }
+        }
+    }
+}
+</script>
+
+{% endblock %}

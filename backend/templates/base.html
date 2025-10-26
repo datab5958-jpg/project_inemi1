@@ -1,0 +1,3190 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{ sidebarOpen: false, darkMode: true }" :class="{ 'dark-mode': darkMode }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>INEMI Dashboard</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Early declaration of toggleMobileNotifications to prevent ReferenceError -->
+    <script>
+    window.toggleMobileNotifications = function() {
+        console.log('🔔 toggleMobileNotifications called from base.html');
+        console.log('🔔 Window notification system exists:', !!window.notificationSystem);
+        
+        if (window.notificationSystem) {
+            console.log('🔔 Calling toggleNotifications()');
+            window.notificationSystem.toggleNotifications();
+        } else {
+            console.log('🔔 Notification system not ready, will be handled by notifications.js');
+            // The notifications.js will override this function with proper implementation
+        }
+    };
+    </script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            --warning-gradient: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --danger-gradient: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #16213e;
+            --bg-card: rgba(26, 26, 46, 0.8);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #6b7280;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow-primary: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --shadow-secondary: 0 4px 16px rgba(0, 0, 0, 0.2);
+            --glow-primary: 0 0 20px rgba(102, 126, 234, 0.5);
+            --glow-secondary: 0 0 30px rgba(245, 87, 108, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(245, 87, 108, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(79, 172, 254, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* iOS Safari specific fixes */
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
+            body {
+                background-attachment: scroll !important;
+                -webkit-background-attachment: scroll !important;
+            }
+            
+            body::before {
+                background-attachment: scroll !important;
+                -webkit-background-attachment: scroll !important;
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-gradient);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-gradient);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            background: var(--bg-secondary);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-color);
+            width: 280px;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            box-shadow: var(--shadow-primary);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem 1rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: var(--glow-primary);
+        }
+
+        .logo-text {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.25rem;
+            font-weight: 900;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 1.5px;
+        }
+
+        .user-profile {
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid transparent;
+            background: var(--primary-gradient);
+            padding: 1px;
+            box-shadow: var(--glow-primary);
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-info h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+        }
+
+        .credits-badge {
+            background: var(--success-gradient);
+            color: var(--text-primary);
+            padding: 0.2rem 0.6rem;
+            border-radius: 16px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 500;
+        }
+
+        /* Notification Bell in Sidebar */
+        .notification-bell-sidebar {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .notification-icon-sidebar {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .notification-icon-sidebar:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(168, 85, 247, 0.5);
+        }
+
+        .notification-icon-sidebar i {
+            font-size: 1.1rem;
+        }
+
+        .notification-badge-sidebar {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #ff4757;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            border: 2px solid var(--bg-secondary);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+            }
+            70% {
+                transform: scale(1.05);
+                box-shadow: 0 0 0 10px rgba(255, 71, 87, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
+            }
+        }
+
+        /* Notification Dropdown Styles */
+        .notification-dropdown {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .notification-header {
+            padding: 1.5rem 1.5rem 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color, #333);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-secondary, #1a1a2e);
+        }
+
+        .notification-header h3 {
+            margin: 0;
+            color: var(--text-primary, #fff);
+            font-size: 1.25rem;
+            font-weight: 600;
+            background: var(--primary-gradient, linear-gradient(135deg, #a855f7, #ec4899));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .notification-header-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .notification-header button {
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .mark-all-read {
+            background: var(--primary-gradient, linear-gradient(135deg, #a855f7, #ec4899));
+            color: white;
+            padding: 0.5rem 1rem;
+            box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3);
+        }
+
+        .mark-all-read:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+        }
+
+        .close-notifications {
+            background: #dc3545;
+            color: white;
+            padding: 0.5rem;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-notifications:hover {
+            background: #c82333;
+            transform: translateY(-1px);
+        }
+
+        .notification-list {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 0;
+        }
+
+        .notification-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .notification-list::-webkit-scrollbar-track {
+            background: var(--bg-primary, #0f0f23);
+        }
+
+        .notification-list::-webkit-scrollbar-thumb {
+            background: var(--primary-gradient, linear-gradient(135deg, #a855f7, #ec4899));
+            border-radius: 2px;
+        }
+
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .notification-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color, #333);
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            transition: background-color 0.2s ease;
+        }
+
+        .notification-item:hover {
+            background: rgba(168, 85, 247, 0.05);
+        }
+
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+
+        .notification-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notification-text {
+            color: var(--text-primary, #fff);
+            font-size: 0.875rem;
+            line-height: 1.4;
+            margin-bottom: 0.25rem;
+        }
+
+        .notification-time {
+            color: var(--text-secondary, #888);
+            font-size: 0.75rem;
+        }
+
+        .notification-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-color, #333);
+            text-align: center;
+            background: var(--bg-secondary, #1a1a2e);
+        }
+
+        .view-all-notifications {
+            color: var(--primary-color, #a855f7);
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .view-all-notifications:hover {
+            background: rgba(168, 85, 247, 0.1);
+            color: var(--primary-color, #a855f7);
+            transform: translateY(-1px);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .notification-dropdown {
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                width: 95% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                max-height: 90vh !important;
+                border-radius: 20px !important;
+                z-index: 10000 !important;
+            }
+            
+            /* Force center positioning for mobile */
+            #notification-dropdown {
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                width: 95% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                z-index: 10000 !important;
+            }
+
+            .notification-header {
+                padding: 1.25rem 1rem 1rem 1rem;
+                border-radius: 20px 20px 0 0;
+            }
+
+            .notification-header h3 {
+                font-size: 1.1rem;
+            }
+
+            .notification-header-actions {
+                gap: 0.5rem;
+            }
+
+            .mark-all-read {
+                padding: 0.4rem 0.8rem !important;
+                font-size: 0.8rem !important;
+            }
+
+            .mark-all-read span {
+                display: none;
+            }
+
+            .close-notifications {
+                width: 32px !important;
+                height: 32px !important;
+                padding: 0.4rem !important;
+            }
+
+            .notification-item {
+                padding: 1rem;
+                border-radius: 0;
+            }
+
+            .notification-avatar {
+                width: 36px;
+                height: 36px;
+            }
+
+            .notification-text {
+                font-size: 0.85rem;
+                line-height: 1.4;
+            }
+
+            .notification-time {
+                font-size: 0.7rem !important;
+            }
+
+            .notification-footer {
+                padding: 1rem;
+                border-radius: 0 0 20px 20px;
+            }
+
+            .view-all-notifications {
+                padding: 0.75rem 1rem !important;
+                font-size: 0.9rem !important;
+            }
+        }
+
+        /* Extra small mobile */
+        @media (max-width: 480px) {
+            .notification-dropdown {
+                width: 98% !important;
+                max-height: 95vh !important;
+            }
+            
+            #notification-dropdown {
+                width: 98% !important;
+                max-height: 95vh !important;
+            }
+
+            .notification-header {
+                padding: 1rem 0.75rem 0.75rem 0.75rem;
+            }
+
+            .notification-item {
+                padding: 0.75rem;
+            }
+
+            .notification-avatar {
+                width: 32px;
+                height: 32px;
+            }
+
+            .notification-text {
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* Prevent notification from moving */
+        .notification-dropdown,
+        #notification-dropdown {
+            will-change: transform, opacity !important;
+            backface-visibility: hidden !important;
+            -webkit-backface-visibility: hidden !important;
+        }
+        
+        /* Loading animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        
+        /* Ensure notification stays visible on mobile */
+        @media (max-width: 768px) {
+            .notification-dropdown,
+            #notification-dropdown {
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                width: 95% !important;
+                max-width: none !important;
+                margin: 0 !important;
+                z-index: 10000 !important;
+                visibility: hidden !important;
+                display: none !important;
+            }
+            
+            .notification-overlay {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                z-index: 9999 !important;
+                visibility: hidden !important;
+                display: none !important;
+            }
+        }
+
+        .nav-menu {
+            padding: 1rem 0.75rem;
+            flex: 1;
+        }
+
+        .nav-item {
+            margin-bottom: 0.3rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .nav-link:hover::before,
+        .nav-link.active::before {
+            left: 0;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: var(--text-primary);
+            transform: translateX(8px);
+            box-shadow: var(--glow-primary);
+        }
+
+        .nav-icon {
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-text {
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        /* AI Tools Section */
+        .ai-tools-section {
+            margin-top: auto;
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .ai-tools-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding: 0.5rem 0;
+        }
+
+        .ai-tools-header i {
+            font-size: 1rem;
+            color: var(--primary-color);
+        }
+
+        .ai-tools-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ai-tools-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .ai-tool-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0.8rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-tool-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(102, 126, 234, 0.1);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .ai-tool-item:hover::before {
+            left: 0;
+        }
+
+        .ai-tool-item:hover {
+            color: var(--text-primary);
+            transform: translateX(4px);
+        }
+
+        .ai-tool-item i {
+            font-size: 0.9rem;
+            width: 16px;
+            text-align: center;
+        }
+
+        .ai-tool-text {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .ai-tool-badge {
+            font-size: 0.65rem;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            background: var(--primary-gradient);
+            color: white;
+            font-weight: 600;
+        }
+
+        .ai-tool-badge.new {
+            background: var(--success-gradient);
+        }
+
+        /* Chat Section */
+        .chat-section {
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .chat-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding: 0.5rem 0;
+        }
+
+        .chat-header i {
+            font-size: 1rem;
+            color: var(--accent-color);
+        }
+
+        .chat-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .chat-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .chat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0.8rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chat-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(79, 172, 254, 0.1);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .chat-item:hover::before {
+            left: 0;
+        }
+
+        .chat-item:hover {
+            color: var(--text-primary);
+            transform: translateX(4px);
+        }
+
+        .chat-item i {
+            font-size: 0.9rem;
+            width: 16px;
+            text-align: center;
+        }
+
+        .chat-text {
+            flex: 1;
+            font-weight: 500;
+        }
+
+          .admin-badge {
+    position: absolute;
+    top: 45%;
+    right: -10px;
+    transform: translateY(-50%);
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    font-size: 0.5rem;
+            font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+    animation: badgeGlow 1.5s ease-in-out infinite alternate;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 18px;
+  }
+
+  /* Notification System Styles */
+  .notification-bell {
+    position: relative;
+    cursor: pointer;
+    margin-left: 1rem;
+  }
+
+  .notification-icon {
+    position: relative;
+            display: flex;
+            align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(99, 102, 241, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .notification-icon:hover {
+    background: rgba(99, 102, 241, 0.2);
+    transform: scale(1.1);
+  }
+
+  .notification-icon i {
+    font-size: 1.2rem;
+    color: #e2e8f0;
+  }
+
+  .notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 2px solid #1a1a2e;
+    min-width: 18px;
+    text-align: center;
+    display: none;
+    animation: pulse 2s infinite;
+  }
+
+  .notification-overlay {
+    position: fixed;
+            top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+    cursor: pointer;
+  }
+
+  .notification-dropdown {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    width: 400px;
+    max-height: 600px;
+    background: #1a1a2e;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    backdrop-filter: blur(20px);
+    z-index: 1000;
+    display: none;
+    overflow: hidden;
+    animation: slideInDown 0.3s ease;
+  }
+
+  @keyframes slideInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .notification-header {
+            display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(99, 102, 241, 0.05);
+  }
+
+  .notification-header h3 {
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin: 0;
+            display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .notification-header h3::before {
+    content: '🔔';
+    font-size: 1.1rem;
+  }
+
+  .notification-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .close-notifications {
+    background: rgba(255, 255, 255, 0.1);
+            border: none;
+    color: #e2e8f0;
+    padding: 0.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: none;
+  }
+
+  .close-notifications:hover {
+    background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+  }
+
+  .mark-all-read {
+    background: linear-gradient(135deg, #6366f1, #ec4899);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .mark-all-read:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  }
+
+  .notification-list {
+    max-height: 350px;
+    overflow-y: auto;
+    padding: 0.5rem 0;
+  }
+
+  .notification-item {
+            display: flex;
+            align-items: flex-start;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+  }
+
+  .notification-item:hover {
+    background: rgba(99, 102, 241, 0.08);
+    transform: translateX(5px);
+  }
+
+  .notification-item.unread {
+    background: rgba(99, 102, 241, 0.1);
+    border-left: 3px solid #6366f1;
+  }
+
+  .notification-item.unread:hover {
+    background: rgba(99, 102, 241, 0.15);
+  }
+
+  .notification-item:last-child {
+    border-bottom: none;
+  }
+
+  .notification-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 1rem;
+    flex-shrink: 0;
+    border: 2px solid rgba(99, 102, 241, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .notification-avatar:hover {
+    border-color: #6366f1;
+    transform: scale(1.05);
+  }
+
+  .notification-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .notification-content {
+    flex: 1;
+            min-width: 0;
+        }
+
+  .notification-text {
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 0.4rem;
+  }
+
+  .notification-text strong {
+    color: #a78bfa;
+            font-weight: 700;
+  }
+
+  .notification-text .notification-type-icon {
+    display: inline-block;
+    margin-left: 0.3rem;
+    font-size: 0.8rem;
+  }
+
+  .notification-time {
+    color: #94a3b8;
+    font-size: 0.85rem;
+            display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .notification-time::before {
+    content: '🕐';
+    font-size: 0.7rem;
+  }
+
+  .notification-status {
+    display: flex;
+    align-items: center;
+    margin-left: 0.5rem;
+  }
+
+  .unread-dot {
+    width: 8px;
+    height: 8px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  .notification-footer {
+    padding: 0.8rem 1.2rem;
+    border-top: 1px solid rgba(99, 102, 241, 0.1);
+    text-align: center;
+  }
+
+  .view-all-notifications {
+    color: #a78bfa;
+    text-decoration: none;
+    font-size: 0.9rem;
+            font-weight: 600;
+    transition: color 0.3s ease;
+  }
+
+  .view-all-notifications:hover {
+    color: #c4b5fd;
+  }
+
+  .no-notifications {
+    text-align: center;
+    padding: 2rem 1rem;
+            color: #94a3b8;
+  }
+
+  .no-notifications i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    opacity: 0.5;
+  }
+
+
+  /* Toast Notifications */
+  #toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+            display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .notification-toast {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    color: white;
+    padding: 1rem 1.2rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    backdrop-filter: blur(10px);
+    min-width: 300px;
+    max-width: 400px;
+    animation: slideInRight 0.3s ease;
+  }
+
+  .notification-toast.success {
+    border-color: rgba(34, 197, 94, 0.3);
+  }
+
+  .notification-toast.error {
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+
+  .notification-toast.warning {
+    border-color: rgba(245, 158, 11, 0.3);
+  }
+
+  .toast-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .toast-content i {
+    font-size: 1.1rem;
+  }
+
+  .toast-close {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0.2rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+
+  .toast-close:hover {
+    color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Animations */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes slideInRight {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideOutRight {
+    from {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+
+  /* Sidebar Notification Bell */
+  .notification-bell-sidebar {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+    cursor: pointer;
+    position: relative;
+    padding: 0.5rem 0;
+  }
+
+  .notification-icon-sidebar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+            border-radius: 50%;
+    background: rgba(99, 102, 241, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .notification-icon-sidebar:hover {
+    background: rgba(99, 102, 241, 0.2);
+    transform: scale(1.1);
+  }
+
+  .notification-badge-sidebar {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 2px solid #1a1a2e;
+    min-width: 18px;
+    text-align: center;
+    display: none;
+    animation: pulse 2s infinite;
+  }
+
+
+
+  /* Header Notification Bell (next to Upgrade button) */
+  .notification-bell-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 10px;
+  }
+
+  .notification-bell-header:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+  }
+
+  .notification-icon-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .notification-icon-header i {
+    color: #e2e8f0;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+  }
+
+  .notification-bell-header:hover .notification-icon-header i {
+    color: #fff;
+  }
+
+  .notification-badge-header {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 8px;
+    min-width: 16px;
+    text-align: center;
+    display: none;
+    animation: pulse 2s infinite;
+    border: 2px solid #1a1a2e;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .notification-dropdown {
+                position: fixed;
+      top: 0;
+                left: 0;
+      right: 0;
+                bottom: 0;
+      width: 100%;
+      height: 100%;
+      max-height: 100vh;
+      border-radius: 0;
+      transform: none;
+      animation: slideInUp 0.3s ease;
+      z-index: 1001;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .notification-overlay {
+      z-index: 1000;
+    }
+
+    .notification-header {
+      padding: 1rem 1.2rem;
+      position: sticky;
+      top: 0;
+      background: #1a1a2e;
+      z-index: 2;
+    }
+
+    .notification-header h3 {
+      font-size: 1.1rem;
+    }
+
+    .close-notifications {
+      display: block;
+    }
+
+    .notification-list {
+      max-height: calc(100vh - 140px);
+      overflow-y: auto;
+    }
+
+    .notification-item {
+      padding: 0.8rem 1.2rem;
+    }
+
+    .notification-avatar {
+      width: 40px;
+      height: 40px;
+      margin-right: 0.8rem;
+    }
+
+    .notification-text {
+      font-size: 0.9rem;
+    }
+
+    .notification-footer {
+      position: sticky;
+      bottom: 0;
+      background: #1a1a2e;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .notification-toast {
+      min-width: 280px;
+      max-width: 320px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .notification-item {
+      padding: 0.7rem 1rem;
+    }
+
+    .notification-avatar {
+      width: 35px;
+      height: 35px;
+      margin-right: 0.7rem;
+    }
+
+    .notification-text {
+      font-size: 0.85rem;
+    }
+
+    .notification-time {
+      font-size: 0.8rem;
+    }
+  }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+            transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .content-wrapper {
+            padding: 2rem;
+        }
+
+        /* Mobile Navigation */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border-color);
+            padding: 1rem;
+            z-index: 1000;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+            min-height: 70px;
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            background: var(--primary-gradient) !important;
+            border: none !important;
+            color: white !important;
+            border-radius: 12px !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            box-shadow: var(--glow-primary) !important;
+        }
+
+        .mobile-menu-btn:hover {
+            transform: translateY(-2px) scale(1.05) !important;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5) !important;
+        }
+
+        .mobile-menu-btn:active {
+            transform: translateY(0) scale(0.95) !important;
+        }
+
+        /* Mobile Navbar Modal Styles */
+        .mobile-navbar-modal {
+            background: var(--bg-primary) !important;
+            border: none !important;
+            border-radius: 0 !important;
+            min-height: 100vh !important;
+            color: var(--text-primary) !important;
+        }
+
+        .mobile-navbar-header {
+            background: var(--bg-secondary) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            padding: 1.5rem 2rem !important;
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 10 !important;
+        }
+
+        .mobile-navbar-logo {
+            display: flex !important;
+            align-items: center !important;
+            gap: 1rem !important;
+        }
+
+        .mobile-logo-image {
+            width: 40px !important;
+            height: 40px !important;
+            border-radius: 10px !important;
+            object-fit: cover !important;
+            box-shadow: var(--glow-primary) !important;
+        }
+
+        .mobile-logo-text {
+            font-family: 'Orbitron', monospace !important;
+            font-size: 1.5rem !important;
+            font-weight: 900 !important;
+            background: var(--primary-gradient) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            letter-spacing: 1.5px !important;
+        }
+
+        .mobile-navbar-body {
+            padding: 0 !important;
+            overflow-y: auto !important;
+            max-height: calc(100vh - 80px) !important;
+        }
+
+        /* Mobile User Profile */
+        .mobile-user-profile {
+            padding: 2rem !important;
+            background: var(--bg-secondary) !important;
+            border-bottom: 1px solid var(--border-color) !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 1rem !important;
+        }
+
+        .mobile-user-avatar {
+            width: 60px !important;
+            height: 60px !important;
+            border-radius: 50% !important;
+            object-fit: cover !important;
+            border: 2px solid transparent !important;
+            background: var(--primary-gradient) !important;
+            padding: 2px !important;
+            box-shadow: var(--glow-primary) !important;
+        }
+
+        .mobile-user-info {
+            flex: 1 !important;
+        }
+
+        .mobile-user-name {
+            font-size: 1.2rem !important;
+            font-weight: 600 !important;
+            margin: 0 0 0.5rem 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.75rem !important;
+            flex-wrap: wrap !important;
+        }
+
+        .mobile-credits-badge {
+            background: var(--success-gradient) !important;
+            color: var(--text-primary) !important;
+            padding: 0.3rem 0.8rem !important;
+            border-radius: 20px !important;
+            font-size: 0.7rem !important;
+            font-weight: 600 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 0.3rem !important;
+        }
+
+        .mobile-user-role {
+            font-size: 0.85rem !important;
+            color: var(--text-secondary) !important;
+            background: var(--accent-gradient) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            font-weight: 500 !important;
+        }
+
+        /* Mobile Navigation Sections */
+        .mobile-nav-section {
+            padding: 1.5rem 2rem !important;
+            border-bottom: 1px solid var(--border-color) !important;
+        }
+
+        .mobile-nav-section:last-child {
+            border-bottom: none !important;
+        }
+
+        .mobile-nav-section-title {
+            font-size: 1rem !important;
+            font-weight: 600 !important;
+            color: var(--text-primary) !important;
+            margin-bottom: 1rem !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.5rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+        }
+
+        .mobile-nav-section-title i {
+            font-size: 1.1rem !important;
+            color: var(--primary-color) !important;
+        }
+
+        .mobile-nav-links {
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 0.5rem !important;
+        }
+
+        .mobile-nav-link {
+            display: flex !important;
+            align-items: center !important;
+            gap: 1rem !important;
+            padding: 1rem 1.25rem !important;
+            color: var(--text-secondary) !important;
+            text-decoration: none !important;
+            border-radius: 12px !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            position: relative !important;
+            overflow: hidden !important;
+            background: transparent !important;
+            border: 1px solid transparent !important;
+        }
+
+        .mobile-nav-link::before {
+            content: '' !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: -100% !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: var(--primary-gradient) !important;
+            transition: left 0.3s ease !important;
+            z-index: -1 !important;
+        }
+
+        .mobile-nav-link:hover::before,
+        .mobile-nav-link.active::before {
+            left: 0 !important;
+        }
+
+        .mobile-nav-link:hover,
+        .mobile-nav-link.active {
+            color: var(--text-primary) !important;
+            transform: translateX(8px) !important;
+            box-shadow: var(--glow-primary) !important;
+            border-color: rgba(102, 126, 234, 0.3) !important;
+        }
+
+        .mobile-nav-link i {
+            font-size: 1.2rem !important;
+            width: 24px !important;
+            text-align: center !important;
+            flex-shrink: 0 !important;
+        }
+
+        .mobile-nav-link span {
+            font-weight: 500 !important;
+            font-size: 1rem !important;
+            flex: 1 !important;
+        }
+
+        /* Mobile Badges */
+        .mobile-badge {
+            background: rgba(255, 255, 255, 0.2) !important;
+            color: var(--text-primary) !important;
+            padding: 0.25rem 0.75rem !important;
+            border-radius: 20px !important;
+            font-size: 0.7rem !important;
+            font-weight: 600 !important;
+            margin-left: auto !important;
+        }
+
+        .mobile-badge.new {
+            background: var(--success-gradient) !important;
+        }
+
+        .mobile-badge.admin-badge {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24) !important;
+            color: white !important;
+            font-size: 0.6rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+        }
+
+        /* Admin Link Styling */
+        .mobile-nav-link.admin-link {
+            position: relative !important;
+            background: rgba(255, 107, 107, 0.05) !important;
+            border-left: 3px solid #ff6b6b !important;
+        }
+
+        .mobile-nav-link.admin-link:hover {
+            background: rgba(255, 107, 107, 0.1) !important;
+            border-left-color: #ff5252 !important;
+        }
+
+        .mobile-nav-link.admin-link.active {
+            background: rgba(255, 107, 107, 0.15) !important;
+            border-left-color: #ff5252 !important;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.3) !important;
+        }
+
+        /* Modal Close Button */
+        .mobile-navbar-modal .btn-close {
+            filter: invert(1) !important;
+            opacity: 0.7 !important;
+            transition: opacity 0.3s ease !important;
+            background: none !important;
+            border: none !important;
+            font-size: 1.5rem !important;
+            color: var(--text-primary) !important;
+        }
+
+        .mobile-navbar-modal .btn-close:hover {
+            opacity: 1 !important;
+            color: var(--text-primary) !important;
+        }
+
+        /* Responsive adjustments for mobile navbar modal */
+        @media (max-width: 480px) {
+            .mobile-navbar-header {
+                padding: 1rem 1.5rem !important;
+            }
+
+            .mobile-logo-text {
+                font-size: 1.3rem !important;
+            }
+
+            .mobile-user-profile {
+                padding: 1.5rem !important;
+            }
+
+            .mobile-user-avatar {
+                width: 50px !important;
+                height: 50px !important;
+            }
+
+            .mobile-user-name {
+                font-size: 1.1rem !important;
+            }
+
+            .mobile-nav-section {
+                padding: 1rem 1.5rem !important;
+            }
+
+            .mobile-nav-link {
+                padding: 0.8rem 1rem !important;
+            }
+
+            .mobile-nav-link i {
+                font-size: 1.1rem !important;
+            }
+
+            .mobile-nav-link span {
+                font-size: 0.9rem !important;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .mobile-navbar-header {
+                padding: 0.8rem 1rem !important;
+            }
+
+            .mobile-user-profile {
+                padding: 1rem !important;
+            }
+
+            .mobile-nav-section {
+                padding: 0.8rem 1rem !important;
+            }
+
+            .mobile-nav-link {
+                padding: 0.7rem 0.8rem !important;
+            }
+        }
+
+        .mobile-nav-items {
+                display: flex;
+            justify-content: space-between;
+                align-items: center;
+            gap: 0.2rem;
+            padding: 0 0.5rem;
+                height: 100%;
+            min-height: 50px;
+                width: 100%;
+            overflow: hidden;
+            }
+
+        .mobile-nav-item {
+            display: flex;
+                flex-direction: column;
+                align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.4rem;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 40px;
+            max-width: 50px;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+                height: 100%;
+            min-height: 45px;
+        }
+
+        .mobile-nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-gradient);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .mobile-nav-item:hover::before,
+        .mobile-nav-item.active::before {
+            left: 0;
+        }
+
+        .mobile-nav-item:hover,
+        .mobile-nav-item.active {
+            color: var(--text-primary);
+            background: var(--primary-gradient);
+            transform: translateX(8px);
+            box-shadow: var(--glow-primary);
+        }
+
+        .mobile-nav-icon {
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        /* Admin Mobile Button - Futuristic Design */
+        .admin-mobile {
+            position: relative;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24) !important;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 
+                0 0 20px rgba(255, 107, 107, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            animation: adminGlow 2s ease-in-out infinite alternate;
+            flex-shrink: 0;
+        }
+
+        /* Admin Navigation Items Styling */
+        .nav-item .nav-link[href*="/admin"] {
+            position: relative;
+            background: rgba(255, 107, 107, 0.1);
+            border-left: 3px solid #ff6b6b;
+        }
+
+        .nav-item .nav-link[href*="/admin"]:hover {
+            background: rgba(255, 107, 107, 0.2);
+            border-left-color: #ff5252;
+            transform: translateX(8px);
+        }
+
+        .nav-item .nav-link[href*="/admin"].active {
+            background: rgba(255, 107, 107, 0.3);
+            border-left-color: #ff5252;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
+        }
+
+        /* Special styling for main Admin Panel link */
+        .nav-item .nav-link[href="/admin"] {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.15), rgba(238, 90, 36, 0.15));
+            border-left: 4px solid #ff6b6b;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item .nav-link[href="/admin"]::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .nav-item .nav-link[href="/admin"]:hover::before {
+            left: 100%;
+        }
+
+        .nav-item .nav-link[href="/admin"]:hover {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.25), rgba(238, 90, 36, 0.25));
+            border-left-color: #ff5252;
+            transform: translateX(8px);
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.4);
+        }
+
+        .nav-item .nav-link[href="/admin"].active {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.3), rgba(238, 90, 36, 0.3));
+            border-left-color: #ff5252;
+            box-shadow: 0 0 25px rgba(255, 107, 107, 0.5);
+        }
+
+        /* Quick Admin Access Styling */
+        .quick-admin-access {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.05), rgba(238, 90, 36, 0.05));
+        }
+
+        .quick-admin-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .quick-admin-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .quick-admin-btn:hover::before {
+            left: 100%;
+        }
+
+        .quick-admin-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.5);
+            background: linear-gradient(135deg, #ff5252, #d32f2f);
+        }
+
+        .quick-admin-btn i:first-child {
+            font-size: 1.1rem;
+        }
+
+        .quick-admin-btn i:last-child {
+            font-size: 0.8rem;
+            margin-left: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .quick-admin-btn:hover i:last-child {
+            transform: translateX(3px);
+        }
+
+        /* Admin Modal Styling */
+        .modal.futuristic .modal-btn[href*="/admin"] {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal.futuristic .modal-btn[href*="/admin"]::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .modal.futuristic .modal-btn[href*="/admin"]:hover::after {
+            left: 100%;
+        }
+
+        .admin-mobile::before {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24) !important;
+        }
+
+        .admin-mobile:hover,
+        .admin-mobile.active {
+            background: linear-gradient(135deg, #ff5252, #d32f2f) !important;
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 
+                0 8px 25px rgba(255, 107, 107, 0.6),
+                0 0 30px rgba(255, 107, 107, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .admin-icon-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .admin-pulse {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 107, 107, 0.3) 0%, transparent 70%);
+            animation: adminPulse 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        .admin-mobile .mobile-nav-icon {
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+            z-index: 2;
+            position: relative;
+        }
+
+        /* Notification Bell Mobile Styling */
+        .notification-bell-mobile {
+            position: relative;
+            cursor: pointer;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .notification-icon-mobile {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        .notification-badge-mobile {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            font-size: 0.6rem;
+          font-weight: 700;
+            padding: 2px 5px;
+            border-radius: 8px;
+            border: 2px solid #1a1a2e;
+            min-width: 16px;
+            text-align: center;
+            display: none;
+            animation: pulse 2s infinite;
+            pointer-events: none;
+        }
+
+        /* Ensure mobile nav item with notification bell is clickable */
+        .mobile-nav-item.notification-bell-mobile {
+            pointer-events: auto !important;
+            cursor: pointer !important;
+            touch-action: manipulation;
+            z-index: 10;
+            min-height: 44px;
+            min-width: 44px;
+        }
+
+        /* Ensure notification bell mobile has proper touch area */
+        .notification-bell-mobile {
+            position: relative;
+            cursor: pointer;
+            pointer-events: auto;
+            z-index: 10;
+            min-height: 44px;
+            min-width: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes adminGlow {
+            0% {
+                box-shadow: 
+                    0 0 20px rgba(255, 107, 107, 0.4),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            }
+            100% {
+                box-shadow: 
+                    0 0 30px rgba(255, 107, 107, 0.6),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            }
+        }
+
+        @keyframes adminPulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0.8;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.2);
+                opacity: 0.4;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0.8;
+            }
+        }
+
+
+
+        @keyframes badgeGlow {
+            0% {
+                box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+            }
+            100% {
+                box-shadow: 0 4px 15px rgba(255, 107, 107, 0.6);
+            }
+        }
+
+        /* Responsive Admin Button */
+        @media (max-width: 480px) {
+            .admin-mobile {
+                min-width: 55px;
+                padding: 0.6rem;
+            }
+            
+            .admin-mobile .mobile-nav-icon {
+                font-size: 1.3rem;
+            }
+            
+            .admin-pulse {
+                width: 90%;
+                height: 90%;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .mobile-nav-items {
+                gap: 0.3rem;
+            }
+            
+            .admin-mobile {
+                min-width: 50px;
+                padding: 0.5rem;
+            }
+            
+            .admin-mobile .mobile-nav-icon {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Modal Styles */
+        .modal.futuristic .modal-dialog {
+            max-width: 500px;
+        }
+
+        .modal.futuristic .modal-content {
+            background: var(--bg-secondary);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-primary);
+            box-shadow: var(--shadow-primary);
+        }
+
+        .modal.futuristic .modal-header {
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+        }
+
+        .modal.futuristic .modal-title {
+            font-family: 'Orbitron', monospace;
+            font-weight: 700;
+            background: var(--primary-gradient);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+
+        .modal.futuristic .modal-body {
+            padding: 2rem;
+        }
+
+        .modal.futuristic .btn-close {
+            filter: invert(1);
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.futuristic .btn-close:hover {
+            opacity: 1;
+        }
+
+        .modal-btn {
+          display: flex;
+          align-items: center;
+            gap: 1rem;
+                width: 100%;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 1rem;
+          border: none;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+          position: relative;
+            overflow: hidden;
+        }
+
+        .modal-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+                height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .modal-btn:hover::before {
+            left: 100%;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--glow-primary);
+        }
+
+        .modal-btn:last-child {
+            margin-bottom: 0;
+        }
+
+        .btn-music {
+            background: var(--success-gradient);
+            color: var(--text-primary);
+        }
+
+        .btn-image {
+            background: var(--warning-gradient);
+            color: var(--text-primary);
+        }
+
+        .btn-video {
+            background: var(--danger-gradient);
+            color: var(--text-primary);
+        }
+
+        .btn-ai {
+            background: var(--accent-gradient);
+            color: var(--text-primary);
+        }
+
+        .btn-chat {
+            background: var(--secondary-gradient);
+            color: var(--text-primary);
+        }
+
+        .badge-modern {
+            background: rgba(255, 255, 255, 0.2);
+            color: var(--text-primary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .ai-tools-section,
+            .chat-section {
+                padding: 0.75rem;
+            }
+
+            .ai-tool-item,
+            .chat-item {
+                padding: 0.5rem 0.6rem;
+                font-size: 0.75rem;
+            }
+
+            .ai-tools-title,
+            .chat-title {
+                font-size: 0.7rem;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .content-wrapper {
+                padding: 1rem;
+            }
+
+            /* Admin elements responsive */
+            .nav-item .nav-link[href*="/admin"] {
+                border-left-width: 2px;
+            }
+
+            .nav-item .nav-link[href*="/admin"]:hover {
+                transform: translateX(4px);
+            }
+
+            /* Quick admin access responsive */
+            .quick-admin-access {
+                padding: 0.75rem;
+            }
+
+            .quick-admin-btn {
+                padding: 0.6rem 0.8rem;
+                font-size: 0.85rem;
+            }
+
+            .quick-admin-btn i:first-child {
+                font-size: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .mobile-nav {
+                display: block;
+            }
+
+            .content-wrapper {
+                margin-bottom: 80px;
+            }
+            
+            /* Ensure admin panel is visible in mobile nav */
+            .admin-mobile {
+                display: flex !important;
+            }
+            
+            /* Ensure notification bell is visible in mobile nav */
+            .notification-bell-mobile {
+                display: flex !important;
+            }
+        }
+
+        /* Ensure mobile nav is hidden on desktop */
+        @media (min-width: 769px) {
+            .mobile-nav {
+                display: none !important;
+            }
+            
+            /* Ensure admin panel is visible in sidebar on desktop */
+            .admin-mobile {
+                display: none !important;
+            }
+            
+            /* Ensure notification bell is hidden in mobile nav on desktop */
+            .notification-bell-mobile {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content-wrapper {
+                padding: 1rem 0.5rem;
+            }
+
+            .modal.futuristic .modal-dialog {
+                margin: 1rem;
+            }
+
+            .modal.futuristic .modal-body {
+                padding: 1.5rem;
+            }
+
+            /* Admin modal mobile styling */
+            .modal.futuristic .modal-btn {
+                padding: 1rem 1.25rem;
+                font-size: 1rem;
+            }
+
+            .modal.futuristic .modal-btn i {
+                font-size: 1.2rem;
+            }
+
+            .badge-modern {
+                font-size: 0.7rem;
+                padding: 0.2rem 0.6rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .user-profile {
+                padding: 0.75rem;
+            }
+
+            .nav-menu {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .nav-link {
+                padding: 0.6rem 0.8rem;
+            }
+
+            .nav-text {
+                font-size: 0.8rem;
+            }
+
+            .nav-icon {
+                font-size: 0.9rem;
+            }
+
+            .mobile-nav {
+                padding: 0.3rem;
+            }
+
+            .mobile-nav-items {
+                gap: 0.15rem;
+                padding: 0 0.3rem;
+            }
+
+            .mobile-nav-item {
+                padding: 0.3rem;
+                min-width: 35px;
+                max-width: 45px;
+            }
+
+            .mobile-nav-icon {
+                font-size: 0.9rem;
+            }
+
+            .notification-badge-mobile {
+                font-size: 0.45rem;
+                padding: 1px 3px;
+                min-width: 12px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .mobile-nav {
+                padding: 0.25rem;
+            }
+
+            .mobile-nav-items {
+                gap: 0.1rem;
+                padding: 0 0.2rem;
+            }
+
+            .mobile-nav-item {
+                padding: 0.2rem;
+                min-width: 30px;
+                max-width: 40px;
+            }
+
+            .mobile-nav-icon {
+                font-size: 0.8rem;
+            }
+
+            .notification-badge-mobile {
+                font-size: 0.4rem;
+                padding: 1px 2px;
+                min-width: 10px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+          opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .slide-in-left {
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Loading States */
+        .loading {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: loading 1.5s infinite;
+        }
+
+        @keyframes loading {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar" :class="{ 'open': sidebarOpen }">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <img src="/static/assets/image/logo.png" alt="INEMI Logo" class="logo-image">
+                <span class="logo-text">INEMI</span>
+            </div>
+        </div>
+        
+        <div class="user-profile">
+            <img src="{{ session['avatar_url'] if session.get('avatar_url') else '/static/assets/image/default.jpg' }}" alt="User Avatar" class="user-avatar">
+            <div class="user-info">
+                <div class="user-name-row">
+                    <h4>
+                        {{ session['username'] if session.get('username') else 'User' }}
+                        <span class="credits-badge">
+                            <i class="bi bi-currency-dollar" style="font-size:1.1em;margin-right:6px;color:#fff;font-weight:bold;"></i>
+                            <span style="font-weight:700;">{{ current_user.kredit if current_user else 0 }}</span>
+                        </span>
+                    </h4>
+                    <!-- Notification Bell next to user name -->
+                    <div class="notification-bell-sidebar" id="notification-bell-sidebar">
+                        <div class="notification-icon-sidebar" id="notification-icon-sidebar">
+                            <i class="bi bi-bell"></i>
+                            <span class="notification-badge-sidebar" id="notification-badge-sidebar">0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-role">{{ session.get('role', 'free').title() }} User</div>
+            </div>
+        </div>
+
+
+        <div class="nav-menu">
+            <div class="nav-item">
+                <a href="/home" class="nav-link{% if request.path.startswith('/home') %} active{% endif %}">
+                    <i class="bi bi-house nav-icon"></i>
+                    <span class="nav-text">Home</span>
+                </a>
+                </div>
+
+            <div class="nav-item">
+                <a href="/search" class="nav-link{% if request.path == '/search' %} active{% endif %}">
+                    <i class="bi bi-search nav-icon"></i>
+                    <span class="nav-text">Search</span>
+                </a>
+                </div>
+                
+                <div class="nav-item">
+                  <a href="/explore" class="nav-link{% if request.path == '/explore' %} active{% endif %}">
+                      <i class="bi bi-compass nav-icon"></i>
+                      <span class="nav-text">Explore</span>
+                  </a>
+                </div>
+
+            <div class="nav-item">
+                <a href="/profil" class="nav-link{% if request.path.startswith('/profil') %} active{% endif %}">
+                    <i class="bi bi-person-circle nav-icon"></i>
+                    <span class="nav-text">Profile</span>
+                </a>
+            </div>
+
+            {% if session.get('role') == 'admin' or (current_user and current_user.role == 'admin') %}
+            <div class="nav-item">
+                <a href="/admin" class="nav-link{% if request.path.startswith('/admin') %} active{% endif %}">
+                    <i class="bi bi-shield-lock nav-icon"></i>
+                    <span class="nav-text">Admin Panel</span>
+                    <span class="admin-badge">ADMIN</span>
+                </a>
+            </div>
+        
+            {% endif %}
+                </div>
+
+        <!-- AI Tools Section -->
+        <div class="ai-tools-section">
+            <div class="ai-tools-header">
+                <i class="bi bi-magic"></i>
+                <span class="ai-tools-title">AI Tools</span>
+            </div>
+            <div class="ai-tools-menu">
+                <a href="/generate_music" class="ai-tool-item" {% if session.get('role') == 'notfree' and session.get('music_trial', 0) >= 2 %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+                    <i class="bi bi-music-note-beamed"></i>
+                    <span class="ai-tool-text">Music</span>
+                    {% if session.get('role') == 'notfree' %}
+                    <span class="ai-tool-badge">2x/day</span>
+                    {% endif %}
+                </a>
+
+                <a href="{% if session.get('role') == 'notfree' %}#{% else %}/generate_image{% endif %}" class="ai-tool-item" {% if session.get('role') == 'notfree' %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+                    <i class="bi bi-image"></i>
+                    <span class="ai-tool-text">Image</span>
+                    {% if session.get('role') == 'notfree' %}
+                    <span class="ai-tool-badge">Pro</span>
+                    {% endif %}
+                </a>
+
+                <a href="/generate_miniatur" class="ai-tool-item">
+                    <i class="bi bi-magic"></i>
+                    <span class="ai-tool-text">Miniatur</span>
+                </a>
+
+                <a href="{% if session.get('role') == 'free' %}#{% else %}/generate_video{% endif %}" class="ai-tool-item" {% if session.get('role') == 'free' %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+                    <i class="bi bi-film"></i>
+                    <span class="ai-tool-text">Video</span>
+                    {% if session.get('role') == 'free' %}
+                    <span class="ai-tool-badge">Pro</span>
+                    {% endif %}
+                </a>
+
+                <a href="{% if session.get('role') == 'free' %}#{% else %}/generate_video_avatar{% endif %}" class="ai-tool-item" {% if session.get('role') == 'free' %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+                    <i class="bi bi-person-video3"></i>
+                    <span class="ai-tool-text">Avatar</span>
+                    {% if session.get('role') == 'free' %}
+                    <span class="ai-tool-badge">Pro</span>
+                    {% endif %}
+                </a>
+
+                <a href="/generate_banner" class="ai-tool-item">
+                    <i class="bi bi-image"></i>
+                    <span class="ai-tool-text">Banner</span>
+                    <span class="ai-tool-badge new">New</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Chat Section -->
+        <div class="chat-section">
+            <div class="chat-header">
+                <i class="bi bi-chat-dots"></i>
+                <span class="chat-title">Chat</span>
+            </div>
+            <div class="chat-menu">
+                <a href="/ai_chat" class="chat-item">
+                    <i class="bi bi-robot"></i>
+                    <span class="chat-text">AI Prompt</span>
+                </a>
+                <a href="/chat" class="chat-item">
+                    <i class="bi bi-chat-dots"></i>
+                    <span class="chat-text">Chat</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="content-wrapper">
+        {% block content %}
+        {% endblock %}
+    </div>
+    </main>
+
+    <!-- Mobile Navigation -->
+    <nav class="mobile-nav">
+        <div class="mobile-nav-items">
+            <!-- Mobile Menu Button -->
+            <button class="mobile-nav-item mobile-menu-btn" data-bs-toggle="modal" data-bs-target="#mobileNavbarModal">
+                <i class="bi bi-list mobile-nav-icon"></i>
+            </button>
+            
+            <a href="/home" class="mobile-nav-item{% if request.path.startswith('/home') %} active{% endif %}">
+                <i class="bi bi-house mobile-nav-icon"></i>
+            </a>
+            <a href="/search" class="mobile-nav-item{% if request.path == '/search' %} active{% endif %}">
+                <i class="bi bi-search mobile-nav-icon"></i>
+            </a>
+            <a href="/explore" class="mobile-nav-item{% if request.path == '/explore' %} active{% endif %}">
+                <i class="bi bi-compass mobile-nav-icon"></i>
+            </a>
+            <button class="mobile-nav-item" data-bs-toggle="modal" data-bs-target="#aiToolsModal">
+                <i class="bi bi-magic mobile-nav-icon"></i>
+            </button>
+            <a href="/ai_chat" class="mobile-nav-item">
+                <i class="bi bi-robot mobile-nav-icon"></i>
+            </a>
+            <a href="/profil" class="mobile-nav-item{% if request.path.startswith('/profil') %} active{% endif %}">
+                <i class="bi bi-person-circle mobile-nav-icon"></i>
+            </a>
+            {% if session.get('role') == 'admin' or (current_user and current_user.role == 'admin') %}
+            <a href="#" class="mobile-nav-item admin-mobile" data-bs-toggle="modal" data-bs-target="#adminModal">
+                <div class="admin-icon-wrapper">
+                    <i class="bi bi-shield-lock mobile-nav-icon"></i>
+                    <div class="admin-pulse"></div>
+                </div>
+            </a>
+            {% endif %}
+    </div>
+    </nav>
+
+    <!-- Admin Modal for Mobile -->
+    {% if session.get('role') == 'admin' or (current_user and current_user.role == 'admin') %}
+    <div class="modal fade futuristic" id="adminModal" tabindex="-1" aria-labelledby="adminModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="adminModalLabel">
+                        <i class="bi bi-shield-lock me-2"></i>Admin Panel
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <a href="/admin" class="modal-btn btn-music">
+                        <i class="bi bi-shield-lock"></i>
+                        <span>Dashboard</span>
+                        <span class="badge-modern">Main</span>
+                    </a>
+                    <a href="/admin/users" class="modal-btn btn-image">
+                        <i class="bi bi-people"></i>
+                        <span>User Management</span>
+                        <span class="badge-modern">Users</span>
+                    </a>
+                    <a href="/admin/analytics" class="modal-btn btn-video">
+                        <i class="bi bi-graph-up"></i>
+                        <span>Analytics</span>
+                        <span class="badge-modern">Stats</span>
+                    </a>
+                    <a href="/admin/settings" class="modal-btn btn-ai">
+                        <i class="bi bi-gear"></i>
+                        <span>System Settings</span>
+                        <span class="badge-modern">Config</span>
+                    </a>
+                    <a href="/admin/logs" class="modal-btn btn-chat">
+                        <i class="bi bi-file-text"></i>
+                        <span>System Logs</span>
+                        <span class="badge-modern">Logs</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- AI Tools Modal for Mobile -->
+    <div class="modal fade futuristic" id="aiToolsModal" tabindex="-1" aria-labelledby="aiToolsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="aiToolsModalLabel">
+                        <i class="bi bi-magic me-2"></i>AI Tools
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <a href="/generate_music" class="modal-btn btn-music" {% if session.get('role') == 'notfree' and session.get('music_trial', 0) >= 2 %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+                        <i class="bi bi-music-note-beamed"></i>
+                        <span>Generate Music</span>
+                        {% if session.get('role') == 'notfree' %}
+                        <span class="badge-modern">2x/day</span>
+                        {% endif %}
+                    </a>
+                    <a href="{% if session.get('role') == 'notfree' %}#{% else %}/generate_image{% endif %}" class="modal-btn btn-image" {% if session.get('role') == 'notfree' %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+                        <i class="bi bi-image"></i>
+                        <span>Generate Image</span>
+                        {% if session.get('role') == 'notfree' %}
+                        <span class="badge-modern">Pro</span>
+                        {% endif %}
+                    </a>
+                    <a href="/generate_miniatur" class="modal-btn btn-ai">
+                        <i class="bi bi-magic"></i>
+                        <span>Generate Miniatur</span>
+                    </a>
+                    <a href="{% if session.get('role') == 'free' %}#{% else %}/generate_video{% endif %}" class="modal-btn btn-video" {% if session.get('role') == 'free' %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+                        <i class="bi bi-film"></i>
+                        <span>Generate Video</span>
+                        {% if session.get('role') == 'free' %}
+                        <span class="badge-modern">Pro</span>
+                        {% endif %}
+                    </a>
+                    <a href="{% if session.get('role') == 'free' %}#{% else %}/generate_video_avatar{% endif %}" class="modal-btn btn-chat" {% if session.get('role') == 'free' %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+                        <i class="bi bi-person-video3"></i>
+                        <span>Generate Avatar</span>
+                        {% if session.get('role') == 'free' %}
+                        <span class="badge-modern">Pro</span>
+                        {% endif %}
+                    </a>
+                    <a href="/generate_banner" class="modal-btn btn-music">
+                        <i class="bi bi-image"></i>
+                        <span>Generate Banner</span>
+                        <span class="badge-modern">New</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Navbar Modal -->
+    <div class="modal fade futuristic" id="mobileNavbarModal" tabindex="-1" aria-labelledby="mobileNavbarModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen">
+            <div class="modal-content mobile-navbar-modal">
+                <div class="modal-header mobile-navbar-header">
+                    <div class="mobile-navbar-logo">
+                        <img src="/static/assets/image/logo.png" alt="INEMI Logo" class="mobile-logo-image">
+                        <span class="mobile-logo-text">INEMI</span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <div class="modal-body mobile-navbar-body">
+                    <!-- User Profile Section -->
+                    <div class="mobile-user-profile">
+                        <img src="{{ session['avatar_url'] if session.get('avatar_url') else '/static/assets/image/default.jpg' }}" alt="User Avatar" class="mobile-user-avatar">
+                        <div class="mobile-user-info">
+                            <h4 class="mobile-user-name">
+                                {{ session['username'] if session.get('username') else 'User' }}
+                                <span class="mobile-credits-badge">
+                                    <i class="bi bi-currency-dollar"></i>
+                                    <span>{{ current_user.kredit if current_user else 0 }}</span>
+                                </span>
+                            </h4>
+                            <div class="mobile-user-role">{{ session.get('role', 'free').title() }} User</div>
+                        </div>
+                    </div>
+
+                    <!-- Main Navigation -->
+                    <div class="mobile-nav-section">
+                        <h5 class="mobile-nav-section-title">Navigation</h5>
+                        <div class="mobile-nav-links">
+                            <a href="/home" class="mobile-nav-link{% if request.path.startswith('/home') %} active{% endif %}">
+                                <i class="bi bi-house"></i>
+                                <span>Home</span>
+                            </a>
+                            <a href="/search" class="mobile-nav-link{% if request.path == '/search' %} active{% endif %}">
+                                <i class="bi bi-search"></i>
+                                <span>Search</span>
+                            </a>
+                            <a href="/explore" class="mobile-nav-link{% if request.path == '/explore' %} active{% endif %}">
+                                <i class="bi bi-compass"></i>
+                                <span>Explore</span>
+                            </a>
+                            <a href="/profil" class="mobile-nav-link{% if request.path.startswith('/profil') %} active{% endif %}">
+                                <i class="bi bi-person-circle"></i>
+                                <span>Profile</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- AI Tools Section -->
+                    <div class="mobile-nav-section">
+                        <h5 class="mobile-nav-section-title">
+                            <i class="bi bi-magic"></i>
+                            AI Tools
+                        </h5>
+                        <div class="mobile-nav-links">
+                            <a href="/generate_music" class="mobile-nav-link" {% if session.get('role') == 'notfree' and session.get('music_trial', 0) >= 2 %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+                                <i class="bi bi-music-note-beamed"></i>
+                                <span>Music</span>
+                                {% if session.get('role') == 'notfree' %}
+                                <span class="mobile-badge">2x/day</span>
+                                {% endif %}
+                            </a>
+                            <a href="{% if session.get('role') == 'notfree' %}#{% else %}/generate_image{% endif %}" class="mobile-nav-link" {% if session.get('role') == 'notfree' %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+                                <i class="bi bi-image"></i>
+                                <span>Image</span>
+                                {% if session.get('role') == 'notfree' %}
+                                <span class="mobile-badge">Pro</span>
+                                {% endif %}
+                            </a>
+                            <a href="/generate_miniatur" class="mobile-nav-link">
+                                <i class="bi bi-magic"></i>
+                                <span>Miniatur</span>
+                            </a>
+                            <a href="{% if session.get('role') == 'free' %}#{% else %}/generate_video{% endif %}" class="mobile-nav-link" {% if session.get('role') == 'free' %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+                                <i class="bi bi-film"></i>
+                                <span>Video</span>
+                                {% if session.get('role') == 'free' %}
+                                <span class="mobile-badge">Pro</span>
+                                {% endif %}
+                            </a>
+                            <a href="{% if session.get('role') == 'free' %}#{% else %}/generate_video_avatar{% endif %}" class="mobile-nav-link" {% if session.get('role') == 'free' %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
+                                <i class="bi bi-person-video3"></i>
+                                <span>Avatar</span>
+                                {% if session.get('role') == 'free' %}
+                                <span class="mobile-badge">Pro</span>
+                                {% endif %}
+                            </a>
+                            <a href="/generate_banner" class="mobile-nav-link">
+                                <i class="bi bi-image"></i>
+                                <span>Banner</span>
+                                <span class="mobile-badge new">New</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Chat Section -->
+                    <div class="mobile-nav-section">
+                        <h5 class="mobile-nav-section-title">
+                            <i class="bi bi-chat-dots"></i>
+                            Chat
+                        </h5>
+                        <div class="mobile-nav-links">
+                            <a href="/ai_chat" class="mobile-nav-link">
+                                <i class="bi bi-robot"></i>
+                                <span>AI Prompt</span>
+                            </a>
+                            <a href="/chat" class="mobile-nav-link">
+                                <i class="bi bi-chat-dots"></i>
+                                <span>Chat</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Admin Section -->
+                    {% if session.get('role') == 'admin' or (current_user and current_user.role == 'admin') %}
+                    <div class="mobile-nav-section">
+                        <h5 class="mobile-nav-section-title">
+                            <i class="bi bi-shield-lock"></i>
+                            Admin Panel
+                        </h5>
+                        <div class="mobile-nav-links">
+                            <a href="/admin" class="mobile-nav-link admin-link">
+                                <i class="bi bi-shield-lock"></i>
+                                <span>Dashboard</span>
+                                <span class="mobile-badge admin-badge">ADMIN</span>
+                            </a>
+                            <a href="/admin/users" class="mobile-nav-link admin-link">
+                                <i class="bi bi-people"></i>
+                                <span>User Management</span>
+                            </a>
+                            <a href="/admin/analytics" class="mobile-nav-link admin-link">
+                                <i class="bi bi-graph-up"></i>
+                                <span>Analytics</span>
+                            </a>
+                            <a href="/admin/settings" class="mobile-nav-link admin-link">
+                                <i class="bi bi-gear"></i>
+                                <span>System Settings</span>
+                            </a>
+                            <a href="/admin/logs" class="mobile-nav-link admin-link">
+                                <i class="bi bi-file-text"></i>
+                                <span>System Logs</span>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- View Tracking Script -->
+    <script src="{{ url_for('static', filename='js/view-tracking.js') }}"></script>
+    
+    <!-- Notification System Script -->
+    <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+    <script>
+    // Initialize notification system in base.html
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof NotificationSystem !== 'undefined' && !window.notificationSystem) {
+            window.notificationSystem = new NotificationSystem();
+            console.log('Notification system initialized in base.html');
+        }
+    });
+    </script>
+
+    <!-- AI Assistant Widget -->
+{% if session.get('username') %}
+  <div id="ai-assistant-widget"></div>
+  <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/ai-assistant.css') }}">
+  <script src="{{ url_for('static', filename='assets/js/ai-assistant.js') }}"></script>
+{% endif %}
+
+<script>
+// Global session handler
+document.addEventListener('DOMContentLoaded', function() {
+    // Intercept all fetch requests to handle session expired
+    const originalFetch = window.fetch;
+    window.fetch = function(...args) {
+        return originalFetch.apply(this, args).then(response => {
+            if (response.status === 401) {
+                console.log('Session expired, redirecting to login');
+                window.location.href = '/login';
+                return Promise.reject(new Error('Session expired'));
+            }
+            return response;
+        });
+    };
+    
+    // Add credentials to all fetch requests
+    const originalFetchWithCredentials = window.fetch;
+    window.fetch = function(url, options = {}) {
+        if (options.credentials === undefined) {
+            options.credentials = 'same-origin';
+        }
+        return originalFetchWithCredentials(url, options);
+    };
+
+            // Add smooth scrolling
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Add loading states
+            document.querySelectorAll('.modal-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (!this.hasAttribute('disabled')) {
+                        this.classList.add('loading');
+                        setTimeout(() => {
+                            this.classList.remove('loading');
+                        }, 2000);
+                    }
+                });
+            });
+
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth <= 1024) {
+                    const sidebar = document.querySelector('.sidebar');
+                    
+                    if (sidebar && !sidebar.contains(e.target)) {
+                        sidebar.classList.remove('open');
+                    }
+                }
+            });
+
+            // AI Tools Modal functionality
+            const aiToolsModal = document.getElementById('aiToolsModal');
+            const aiToolsBtn = document.querySelector('[data-bs-target="#aiToolsModal"]');
+            
+            if (aiToolsModal && aiToolsBtn) {
+                // Add click event to AI tools button
+                aiToolsBtn.addEventListener('click', function() {
+                    console.log('AI Tools button clicked');
+                });
+
+                // Add event listeners for modal show/hide
+                aiToolsModal.addEventListener('show.bs.modal', function() {
+                    console.log('AI Tools modal opening');
+                });
+
+                aiToolsModal.addEventListener('hide.bs.modal', function() {
+                    console.log('AI Tools modal closing');
+                });
+
+                // Add click event to modal buttons to close modal
+                const modalBtns = aiToolsModal.querySelectorAll('.modal-btn');
+                modalBtns.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        // Close modal after a short delay to allow navigation
+                        setTimeout(() => {
+                            const modal = bootstrap.Modal.getInstance(aiToolsModal);
+                            if (modal) {
+                                modal.hide();
+                            }
+                        }, 100);
+                    });
+                });
+            }
+
+            // Mobile navbar modal functionality
+            const mobileNavbarModal = document.getElementById('mobileNavbarModal');
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            
+            if (mobileNavbarModal && mobileMenuBtn) {
+                // Add click event to mobile menu button
+                mobileMenuBtn.addEventListener('click', function() {
+                    console.log('Mobile menu button clicked');
+                });
+
+                // Add event listeners for modal show/hide
+                mobileNavbarModal.addEventListener('show.bs.modal', function() {
+                    console.log('Mobile navbar modal opening');
+                    document.body.style.overflow = 'hidden';
+                });
+
+                mobileNavbarModal.addEventListener('hide.bs.modal', function() {
+                    console.log('Mobile navbar modal closing');
+                    document.body.style.overflow = 'auto';
+                });
+
+                // Add click event to mobile nav links to close modal
+                const mobileNavLinks = mobileNavbarModal.querySelectorAll('.mobile-nav-link');
+                mobileNavLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        // Close modal after a short delay to allow navigation
+                        setTimeout(() => {
+                            const modal = bootstrap.Modal.getInstance(mobileNavbarModal);
+                            if (modal) {
+                                modal.hide();
+                            }
+                        }, 100);
+                    });
+                });
+
+                // Add smooth scroll behavior for modal content
+                const modalBody = mobileNavbarModal.querySelector('.mobile-navbar-body');
+                if (modalBody) {
+                    modalBody.style.scrollBehavior = 'smooth';
+                }
+            }
+});
+
+// Initialize Notification System
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing notification system...');
+    if (typeof NotificationSystem !== 'undefined') {
+        window.notificationSystem = new NotificationSystem();
+        console.log('Notification system initialized successfully');
+    } else {
+        console.error('NotificationSystem class not found!');
+    }
+});
+</script>
+</body>
+</html>

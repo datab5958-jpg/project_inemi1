@@ -1,0 +1,3341 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-3 py-md-5" x-data="{
+    loading: false,
+    text: '',
+    voiceMode: 'automatic', // 'automatic' or 'manual'
+    selectedVoice: 'Indonesian_ReservedYoungMan',
+    selectedLanguageBoost: 'Indonesian',
+    manualAudioFile: null,
+    manualAudioPreview: null,
+    avatarFile: null,
+    avatarPreview: null,
+    avatarDragover: false,
+    uploadProgress: 0,
+    resultVideo: '',
+    errorMsg: '',
+    successMsg: '',
+    showGallery: false,
+    galleryImages: [],
+    galleryGenerated: [],
+    videoCanPlay: false,
+    showImagePreview: false,
+    
+    init() {
+        console.log('Generate Video Avatar page initialized');
+        this.loadGallery();
+    },
+    
+    async loadGallery() {
+        try {
+            const response = await fetch('/api/gallery/images');
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    this.galleryImages = data.images || [];
+                    this.galleryGenerated = data.generated || [];
+                    console.log('Gallery loaded:', {
+                        images: this.galleryImages.length,
+                        generated: this.galleryGenerated.length
+                    });
+                } else {
+                    console.error('Gallery API error:', data.error);
+                }
+            } else {
+                console.error('Gallery API response not ok:', response.status);
+            }
+        } catch (error) {
+            console.error('Error loading gallery:', error);
+        }
+    },
+    
+    handleAvatarUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            this.avatarFile = file;
+            
+            // Create preview
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.avatarPreview = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    },
+    
+    async handleAvatarDrop(e) {
+        e.preventDefault();
+        this.avatarDragover = false;
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.type.startsWith('image/')) {
+                this.avatarFile = file;
+                
+                // Create preview
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    this.avatarPreview = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    },
+    
+    triggerAvatarFileInput() {
+        document.getElementById('avatarFileInput').click();
+    },
+    
+    clearAvatarInput() {
+        this.avatarFile = null;
+        this.avatarPreview = null;
+        this.uploadProgress = 0;
+        document.getElementById('avatarFileInput').value = '';
+    },
+    
+    handleManualAudioUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            // Debug logging
+            console.log('File info:', {
+                name: file.name,
+                type: file.type,
+                size: file.size
+            });
+            
+            // Validate audio file type - check both MIME type and file extension
+            const allowedTypes = ['audio/mp3', 'audio/mpeg', 'audio/wav', 'audio/wave', 'audio/x-wav', 'audio/m4a', 'audio/mp4', 'audio/aac', 'audio/ogg', 'audio/vorbis', 'audio/flac'];
+            const allowedExtensions = ['mp3', 'wav', 'm4a', 'aac', 'ogg', 'flac'];
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            
+            console.log('Validation check:', {
+                fileType: file.type,
+                fileExtension: fileExtension,
+                typeAllowed: allowedTypes.includes(file.type),
+                extensionAllowed: allowedExtensions.includes(fileExtension)
+            });
+            
+            // Accept if either MIME type OR extension is valid
+            if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+                console.log('File rejected - neither type nor extension valid');
+                this.errorMsg = 'Format audio tidak didukung. Gunakan MP3, WAV, M4A, AAC, atau OGG.';
+                return;
+            }
+            
+            // Validate file size (max 50MB)
+            if (file.size > 50 * 1024 * 1024) {
+                this.errorMsg = 'File audio terlalu besar. Maksimal 50MB.';
+                return;
+            }
+            
+            this.manualAudioFile = file;
+            
+            // Create preview URL for audio player
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.manualAudioPreview = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            
+            this.errorMsg = '';
+        }
+    },
+    
+    clearManualAudioInput() {
+        this.manualAudioFile = null;
+        this.manualAudioPreview = null;
+        document.getElementById('manualAudioFileInput').value = '';
+    },
+    
+    triggerManualAudioFileInput() {
+        document.getElementById('manualAudioFileInput').click();
+    },
+    
+    detectVoiceFromText(text) {
+        // Simple voice detection based on text characteristics
+        const textLower = text.toLowerCase();
+        
+        // Medical words
+        const medicalWords = ['pasien', 'dokter', 'obat', 'penyakit', 'kesehatan', 'rumah sakit', 'perawatan', 'terapi'];
+        if (medicalWords.some(word => textLower.includes(word))) {
+            return 'Indonesian_CaringMan';
+        }
+        
+        // Educational words
+        const educationalWords = ['belajar', 'mengajar', 'sekolah', 'universitas', 'pendidikan', 'ilmu', 'pengetahuan', 'siswa'];
+        if (educationalWords.some(word => textLower.includes(word))) {
+            return 'Indonesian_ConfidentWoman';
+        }
+        
+        // Professional words
+        const professionalWords = ['presentasi', 'meeting', 'proyek', 'laporan', 'analisis', 'strategi', 'bisnis', 'perusahaan'];
+        if (professionalWords.some(word => textLower.includes(word))) {
+            return 'Indonesian_BossyLeader';
+        }
+        
+        // Emotional words
+        const emotionalWords = ['senang', 'bahagia', 'gembira', 'sedih', 'marah', 'takut', 'bangga', 'haru', 'senyum', 'tawa'];
+        if (emotionalWords.some(word => textLower.includes(word))) {
+            return 'Indonesian_SweetGirl';
+        }
+        
+        // Casual words
+        const casualWords = ['kamu', 'gue', 'lo', 'teman', 'bro', 'sis', 'mantap', 'keren', 'asik', 'oke', 'yuk'];
+        if (casualWords.some(word => textLower.includes(word))) {
+            return 'Indonesian_CharmingGirl';
+        }
+        
+        // Default Indonesian
+        return 'Indonesian_ReservedYoungMan';
+    },
+    
+    
+    selectGalleryImage(url) {
+        this.avatarPreview = url;
+        this.avatarFile = null; // Clear file since we're using URL
+        this.showGallery = false;
+        console.log('Selected gallery image:', url);
+        if (typeof showNotification === 'function') {
+            showNotification('Gambar dari galeri berhasil dipilih!', 'success');
+        }
+    },
+    
+    clickPreviewImage() {
+        // Show image preview popup when clicked
+        this.showImagePreview = true;
+    },
+    
+    closeImagePreview() {
+        this.showImagePreview = false;
+    },
+    
+    async generateVideo() {
+        // Validasi berdasarkan voice mode
+        if (this.voiceMode === 'automatic') {
+            if (!this.text.trim()) {
+                this.errorMsg = 'Teks narasi tidak boleh kosong untuk mode otomatis';
+                return;
+            }
+        } else if (this.voiceMode === 'manual') {
+            if (!this.manualAudioFile) {
+                this.errorMsg = 'File audio tidak boleh kosong untuk mode manual';
+                return;
+            }
+        }
+        
+        if (!this.avatarFile && !this.avatarPreview) {
+            this.errorMsg = 'Gambar avatar tidak boleh kosong';
+            return;
+        }
+        
+        this.loading = true;
+        this.errorMsg = '';
+        this.successMsg = '';
+        this.resultVideo = '';
+        this.videoCanPlay = false;
+        
+        try {
+            const formData = new FormData();
+            
+            // Add voice mode
+            formData.append('voice_mode', this.voiceMode);
+            
+            console.log('Sending form data:', {
+                voiceMode: this.voiceMode,
+                text: this.text,
+                selectedVoice: this.selectedVoice,
+                selectedLanguageBoost: this.selectedLanguageBoost,
+                manualAudioFile: this.manualAudioFile ? this.manualAudioFile.name : null,
+                avatarFile: this.avatarFile ? this.avatarFile.name : null,
+                avatarPreview: this.avatarPreview
+            });
+            
+            if (this.voiceMode === 'automatic') {
+                formData.append('text', this.text);
+                
+                // Add selected voice or auto-detect if not selected
+                if (this.selectedVoice) {
+                    formData.append('voice_id', this.selectedVoice);
+                } else {
+                    // Auto-detect voice based on text
+                    const detectedVoice = this.detectVoiceFromText(this.text);
+                    formData.append('voice_id', detectedVoice);
+                }
+                
+                // Add selected language boost
+                formData.append('language_boost', this.selectedLanguageBoost);
+            } else if (this.voiceMode === 'manual') {
+                // Add manual audio file
+                formData.append('manual_audio', this.manualAudioFile);
+                
+                // No text needed for manual mode - audio is provided
+            }
+            
+            if (this.avatarFile) {
+                formData.append('avatar_image', this.avatarFile);
+            } else if (this.avatarPreview) {
+                // If using gallery image, send the URL
+                formData.append('avatar_url', this.avatarPreview);
+            }
+            
+            const response = await fetch('/generate_video_avatar', {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin'
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                if (result.status === 'processing' && result.request_id) {
+                    // Video is still processing, start polling
+                    this.successMsg = result.message;
+                    this.pollVideoStatus(result.request_id);
+                } else if (result.video_url) {
+                    // Video completed immediately
+                    this.successMsg = result.message;
+                    this.resultVideo = result.video_url;
+                    this.loading = false;
+                    if (typeof showNotification === 'function') {
+                        showNotification('Video avatar berhasil dibuat!', 'success');
+                    }
+                } else {
+                    this.errorMsg = 'Unexpected response format';
+                    this.loading = false;
+                }
+            } else {
+                this.errorMsg = result.error || 'Generation failed';
+                this.loading = false;
+                if (typeof showNotification === 'function') {
+                    showNotification(result.error || 'Generation failed', 'error');
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            this.errorMsg = 'Network error occurred';
+            this.loading = false;
+            if (typeof showNotification === 'function') {
+                showNotification('Network error occurred', 'error');
+            }
+        }
+    },
+    
+    async pollVideoStatus(requestId) {
+        console.log('Starting video status polling for request ID:', requestId);
+        const maxAttempts = 600; // 10 minutes max (poll every 1 second)
+        let attempts = 0;
+        
+        const pollInterval = setInterval(async () => {
+            attempts++;
+            console.log(`Polling attempt ${attempts}/${maxAttempts}`);
+            
+            try {
+                const response = await fetch(`/api/avatar_status/${requestId}?text=${encodeURIComponent(this.text)}`, {
+                    method: 'GET',
+                    credentials: 'same-origin'
+                });
+                
+                const result = await response.json();
+                console.log('Polling result:', result);
+                
+                if (result.success) {
+                    if (result.status === 'completed' && result.video_url) {
+                        // Video completed successfully
+                        clearInterval(pollInterval);
+                        this.resultVideo = result.video_url;
+                        this.loading = false;
+                        this.successMsg = result.message || 'Video avatar berhasil dibuat!';
+                        if (typeof showNotification === 'function') {
+                            showNotification('Video avatar berhasil dibuat!', 'success');
+                        }
+                        console.log('Video generation completed:', result.video_url);
+                    } else if (result.status === 'failed') {
+                        // Video generation failed
+                        clearInterval(pollInterval);
+                        this.loading = false;
+                        this.errorMsg = result.error || 'Video generation failed';
+                        if (typeof showNotification === 'function') {
+                            showNotification(result.error || 'Video generation failed', 'error');
+                        }
+                        console.log('Video generation failed:', result.error);
+                    } else if (result.status === 'processing') {
+                        // Still processing, continue polling
+                        console.log('Video still processing...');
+                        
+                        // Update success message with progress info
+                        if (result.message) {
+                            this.successMsg = result.message;
+                        }
+                        
+                        // Show execution time if available
+                        if (result.execution_time) {
+                            const minutes = Math.floor(result.execution_time / 60);
+                            const seconds = result.execution_time % 60;
+                            console.log(`Execution time: ${minutes}m ${seconds}s`);
+                        }
+                    }
+                } else {
+                    // API error
+                    console.error('Polling API error:', result.error);
+                }
+            } catch (error) {
+                console.error('Polling error:', error);
+            }
+            
+            // Stop polling after max attempts
+            if (attempts >= maxAttempts) {
+                clearInterval(pollInterval);
+                this.loading = false;
+                this.errorMsg = `Video generation timeout after ${Math.floor(maxAttempts/60)} minutes. The video might still be processing on the server. Please check back later or try with shorter text.`;
+                if (typeof showNotification === 'function') {
+                    showNotification('Video generation timeout. Please try with shorter text or check back later.', 'error');
+                }
+                console.log('Polling timeout after', maxAttempts, 'attempts');
+            }
+        }, 1000); // Poll every 1 second
+    },
+    
+    downloadVideo() {
+        if (this.resultVideo) {
+            const link = document.createElement('a');
+            link.href = this.resultVideo;
+            link.download = `avatar_video_${Date.now()}.mp4`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    },
+    
+    onVideoLoaded() {
+        console.log('Video loaded successfully:', this.resultVideo);
+        console.log('Video duration:', event.target.duration);
+        console.log('Video ready state:', event.target.readyState);
+        this.videoCanPlay = true;
+        // Video is ready to play
+    },
+    
+    onVideoError(event) {
+        console.error('Video loading error:', event);
+        console.error('Video error details:', event.target.error);
+        console.error('Video network state:', event.target.networkState);
+        this.videoCanPlay = false;
+        this.errorMsg = 'Error loading video. Please try again.';
+        if (typeof showNotification === 'function') {
+            showNotification('Error loading video. Please try again.', 'error');
+        }
+    },
+    
+    onVideoCanPlay() {
+        console.log('Video can start playing:', this.resultVideo);
+        console.log('Video ready state:', event.target.readyState);
+        this.videoCanPlay = true;
+    },
+    
+    onVideoLoadStart() {
+        console.log('Video load started:', this.resultVideo);
+        console.log('Video network state:', event.target.networkState);
+        this.videoCanPlay = false;
+    },
+    
+    playVideo() {
+        const video = document.querySelector('.result-video');
+        if (video) {
+            video.play().catch(error => {
+                console.error('Error playing video:', error);
+                this.errorMsg = 'Error playing video. Please try downloading instead.';
+                if (typeof showNotification === 'function') {
+                    showNotification('Error playing video. Please try downloading instead.', 'error');
+                }
+            });
+        }
+    }
+}">
+  
+  <!-- Toast Container -->
+  <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+  </div>
+
+  <!-- Futuristic Header Section -->
+  <div class="hero-section">
+    <div class="hero-background">
+      <div class="animated-grid"></div>
+      <div class="floating-elements">
+        <div class="floating-element element-1"></div>
+        <div class="floating-element element-2"></div>
+        <div class="floating-element element-3"></div>
+        <div class="floating-element element-4"></div>
+        <div class="floating-element element-5"></div>
+      </div>
+    </div>
+    
+    <div class="hero-content">
+      <div class="hero-icon">
+        <div class="icon-container">
+          <i class="bi bi-person-video3"></i>
+          <div class="icon-ring"></div>
+          <div class="icon-glow"></div>
+        </div>
+      </div>
+      
+      <h1 class="hero-title">
+        <span class="title-line-1">Generate</span>
+        <span class="title-line-2">Video Avatar</span>
+      </h1>
+      
+      <p class="hero-subtitle">
+        Transform your images into lifelike AI-powered video avatars with natural speech synthesis
+      </p>
+      
+      <div class="hero-features">
+        <div class="feature-badge">
+          <i class="bi bi-lightning-charge"></i>
+          <span>AI-Powered</span>
+        </div>
+        <div class="feature-badge">
+          <i class="bi bi-shield-check"></i>
+          <span>High Quality</span>
+        </div>
+        <div class="feature-badge">
+          <i class="bi bi-clock"></i>
+          <span>Fast Processing</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modern Cost Info Panel -->
+  <div class="cost-info-section">
+    <div class="cost-panel">
+      <div class="cost-header">
+        <div class="cost-icon">
+          <i class="bi bi-currency-dollar"></i>
+        </div>
+        <h3 class="cost-title">Credit Information</h3>
+      </div>
+      
+      <div class="cost-content">
+        <div class="cost-description">
+          Credits will be deducted based on video duration
+        </div>
+        
+        <div class="cost-breakdown">
+          <div class="cost-item">
+            <div class="cost-label">Base Cost</div>
+            <div class="cost-value">50 Credits</div>
+          </div>
+          <div class="cost-item">
+            <div class="cost-label">Per Second</div>
+            <div class="cost-value">10 Credits</div>
+          </div>
+        </div>
+        
+        <div class="cost-example">
+          <i class="bi bi-calculator"></i>
+          <span>Example: 10-second video = 50 + (10×10) = 150 credits</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modern Grid Layout -->
+  <div class="main-container">
+    <!-- Form Section -->
+    <div class="form-section">
+      <div class="form-panel">
+        <div class="form-header">
+          <div class="form-icon">
+            <i class="bi bi-gear-fill"></i>
+          </div>
+          <h3 class="form-title">Configuration</h3>
+          <p class="form-subtitle">Set up your video avatar generation</p>
+        </div>
+        
+        <form @submit.prevent="generateVideo()" class="modern-form">
+          <!-- Voice Mode Selection -->
+          <div class="input-group">
+            <div class="input-header">
+              <label class="input-label">
+                <i class="bi bi-soundwave"></i>
+                <span>Voice Mode</span>
+              </label>
+              <div class="input-status" x-show="voiceMode">
+                <i class="bi bi-check-circle-fill"></i>
+                <span x-text="voiceMode === 'automatic' ? 'Otomatis (TTS)' : 'Manual Upload'"></span>
+              </div>
+            </div>
+            
+            <div class="input-container">
+              <select 
+                class="modern-select voice-mode-select" 
+                x-model="voiceMode"
+                required>
+                <option value="automatic">
+                  🤖 Voice Otomatis - Gunakan text-to-speech AI
+                </option>
+                <option value="manual">
+                  📤 Voice Manual Upload - Upload file audio sendiri
+                </option>
+              </select>
+              <div class="input-focus-line"></div>
+            </div>
+            
+            <div class="input-hint">
+              <i class="bi bi-info-circle"></i>
+              <span x-show="voiceMode === 'automatic'">Mode otomatis akan mengubah teks menjadi suara menggunakan AI</span>
+              <span x-show="voiceMode === 'manual'">Mode manual memungkinkan Anda menggunakan file audio sendiri</span>
+            </div>
+          </div>
+
+          <!-- Manual Audio Upload (shown when manual mode is selected) -->
+          <div class="input-group" x-show="voiceMode === 'manual'">
+            <div class="input-header">
+              <label class="input-label">
+                <i class="bi bi-file-earmark-music"></i>
+                <span>Upload Audio File</span>
+              </label>
+              <div class="input-status" x-show="manualAudioFile">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Audio Selected</span>
+              </div>
+            </div>
+            
+            <div class="upload-tips">
+              <i class="bi bi-lightbulb"></i>
+              <span><strong>Tip:</strong> Gunakan audio berkualitas baik (MP3, WAV, M4A, AAC, OGG). Maksimal 50MB</span>
+            </div>
+            
+            <div class="audio-upload-area" :class="{ 'has-audio': manualAudioFile }">
+              <!-- Upload Placeholder -->
+              <div x-show="!manualAudioFile" class="upload-zone" @click="triggerManualAudioFileInput()">
+                <div class="upload-animation">
+                  <div class="upload-ring">
+                    <div class="upload-ring-inner"></div>
+                  </div>
+                  <div class="upload-icon-container">
+                    <i class="bi bi-file-earmark-music"></i>
+                  </div>
+                </div>
+                <div class="upload-text">
+                  <h4>Upload Audio File</h4>
+                  <p>Klik untuk memilih file audio</p>
+                  <div class="upload-specs">
+                    <span class="spec-item">MP3, WAV, M4A</span>
+                    <span class="spec-item">AAC, OGG</span>
+                    <span class="spec-item">Max 50MB</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Audio Preview -->
+              <div x-show="manualAudioFile" class="audio-preview-zone">
+                <div class="audio-info">
+                  <div class="audio-icon">
+                    <i class="bi bi-file-earmark-music-fill"></i>
+                  </div>
+                  <div class="audio-details">
+                    <h4 x-text="manualAudioFile ? manualAudioFile.name : ''"></h4>
+                    <p x-text="manualAudioFile ? (manualAudioFile.size / (1024*1024)).toFixed(2) + ' MB' : ''"></p>
+                  </div>
+                </div>
+                
+                <!-- Audio Player -->
+                <div class="audio-player" x-show="manualAudioPreview">
+                  <audio controls :src="manualAudioPreview" class="audio-control">
+                    Your browser does not support the audio element.
+                  </audio>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="audio-actions">
+                  <button type="button" class="action-btn primary" @click="triggerManualAudioFileInput()">
+                    <i class="bi bi-arrow-repeat"></i>
+                    <span>Replace</span>
+                  </button>
+                  <button type="button" class="action-btn danger" @click="clearManualAudioInput()">
+                    <i class="bi bi-trash"></i>
+                    <span>Remove</span>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Hidden File Input -->
+              <input 
+                type="file" 
+                id="manualAudioFileInput"
+                accept="audio/*,.mp3,.wav,.m4a,.aac,.ogg,.flac" 
+                @change="handleManualAudioUpload($event)" 
+                style="display: none;">
+            </div>
+          </div>
+
+          <!-- Narration Text Input (only for automatic mode) -->
+          <div class="input-group" x-show="voiceMode === 'automatic'">
+            <div class="input-header">
+              <label class="input-label">
+                <i class="bi bi-chat-text"></i>
+                <span>Narration Text</span>
+              </label>
+              <div class="input-status" x-show="text.trim()">
+                <i class="bi bi-check-circle-fill"></i>
+                <span x-text="text.split(' ').length + ' words'"></span>
+              </div>
+            </div>
+            
+            <div class="input-container">
+              <textarea 
+                class="modern-textarea" 
+                rows="4" 
+                placeholder="Masukkan teks yang ingin diucapkan avatar..."
+                x-model="text" 
+                :required="voiceMode === 'automatic'"></textarea>
+              <div class="input-focus-line"></div>
+            </div>
+            
+            <div class="input-hint">
+              <i class="bi bi-info-circle"></i>
+              <span>Teks akan diubah menjadi suara dan disinkronkan dengan avatar</span>
+            </div>
+          </div>
+
+          <!-- Voice Selection (only for automatic mode) -->
+          <div class="input-group" x-show="voiceMode === 'automatic'">
+            <div class="input-header">
+              <label class="input-label">
+                <i class="bi bi-mic"></i>
+                <span>Voice Selection</span>
+              </label>
+              <div class="input-status" x-show="selectedVoice">
+                <i class="bi bi-check-circle-fill"></i>
+                <span x-text="selectedVoice"></span>
+              </div>
+            </div>
+            
+            <div class="input-container">
+              <select 
+                class="modern-select" 
+                x-model="selectedVoice"
+                :required="voiceMode === 'automatic'">
+                <optgroup label="Indonesian Voices">
+                  <option value="Indonesian_ReservedYoungMan">Reserved Young Man (Default)</option>
+                  <option value="Indonesian_SweetGirl">Sweet Girl (Emotional)</option>
+                  <option value="Indonesian_CharmingGirl">Charming Girl (Casual)</option>
+                  <option value="Indonesian_CalmWoman">Calm Woman (Professional)</option>
+                  <option value="Indonesian_ConfidentWoman">Confident Woman (Educational)</option>
+                  <option value="Indonesian_CaringMan">Caring Man (Medical)</option>
+                  <option value="Indonesian_BossyLeader">Bossy Leader (Formal)</option>
+                </optgroup>
+                <optgroup label="International Voices">
+                  <option value="Patient_Man">Patient Man (Universal)</option>
+                  <option value="German_SweetLady">German Sweet Lady</option>
+                  <option value="German_PlayfulMan">German Playful Man</option>
+                </optgroup>
+              </select>
+              <div class="input-focus-line"></div>
+            </div>
+            
+            <div class="input-hint">
+              <i class="bi bi-info-circle"></i>
+              <span>Pilih voice yang sesuai dengan karakter teks Anda untuk hasil terbaik.</span>
+            </div>
+            
+          </div>
+
+          <!-- Language Boost Selection (only for automatic mode) -->
+          <div class="input-group" x-show="voiceMode === 'automatic'">
+            <div class="input-header">
+              <label class="input-label">
+                <i class="bi bi-translate"></i>
+                <span>Language Boost</span>
+              </label>
+              <div class="input-status" x-show="selectedLanguageBoost">
+                <i class="bi bi-check-circle-fill"></i>
+                <span x-text="selectedLanguageBoost"></span>
+              </div>
+            </div>
+            
+            <div class="input-container">
+              <select 
+                class="modern-select" 
+                x-model="selectedLanguageBoost"
+                :required="voiceMode === 'automatic'">
+                <option value="Indonesian">Indonesian (Default)</option>
+                <option value="English">English</option>
+                <option value="Malay">Malay</option>
+                <option value="Javanese">Javanese</option>
+                <option value="Sundanese">Sundanese</option>
+                <option value="Minangkabau">Minangkabau</option>
+                <option value="Buginese">Buginese</option>
+                <option value="Balinese">Balinese</option>
+                <option value="Acehnese">Acehnese</option>
+                <option value="Batak">Batak</option>
+                <option value="Chinese">Chinese</option>
+                <option value="Arabic">Arabic</option>
+                <option value="Dutch">Dutch</option>
+                <option value="Portuguese">Portuguese</option>
+                <option value="German">German</option>
+                <option value="French">French</option>
+                <option value="Spanish">Spanish</option>
+                <option value="Italian">Italian</option>
+                <option value="Russian">Russian</option>
+                <option value="Japanese">Japanese</option>
+                <option value="Korean">Korean</option>
+                <option value="Thai">Thai</option>
+                <option value="Vietnamese">Vietnamese</option>
+                <option value="Filipino">Filipino</option>
+                <option value="Hindi">Hindi</option>
+                <option value="Turkish">Turkish</option>
+                <option value="Ukrainian">Ukrainian</option>
+              </select>
+              <div class="input-focus-line"></div>
+            </div>
+            
+            <div class="input-hint">
+              <i class="bi bi-info-circle"></i>
+              <span>Pilih bahasa yang sesuai dengan teks untuk akurasi pengucapan yang lebih baik. Default: Indonesian.</span>
+            </div>
+          </div>
+
+          <!-- Avatar Image Upload -->
+          <div class="input-group">
+            <div class="input-header">
+              <label class="input-label">
+                <i class="bi bi-image"></i>
+                <span>Avatar Image</span>
+              </label>
+              <div class="input-status" x-show="avatarPreview">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Image Selected</span>
+              </div>
+            </div>
+            
+            <div class="upload-tips">
+              <i class="bi bi-lightbulb"></i>
+              <span><strong>Pro Tip:</strong> Use high-resolution images (min 512x512) for best results. Supported: JPG, PNG, WEBP, GIF</span>
+            </div>
+            
+            <div class="futuristic-upload-area" :class="{ 'has-preview': avatarPreview, 'dragover': avatarDragover }"
+                 @dragover.prevent="avatarDragover = true"
+                 @drop.prevent="handleAvatarDrop($event)"
+                 @dragenter.prevent="avatarDragover = true"
+                 @dragleave.prevent="avatarDragover = false">
+              
+              <!-- Upload Placeholder -->
+              <div x-show="!avatarPreview" class="upload-zone" @click="triggerAvatarFileInput()">
+                <div class="upload-animation">
+                  <div class="upload-ring">
+                    <div class="upload-ring-inner"></div>
+                  </div>
+                  <div class="upload-icon-container">
+                    <i class="bi bi-cloud-upload"></i>
+                  </div>
+                </div>
+                <div class="upload-text">
+                  <h4>Upload Avatar Image</h4>
+                  <p>Click to browse or drag & drop your image here</p>
+                  <div class="upload-specs">
+                    <span class="spec-item">JPG, PNG, WEBP, GIF</span>
+                    <span class="spec-item">Max 10MB</span>
+                    <span class="spec-item">Min 512x512px</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Image Preview -->
+              <div x-show="avatarPreview" class="preview-zone">
+                <div class="preview-container" @click="clickPreviewImage()">
+                  <img :src="avatarPreview" class="preview-image" alt="Avatar Preview">
+                  <div class="preview-click-hint">
+                    <i class="bi bi-zoom-in"></i>
+                    <span>Klik untuk memperbesar</span>
+                  </div>
+                </div>
+                
+                <!-- Action Buttons Outside Preview -->
+                <div class="preview-actions">
+                  <button type="button" class="action-btn primary" @click="triggerAvatarFileInput()">
+                    <i class="bi bi-arrow-repeat"></i>
+                    <span>Replace</span>
+                  </button>
+                  <button type="button" class="action-btn secondary" @click="showGallery = true">
+                    <i class="bi bi-images"></i>
+                    <span>Gallery</span>
+                  </button>
+                  <button type="button" class="action-btn danger" @click="clearAvatarInput()">
+                    <i class="bi bi-trash"></i>
+                    <span>Remove</span>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Hidden File Input -->
+              <input 
+                type="file" 
+                id="avatarFileInput"
+                accept="image/*" 
+                @change="handleAvatarUpload($event)" 
+                style="display: none;">
+            </div>
+            
+            <!-- Gallery Button -->
+            <div class="gallery-button-container">
+              <button type="button" class="gallery-btn" @click="showGallery = true">
+                <i class="bi bi-images"></i>
+                <span>Choose from Gallery</span>
+              </button>
+            </div>
+              
+              <!-- Gallery Modal/Dropdown -->
+              <template x-if="showGallery">
+                <div class="gallery-overlay" @click.self="showGallery = false">
+                  <div class="gallery-popup animate__animated animate__zoomIn">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                      <div class="fw-bold text-gradient fs-5">
+                        <i class="bi bi-images me-2"></i>Galeri Gambar
+                      </div>
+                      <button type="button" class="btn-close btn-close-white" aria-label="Close" @click="showGallery = false"></button>
+                    </div>
+                    <div class="mb-3 small text-secondary">
+                      <i class="bi bi-info-circle me-1"></i>Klik gambar untuk memilih sebagai avatar
+                    </div>
+                    
+                    <!-- Gallery Images -->
+                    <div class="mb-4">
+                      <div class="fw-bold text-gradient fs-6 mb-2">
+                        <i class="bi bi-image me-2"></i>Galeri Gambar
+                      </div>
+                      <div class="d-flex flex-wrap gap-2">
+                        <template x-for="img in galleryImages" :key="img.id">
+                          <div class="gallery-thumb" style="cursor:pointer;" 
+                               @click="selectGalleryImage(img.url)"
+                               title="Klik untuk memilih gambar ini">
+                            <img :src="img.url" :alt="img.caption" class="gallery-img">
+                          </div>
+                        </template>
+                      </div>
+                    </div>
+                    
+                    <!-- Generated Images -->
+                    <div class="mb-3">
+                      <div class="fw-bold text-gradient fs-6 mb-2">
+                        <i class="bi bi-stars me-2"></i>Gambar Hasil Generate
+                      </div>
+                      <div class="d-flex flex-wrap gap-2">
+                        <template x-for="img in galleryGenerated" :key="img.id">
+                          <div class="gallery-thumb" style="cursor:pointer;" 
+                               @click="selectGalleryImage(img.url)"
+                               title="Klik untuk memilih gambar ini">
+                            <img :src="img.url" :alt="img.caption" class="gallery-img gallery-img-gen">
+                          </div>
+                        </template>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+          <!-- Image Preview Modal -->
+          <template x-if="showImagePreview">
+            <div class="image-preview-modal" @click="closeImagePreview()">
+              <div class="image-preview-content" @click.stop>
+                <div class="image-preview-header">
+                  <h3>Preview Avatar</h3>
+                  <button type="button" class="close-btn" @click="closeImagePreview()">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </div>
+                <div class="image-preview-body">
+                  <img :src="avatarPreview" class="modal-preview-image" alt="Avatar Preview">
+                </div>
+                <div class="image-preview-footer">
+                  <button type="button" class="modal-action-btn primary" @click="triggerAvatarFileInput(); closeImagePreview()">
+                    <i class="bi bi-arrow-repeat"></i>
+                    <span>Ganti Gambar</span>
+                  </button>
+                  <button type="button" class="modal-action-btn secondary" @click="showGallery = true; closeImagePreview()">
+                    <i class="bi bi-images"></i>
+                    <span>Dari Galeri</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- Generate Button -->
+          <div class="generate-button-container">
+            <button type="submit" class="generate-btn" :disabled="loading">
+              <div class="btn-content">
+                <div class="btn-icon" x-show="!loading">
+                  <i class="bi bi-person-video3"></i>
+                </div>
+                <div class="btn-spinner" x-show="loading">
+                  <div class="spinner"></div>
+                </div>
+                <div class="btn-text">
+                  <span x-show="!loading">Generate Video Avatar</span>
+                  <span x-show="loading">Processing...</span>
+                </div>
+              </div>
+              <div class="btn-glow"></div>
+            </button>
+          </div>
+        </form>
+        
+        <!-- Status Messages -->
+        <div class="status-messages">
+          <template x-if="errorMsg">
+            <div class="status-message error">
+              <div class="status-icon">
+                <i class="bi bi-exclamation-triangle"></i>
+              </div>
+              <div class="status-content">
+                <div class="status-title">Error</div>
+                <div class="status-text" x-text="errorMsg"></div>
+              </div>
+            </div>
+          </template>
+          
+          <template x-if="successMsg">
+            <div class="status-message success">
+              <div class="status-icon">
+                <i class="bi bi-check-circle"></i>
+              </div>
+              <div class="status-content">
+                <div class="status-title">Success</div>
+                <div class="status-text" x-text="successMsg"></div>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <!-- Preview Section -->
+    <div class="preview-section">
+      <div class="preview-panel">
+        <!-- Loading State -->
+        <template x-if="loading">
+          <div class="loading-state">
+            <div class="loading-background">
+              <div class="loading-particles">
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+                <div class="particle"></div>
+              </div>
+            </div>
+            
+            <div class="loading-content">
+              <div class="loading-icon">
+                <div class="loading-ring">
+                  <div class="loading-ring-inner"></div>
+                </div>
+                <i class="bi bi-person-video3 loading-main-icon"></i>
+              </div>
+              
+              <div class="loading-text">
+                <h3>Generating Video Avatar</h3>
+                <p x-text="successMsg || 'Processing your request, please wait...'"></p>
+                <div class="loading-time">
+                  <span x-show="!successMsg">Estimated time: 2-10 minutes (longer text takes more time)</span>
+                  <span x-show="successMsg" x-text="successMsg"></span>
+                </div>
+              </div>
+              
+              <!-- Progress Steps -->
+              <div class="progress-steps">
+                <div class="step">
+                  <div class="step-icon">
+                    <i class="bi bi-mic"></i>
+                  </div>
+                  <div class="step-label">TTS Audio</div>
+                  <div class="step-progress"></div>
+                </div>
+                <div class="step">
+                  <div class="step-icon">
+                    <i class="bi bi-person-video3"></i>
+                  </div>
+                  <div class="step-label">Avatar Video</div>
+                  <div class="step-progress"></div>
+                </div>
+                <div class="step">
+                  <div class="step-icon">
+                    <i class="bi bi-download"></i>
+                  </div>
+                  <div class="step-label">Finalizing</div>
+                  <div class="step-progress"></div>
+                </div>
+              </div>
+              
+              <!-- Progress Bar -->
+              <div class="progress-container">
+                <div class="progress-bar">
+                  <div class="progress-fill"></div>
+                </div>
+                <div class="progress-text">Processing...</div>
+              </div>
+              
+              <!-- Credit Info -->
+              <div class="credit-info">
+                <i class="bi bi-currency-dollar"></i>
+                <span>Credits will be deducted based on video duration</span>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <!-- Result Video -->
+        <template x-if="resultVideo && !loading">
+          <div class="result-state">
+            <div class="result-header">
+              <div class="result-icon">
+                <i class="bi bi-check-circle-fill"></i>
+              </div>
+              <h3>Video Avatar Generated!</h3>
+              <p>Your AI-powered video avatar is ready</p>
+            </div>
+            
+            <div class="video-container">
+              <div class="video-wrapper">
+                <video 
+                  :src="resultVideo" 
+                  controls 
+                  class="result-video"
+                  preload="metadata"
+                  playsinline
+                  webkit-playsinline
+                  type="video/mp4"
+                  @loadedmetadata="onVideoLoaded"
+                  @error="onVideoError"
+                  @canplay="onVideoCanPlay"
+                  @loadstart="onVideoLoadStart">
+                  <p>Your browser does not support the video tag.</p>
+                  <p>Please try downloading the video instead: <a :href="resultVideo" download>Download Video</a></p>
+                </video>
+                
+                <!-- Manual play button as fallback -->
+                <div class="video-play-fallback" x-show="!videoCanPlay" @click="playVideo()">
+                  <div class="play-button-large">
+                    <i class="bi bi-play-fill"></i>
+                  </div>
+                  <p>Click to play video</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Success Info -->
+            <div class="success-info">
+              <div class="success-icon">
+                <i class="bi bi-database-check"></i>
+              </div>
+              <div class="success-content">
+                <div class="success-title">Video Saved!</div>
+                <div class="success-text">Your video has been saved to the database and will appear in the feed/explore section.</div>
+              </div>
+            </div>
+            
+            <div class="action-buttons">
+              <button 
+                @click="downloadVideo()"
+                class="download-btn">
+                <div class="btn-icon">
+                  <i class="bi bi-download"></i>
+                </div>
+                <div class="btn-text">Download Video</div>
+                <div class="btn-glow"></div>
+              </button>
+            </div>
+          </div>
+        </template>
+
+        <!-- Default State -->
+        <template x-if="!loading && !resultVideo">
+          <div class="default-state">
+            <div class="default-content">
+              <div class="default-icon">
+                <div class="icon-container">
+                  <i class="bi bi-person-video3"></i>
+                  <div class="icon-glow"></div>
+                </div>
+              </div>
+              <div class="default-text">
+                <h3>Video Avatar Preview</h3>
+                <p>Your generated video avatar will appear here once the process is complete</p>
+              </div>
+              <div class="default-features">
+                <div class="feature-item">
+                  <i class="bi bi-lightning-charge"></i>
+                  <span>AI-Powered</span>
+                </div>
+                <div class="feature-item">
+                  <i class="bi bi-shield-check"></i>
+                  <span>High Quality</span>
+                </div>
+                <div class="feature-item">
+                  <i class="bi bi-clock"></i>
+                  <span>Fast Processing</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Modern Futuristic Design System */
+:root {
+  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --secondary-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  --success-gradient: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  --danger-gradient: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  --warning-gradient: linear-gradient(135deg, #feca57 0%, #ff9ff3 100%);
+  
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #1a1a1a;
+  --bg-tertiary: #2a2a2a;
+  --bg-glass: rgba(26, 26, 46, 0.9);
+  --bg-glass-light: rgba(255, 255, 255, 0.05);
+  
+  --text-primary: #ffffff;
+  --text-secondary: #e0e0e0;
+  --text-muted: #a0a0a0;
+  --text-accent: #667eea;
+  
+  --border-primary: rgba(255, 255, 255, 0.15);
+  --border-secondary: rgba(102, 126, 234, 0.3);
+  --border-accent: #667eea;
+  
+  --shadow-primary: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-secondary: 0 4px 15px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 20px rgba(102, 126, 234, 0.4);
+  
+  --border-radius: 20px;
+  --border-radius-sm: 12px;
+  --border-radius-lg: 24px;
+  
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Hero Section */
+.hero-section {
+  position: relative;
+  padding: 5rem 0;
+  margin-bottom: 4rem;
+  overflow: hidden;
+  min-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+}
+
+.animated-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    linear-gradient(rgba(102, 126, 234, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(102, 126, 234, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: grid-move 20s linear infinite;
+}
+
+@keyframes grid-move {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(50px, 50px); }
+}
+
+.floating-elements {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.floating-element {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: var(--text-accent);
+  border-radius: 50%;
+  animation: float 8s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+.element-1 { top: 20%; left: 10%; animation-delay: 0s; }
+.element-2 { top: 60%; left: 80%; animation-delay: 2s; }
+.element-3 { top: 40%; left: 60%; animation-delay: 4s; }
+.element-4 { top: 80%; left: 30%; animation-delay: 1s; }
+.element-5 { top: 10%; left: 70%; animation-delay: 3s; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+  50% { transform: translateY(-30px) rotate(180deg); opacity: 1; }
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.hero-icon {
+  margin-bottom: 2rem;
+}
+
+.icon-container {
+  position: relative;
+  display: inline-block;
+}
+
+.icon-container i {
+  font-size: 4rem;
+  color: var(--text-accent);
+  position: relative;
+  z-index: 2;
+}
+
+.icon-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  border: 2px solid var(--border-accent);
+  border-radius: 50%;
+  animation: rotate 10s linear infinite;
+}
+
+.icon-ring::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid transparent;
+  border-top-color: var(--text-accent);
+  border-radius: 50%;
+  animation: rotate 5s linear infinite reverse;
+}
+
+@keyframes rotate {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+.icon-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(102, 126, 234, 0.3) 0%, transparent 70%);
+  border-radius: 50%;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.3; }
+  50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.6; }
+}
+
+.hero-title {
+  font-size: 4rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  line-height: 1.1;
+}
+
+.title-line-1 {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+}
+
+.title-line-2 {
+  background: var(--secondary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+  margin-top: 0.5rem;
+}
+
+.hero-subtitle {
+  font-size: 1.3rem;
+  color: var(--text-secondary);
+  margin-bottom: 3rem;
+  font-weight: 500;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-features {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.feature-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-primary);
+  border-radius: 25px;
+  backdrop-filter: blur(10px);
+  transition: var(--transition);
+}
+
+.feature-badge:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-accent);
+  box-shadow: var(--shadow-glow);
+}
+
+.feature-badge i {
+  color: var(--text-accent);
+  font-size: 1.2rem;
+}
+
+.feature-badge span {
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Cost Info Panel */
+.cost-info-section {
+  margin-bottom: 3rem;
+}
+
+.cost-panel {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  backdrop-filter: blur(15px);
+  position: relative;
+  overflow: hidden;
+}
+
+.cost-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary-gradient);
+}
+
+.cost-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.cost-icon {
+  margin-right: 1rem;
+}
+
+.cost-icon i {
+  font-size: 2rem;
+  color: var(--text-accent);
+}
+
+.cost-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cost-content {
+  display: grid;
+  gap: 1rem;
+}
+
+.cost-description {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.cost-breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.cost-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--bg-glass-light);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
+}
+
+.cost-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.cost-value {
+  color: var(--text-accent);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.cost-example {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--bg-glass-light);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.cost-example i {
+  color: var(--text-accent);
+}
+
+/* Main Container */
+.main-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Form Section */
+.form-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-panel {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  backdrop-filter: blur(15px);
+  position: relative;
+  overflow: hidden;
+  height: fit-content;
+}
+
+.form-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary-gradient);
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.form-icon {
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.form-icon i {
+  font-size: 2.5rem;
+  color: var(--text-accent);
+}
+
+.form-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.form-subtitle {
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+/* Modern Form */
+.modern-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.input-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.input-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.input-counter {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: var(--bg-glass-light);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-primary);
+}
+
+.input-container {
+  position: relative;
+}
+
+.modern-textarea {
+  width: 100%;
+  background: var(--bg-glass-light);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
+  padding: 1rem;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 120px;
+  transition: var(--transition);
+}
+
+.modern-textarea:focus {
+  outline: none;
+  border-color: var(--border-accent);
+  background: var(--bg-glass);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.modern-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.input-focus-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--primary-gradient);
+  transform: scaleX(0);
+  transition: var(--transition);
+}
+
+.modern-textarea:focus + .input-focus-line {
+  transform: scaleX(1);
+}
+
+.input-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Voice Mode Select */
+.voice-mode-select {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.voice-mode-select option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 1rem;
+  font-size: 1rem;
+}
+
+/* Audio Upload Area */
+.audio-upload-area {
+  border: 2px dashed var(--border-primary);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  background: var(--bg-glass-light);
+  position: relative;
+  overflow: hidden;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.audio-upload-area:hover {
+  border-color: var(--border-accent);
+  background: var(--bg-glass);
+  transform: translateY(-2px);
+}
+
+.audio-upload-area.has-audio {
+  border-style: solid;
+  border-color: var(--border-accent);
+  background: var(--bg-glass);
+}
+
+.audio-preview-zone {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.audio-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
+  padding: 1rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.audio-icon {
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  background: var(--success-gradient);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.audio-icon i {
+  font-size: 1.5rem;
+  color: white;
+}
+
+.audio-details {
+  flex: 1;
+  text-align: left;
+}
+
+.audio-details h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.25rem 0;
+  word-break: break-all;
+}
+
+.audio-details p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.audio-player {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
+  padding: 1rem;
+}
+
+.audio-control {
+  width: 100%;
+  height: 40px;
+  background: var(--bg-glass-light);
+  border-radius: var(--border-radius-sm);
+}
+
+.audio-control::-webkit-media-controls-panel {
+  background: var(--bg-glass-light);
+}
+
+.audio-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
+/* Modern Select Styles */
+.modern-select {
+  width: 100%;
+  background: var(--bg-glass-light);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
+  padding: 1rem;
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+.modern-select:focus {
+  outline: none;
+  border-color: var(--border-accent);
+  background: var(--bg-glass);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.modern-select option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 0.5rem;
+}
+
+.modern-select optgroup {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  padding: 0.5rem;
+}
+
+
+.input-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--success-gradient);
+  font-weight: 500;
+}
+
+.upload-tips {
+  background: var(--bg-glass-light);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--border-radius-sm);
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Futuristic Upload Area */
+.futuristic-upload-area {
+  border: 2px dashed var(--border-primary);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  background: var(--bg-glass-light);
+  position: relative;
+  overflow: hidden;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.futuristic-upload-area:hover {
+  border-color: var(--border-accent);
+  background: var(--bg-glass);
+  transform: translateY(-2px);
+}
+
+.futuristic-upload-area.dragover {
+  border-color: var(--border-accent);
+  background: var(--bg-glass);
+  transform: scale(1.02);
+  box-shadow: var(--shadow-glow);
+}
+
+.upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+}
+
+.upload-animation {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.upload-ring {
+  width: 80px;
+  height: 80px;
+  border: 2px solid var(--border-accent);
+  border-radius: 50%;
+  position: relative;
+  animation: rotate 3s linear infinite;
+}
+
+.upload-ring-inner {
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid transparent;
+  border-top-color: var(--text-accent);
+  border-radius: 50%;
+  animation: rotate 1.5s linear infinite reverse;
+}
+
+.upload-icon-container {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 60px;
+  height: 60px;
+  background: var(--bg-glass);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-icon-container i {
+  font-size: 2rem;
+  color: var(--text-accent);
+}
+
+.upload-text h4 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.upload-text p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.upload-specs {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.spec-item {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-primary);
+  border-radius: 20px;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.preview-zone {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.preview-container {
+  position: relative;
+  max-width: 100%;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  background: var(--bg-glass-light);
+  box-shadow: var(--shadow-secondary);
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.preview-container:hover {
+  transform: scale(1.02);
+  box-shadow: var(--shadow-glow);
+  border-color: var(--border-accent);
+}
+
+.preview-click-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: var(--border-radius-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0;
+  transition: var(--transition);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-primary);
+}
+
+.preview-container:hover .preview-click-hint {
+  opacity: 1;
+}
+
+.preview-click-hint i {
+  font-size: 1.5rem;
+}
+
+.preview-click-hint span {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 300px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--border-radius-sm);
+  box-shadow: var(--shadow-secondary);
+  transition: var(--transition);
+  display: block;
+}
+
+/* Image Preview Modal */
+.image-preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.image-preview-content {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius);
+  max-width: 90vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-primary);
+  overflow: hidden;
+}
+
+.image-preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-glass-light);
+}
+
+.image-preview-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.close-btn:hover {
+  background: var(--bg-glass);
+  color: var(--text-primary);
+}
+
+.image-preview-body {
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 400px;
+}
+
+.modal-preview-image {
+  max-width: 100%;
+  max-height: 70vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: var(--border-radius-sm);
+  box-shadow: var(--shadow-secondary);
+}
+
+.image-preview-footer {
+  display: flex;
+  gap: 1rem;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid var(--border-primary);
+  background: var(--bg-glass-light);
+  justify-content: center;
+}
+
+.modal-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.8rem 1.5rem;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
+  background: var(--bg-glass);
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.modal-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-secondary);
+}
+
+.modal-action-btn.primary:hover {
+  background: var(--primary-gradient);
+  border-color: var(--border-accent);
+  color: white;
+}
+
+.modal-action-btn.secondary:hover {
+  background: var(--secondary-gradient);
+  border-color: var(--secondary-gradient);
+  color: white;
+}
+
+.preview-actions {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: nowrap;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
+  color: var(--text-primary);
+  text-decoration: none;
+  transition: var(--transition);
+  cursor: pointer;
+  min-width: 120px;
+  white-space: nowrap;
+  backdrop-filter: blur(10px);
+  flex-shrink: 0;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.action-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-glow);
+}
+
+.action-btn.primary:hover {
+  border-color: var(--border-accent);
+  background: var(--primary-gradient);
+  color: white;
+}
+
+.action-btn.secondary:hover {
+  border-color: var(--secondary-gradient);
+  background: var(--secondary-gradient);
+  color: white;
+}
+
+.action-btn.danger:hover {
+  border-color: var(--danger-gradient);
+  background: var(--danger-gradient);
+  color: white;
+}
+
+.action-btn i {
+  font-size: 1.3rem;
+  margin-bottom: 0.2rem;
+}
+
+.action-btn span {
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  width: 100%;
+  overflow: visible;
+  display: block;
+  word-break: keep-all;
+}
+
+.gallery-button-container {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.gallery-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-secondary);
+  border-radius: 25px;
+  color: var(--text-accent);
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.gallery-btn:hover {
+  background: var(--bg-glass);
+  border-color: var(--border-accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-secondary);
+}
+
+/* Generate Button */
+.generate-button-container {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.generate-btn {
+  position: relative;
+  padding: 1.5rem 3rem;
+  background: var(--primary-gradient);
+  border: none;
+  border-radius: var(--border-radius);
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  overflow: hidden;
+  min-width: 250px;
+}
+
+.generate-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-glow);
+}
+
+.generate-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.btn-icon i {
+  font-size: 1.5rem;
+}
+
+.btn-spinner {
+  width: 24px;
+  height: 24px;
+}
+
+.spinner {
+  width: 100%;
+  height: 100%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.btn-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--secondary-gradient);
+  opacity: 0;
+  transition: var(--transition);
+  border-radius: var(--border-radius);
+}
+
+.generate-btn:hover .btn-glow {
+  opacity: 0.2;
+}
+
+/* Status Messages */
+.status-messages {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.status-message {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-radius: var(--border-radius-sm);
+  border: 1px solid;
+}
+
+.status-message.error {
+  background: rgba(255, 107, 107, 0.1);
+  border-color: rgba(255, 107, 107, 0.3);
+  color: #ff6b6b;
+}
+
+.status-message.success {
+  background: rgba(67, 233, 123, 0.1);
+  border-color: rgba(67, 233, 123, 0.3);
+  color: #43e97b;
+}
+
+.status-icon {
+  font-size: 1.5rem;
+}
+
+.status-content {
+  flex: 1;
+}
+
+.status-title {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.status-text {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+/* Preview Section */
+.preview-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.preview-panel {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  backdrop-filter: blur(15px);
+  position: relative;
+  overflow: hidden;
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--secondary-gradient);
+}
+
+/* Loading State */
+.loading-state {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.loading-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+  border-radius: var(--border-radius);
+}
+
+.loading-particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.loading-particles .particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: var(--text-accent);
+  border-radius: 50%;
+  animation: float 4s ease-in-out infinite;
+  opacity: 0.8;
+}
+
+.loading-particles .particle:nth-child(1) { top: 20%; left: 20%; animation-delay: 0s; }
+.loading-particles .particle:nth-child(2) { top: 60%; left: 80%; animation-delay: 1s; }
+.loading-particles .particle:nth-child(3) { top: 40%; left: 60%; animation-delay: 2s; }
+.loading-particles .particle:nth-child(4) { top: 80%; left: 30%; animation-delay: 0.5s; }
+.loading-particles .particle:nth-child(5) { top: 10%; left: 70%; animation-delay: 1.5s; }
+
+.loading-content {
+  position: relative;
+  z-index: 2;
+  max-width: 400px;
+  padding: 2rem;
+}
+
+.loading-icon {
+  position: relative;
+  margin-bottom: 2rem;
+}
+
+.loading-ring {
+  width: 100px;
+  height: 100px;
+  border: 3px solid var(--border-primary);
+  border-radius: 50%;
+  position: relative;
+  margin: 0 auto;
+  animation: rotate 3s linear infinite;
+}
+
+.loading-ring-inner {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  right: -3px;
+  bottom: -3px;
+  border: 3px solid transparent;
+  border-top-color: var(--text-accent);
+  border-radius: 50%;
+  animation: rotate 1.5s linear infinite reverse;
+}
+
+.loading-main-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.5rem;
+  color: var(--text-accent);
+}
+
+.loading-text h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.loading-text p {
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.loading-time {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Progress Steps */
+.progress-steps {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.step-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--bg-glass);
+  border: 2px solid var(--border-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.step-icon i {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+
+.step-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-align: center;
+}
+
+.step-progress {
+  position: absolute;
+  top: 25px;
+  left: 50px;
+  width: 2rem;
+  height: 2px;
+  background: var(--border-primary);
+  transition: var(--transition);
+}
+
+.step:last-child .step-progress {
+  display: none;
+}
+
+.step.active .step-icon {
+  background: var(--primary-gradient);
+  border-color: var(--border-accent);
+  box-shadow: var(--shadow-glow);
+}
+
+.step.active .step-icon i {
+  color: var(--text-primary);
+}
+
+.step.active .step-label {
+  color: var(--text-accent);
+  font-weight: 600;
+}
+
+.step.active .step-progress {
+  background: var(--primary-gradient);
+}
+
+/* Progress Bar */
+.progress-container {
+  margin: 2rem 0;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-glass-light);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary-gradient);
+  border-radius: 4px;
+  animation: progress-animation 2s ease-in-out infinite;
+}
+
+@keyframes progress-animation {
+  0% { width: 0%; }
+  50% { width: 70%; }
+  100% { width: 100%; }
+}
+
+.progress-text {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.credit-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Result State */
+.result-state {
+  width: 100%;
+  text-align: center;
+  padding: 2rem;
+}
+
+.result-header {
+  margin-bottom: 2rem;
+}
+
+.result-icon {
+  font-size: 3rem;
+  color: #43e97b;
+  margin-bottom: 1rem;
+}
+
+.result-header h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.result-header p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+}
+
+.video-container {
+  margin: 2rem 0;
+}
+
+.video-wrapper {
+  position: relative;
+  display: inline-block;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow-primary);
+  max-width: 100%;
+}
+
+/* Ensure video wrapper doesn't interfere with video controls */
+.video-wrapper:not(:hover) .video-overlay {
+  display: none;
+}
+
+/* Video play fallback */
+.video-play-fallback {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  border-radius: var(--border-radius);
+}
+
+.video-play-fallback:hover {
+  background: rgba(0, 0, 0, 0.9);
+}
+
+.play-button-large {
+  width: 80px;
+  height: 80px;
+  background: var(--primary-gradient);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  transition: var(--transition);
+}
+
+.play-button-large i {
+  font-size: 2rem;
+  color: white;
+  margin-left: 4px; /* Offset for play icon */
+}
+
+.video-play-fallback:hover .play-button-large {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-glow);
+}
+
+.video-play-fallback p {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.result-video {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--border-radius);
+  transition: var(--transition);
+  background: #000;
+  cursor: pointer;
+}
+
+.result-video:hover {
+  transform: scale(1.02);
+}
+
+/* Ensure video controls are visible and functional */
+.result-video::-webkit-media-controls {
+  display: flex !important;
+}
+
+.result-video::-webkit-media-controls-panel {
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+}
+
+.video-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: var(--transition);
+  pointer-events: none; /* Allow clicks to pass through to video */
+}
+
+.video-wrapper:hover .video-overlay {
+  opacity: 1;
+}
+
+.play-button {
+  width: 60px;
+  height: 60px;
+  background: var(--bg-glass);
+  border: 2px solid var(--border-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-primary);
+  font-size: 1.5rem;
+  transition: var(--transition);
+}
+
+.play-button:hover {
+  background: var(--primary-gradient);
+  border-color: var(--border-accent);
+  transform: scale(1.1);
+}
+
+.success-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--bg-glass-light);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--border-radius-sm);
+  padding: 1.5rem;
+  margin: 2rem 0;
+  text-align: left;
+}
+
+.success-icon {
+  font-size: 2rem;
+  color: var(--text-accent);
+}
+
+.success-content {
+  flex: 1;
+}
+
+.success-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.success-text {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.action-buttons {
+  margin-top: 2rem;
+}
+
+.download-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  background: var(--success-gradient);
+  border: none;
+  border-radius: var(--border-radius);
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+  overflow: hidden;
+}
+
+.download-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(67, 233, 123, 0.4);
+}
+
+.download-btn .btn-icon {
+  font-size: 1.5rem;
+}
+
+.download-btn .btn-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--secondary-gradient);
+  opacity: 0;
+  transition: var(--transition);
+  border-radius: var(--border-radius);
+}
+
+.download-btn:hover .btn-glow {
+  opacity: 0.2;
+}
+
+/* Default State */
+.default-state {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.default-content {
+  max-width: 400px;
+}
+
+.default-icon {
+  margin-bottom: 2rem;
+}
+
+.default-text h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.default-text p {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.default-features {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.default-features .feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: var(--bg-glass-light);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius-sm);
+  transition: var(--transition);
+  min-width: 100px;
+}
+
+.default-features .feature-item:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-accent);
+  box-shadow: var(--shadow-secondary);
+}
+
+.default-features .feature-item i {
+  font-size: 1.5rem;
+  color: var(--text-accent);
+}
+
+.default-features .feature-item span {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Gallery Modal */
+.gallery-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+}
+
+.gallery-popup {
+  background: var(--bg-glass);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--border-radius);
+  padding: 2rem;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-primary);
+}
+
+.gallery-thumb {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.gallery-thumb:hover {
+  border-color: var(--border-accent);
+  transform: scale(1.05);
+}
+
+.gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gallery-img-gen {
+  border: 2px solid var(--text-accent);
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .main-container {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .hero-features {
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 3rem 0;
+    min-height: 50vh;
+  }
+  
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .hero-features {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .feature-badge {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  
+  .main-container {
+    padding: 0 1rem;
+  }
+  
+  .form-panel,
+  .preview-panel {
+    padding: 1.5rem;
+  }
+  
+  
+  /* Audio Upload Responsive */
+  .audio-upload-area {
+    padding: 1.5rem;
+    min-height: 150px;
+  }
+  
+  .audio-info {
+    padding: 0.8rem;
+    gap: 0.8rem;
+  }
+  
+  .audio-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .audio-icon i {
+    font-size: 1.2rem;
+  }
+  
+  .audio-details h4 {
+    font-size: 0.9rem;
+  }
+  
+  .audio-details p {
+    font-size: 0.8rem;
+  }
+  
+  .audio-player {
+    padding: 0.8rem;
+  }
+  
+  .audio-actions {
+    gap: 0.8rem;
+    max-width: 250px;
+  }
+  
+  .progress-steps {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .step-progress {
+    display: none;
+  }
+  
+  .default-features {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .default-features .feature-item {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .gallery-popup {
+    max-width: 95vw;
+    max-height: 95vh;
+    padding: 1rem;
+  }
+  
+  .gallery-thumb {
+    width: 60px;
+    height: 60px;
+  }
+  
+  /* Preview responsive */
+  .preview-image {
+    max-height: 250px;
+  }
+  
+  .preview-zone {
+    gap: 1rem;
+  }
+  
+  .preview-container {
+    min-height: 250px;
+  }
+  
+  .preview-actions {
+    gap: 1rem;
+    flex-wrap: wrap;
+    max-width: 100%;
+  }
+  
+  .action-btn {
+    min-width: 100px;
+    padding: 0.8rem 1rem;
+  }
+  
+  .action-btn span {
+    font-size: 0.85rem;
+  }
+  
+  /* Modal responsive */
+  .image-preview-modal {
+    padding: 1rem;
+  }
+  
+  .image-preview-content {
+    max-width: 95vw;
+    max-height: 95vh;
+  }
+  
+  .image-preview-header {
+    padding: 1rem 1.5rem;
+  }
+  
+  .image-preview-header h3 {
+    font-size: 1.2rem;
+  }
+  
+  .image-preview-body {
+    padding: 1rem;
+    min-height: 300px;
+  }
+  
+  .image-preview-footer {
+    padding: 1rem 1.5rem;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+  
+  .modal-action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+  
+  .form-panel,
+  .preview-panel {
+    padding: 1rem;
+  }
+  
+  .generate-btn {
+    padding: 1rem 2rem;
+    min-width: 200px;
+  }
+  
+  .download-btn {
+    padding: 0.75rem 1.5rem;
+  }
+  
+  .cost-breakdown {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Preview mobile */
+  .preview-image {
+    max-height: 200px;
+  }
+  
+  .preview-zone {
+    gap: 0.8rem;
+  }
+  
+  .preview-container {
+    min-height: 200px;
+  }
+  
+  .preview-actions {
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 100%;
+  }
+  
+  .action-btn {
+    min-width: 90px;
+    padding: 0.7rem 1rem;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+  
+  .action-btn i {
+    font-size: 1rem;
+    margin-bottom: 0;
+  }
+  
+  .action-btn span {
+    font-size: 0.8rem;
+  }
+  
+  /* Modal mobile */
+  .image-preview-modal {
+    padding: 0.5rem;
+  }
+  
+  .image-preview-content {
+    max-width: 98vw;
+    max-height: 98vh;
+  }
+  
+  .image-preview-header {
+    padding: 0.8rem 1rem;
+  }
+  
+  .image-preview-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .image-preview-body {
+    padding: 0.8rem;
+    min-height: 250px;
+  }
+  
+  .modal-preview-image {
+    max-height: 60vh;
+  }
+  
+  .image-preview-footer {
+    padding: 0.8rem 1rem;
+  }
+  
+  .modal-action-btn {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Extra small screens - ensure text is never cut off */
+@media (max-width: 360px) {
+  .preview-zone {
+    gap: 0.8rem;
+  }
+  
+  .preview-actions {
+    gap: 0.5rem;
+  }
+  
+  .action-btn {
+    min-width: 85px;
+    padding: 0.6rem 0.8rem;
+  }
+  
+  .action-btn span {
+    font-size: 0.75rem;
+  }
+}
+</style>
+{% endblock %}

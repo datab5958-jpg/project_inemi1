@@ -1,0 +1,1858 @@
+<!DOCTYPE html>
+<html lang="id" x-data="{ 
+    loaded: false, 
+    sidebarOpen: false, 
+    isMobile: false
+}" x-init="
+    checkScreenSize();
+    setTimeout(() => loaded = true, 100);
+    $watch('isMobile', value => {
+        if (!value) sidebarOpen = false;
+    });
+">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengaturan - Admin INEMI</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo/logo.png') }}">
+    
+    <!-- Modern CSS Framework -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        :root {
+            /* Futuristic Color Palette */
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --info: #3b82f6;
+            
+            /* Dark Theme Colors */
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #16213e;
+            --bg-card: rgba(26, 26, 46, 0.8);
+            --bg-glass: rgba(255, 255, 255, 0.05);
+            --bg-glass-hover: rgba(255, 255, 255, 0.1);
+            
+            /* Text Colors */
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --text-muted: #6b7280;
+            
+            /* Gradients */
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-success: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-warning: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            --gradient-danger: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            --gradient-settings: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --gradient-security: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --gradient-system: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --gradient-notifications: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            
+            /* Shadows & Effects */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.15);
+            --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+            --shadow-glow-hover: 0 0 30px rgba(99, 102, 241, 0.5);
+            
+            /* Border Radius */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+            
+            /* Spacing */
+            --space-xs: 0.5rem;
+            --space-sm: 1rem;
+            --space-md: 1.5rem;
+            --space-lg: 2rem;
+            --space-xl: 3rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
+            z-index: -1;
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(-10px, -10px) scale(1.05); }
+            50% { transform: translate(10px, -5px) scale(1.02); }
+            75% { transform: translate(-5px, 10px) scale(1.03); }
+        }
+
+        /* Floating Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { top: 20%; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { top: 60%; left: 80%; animation-delay: 2s; }
+        .particle:nth-child(3) { top: 40%; left: 50%; animation-delay: 4s; }
+        .particle:nth-child(4) { top: 80%; left: 20%; animation-delay: 1s; }
+        .particle:nth-child(5) { top: 10%; left: 70%; animation-delay: 3s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
+        }
+
+        /* Main Layout */
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--bg-secondary);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        .sidebar-header {
+            padding: var(--space-lg);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .logo-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sidebar-nav {
+            padding: var(--space-md);
+        }
+
+        .nav-item {
+            margin-bottom: var(--space-xs);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient-primary);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .nav-link:hover::before,
+        .nav-link.active::before {
+            left: 0;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            transition: margin-left 0.3s ease;
+            min-height: 100vh;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            position: sticky;
+            top: 0;
+            background: var(--bg-secondary);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 100;
+            padding: var(--space-md) var(--space-lg);
+        }
+
+        .top-nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .mobile-toggle {
+            display: none;
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: var(--radius-md);
+            width: 44px;
+            height: 44px;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .mobile-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow-hover);
+        }
+
+        .mobile-toggle:active {
+            transform: translateY(0);
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: var(--space-lg);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: var(--space-md);
+            margin-bottom: var(--space-xl);
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-primary);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.users { background: var(--gradient-primary); }
+        .stat-icon.active { background: var(--gradient-success); }
+        .stat-icon.premium { background: var(--gradient-warning); }
+        .stat-icon.revenue { background: var(--gradient-secondary); }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Search and Filters */
+        .filters-section {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-xl);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .filters-section:hover {
+            box-shadow: var(--shadow-xl);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-xs);
+        }
+
+        .filter-label {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-input {
+            background: var(--bg-glass);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            padding: var(--space-sm) var(--space-md);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+        }
+
+        .filter-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .filter-button {
+            background: var(--gradient-primary);
+            border: none;
+            border-radius: var(--radius-md);
+            color: white;
+            padding: var(--space-sm) var(--space-lg);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-glow);
+        }
+
+        .filter-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow-hover);
+        }
+
+        /* Users Table */
+        .table-section {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .table-section:hover {
+            box-shadow: var(--shadow-xl);
+        }
+
+        .table-header {
+            padding: var(--space-lg);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .table-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .action-button {
+            background: var(--gradient-success);
+            border: none;
+            border-radius: var(--radius-md);
+            color: white;
+            padding: var(--space-sm) var(--space-md);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            min-width: fit-content;
+            white-space: nowrap;
+        }
+
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .action-button:active {
+            transform: translateY(0);
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-primary);
+            font-weight: 600;
+            text-align: left;
+            padding: var(--space-md);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        .table td {
+            padding: var(--space-md);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+        }
+
+        .table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: scale(1.01);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--accent);
+        }
+
+        .user-details h6 {
+            color: var(--text-primary);
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .user-details small {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .badge {
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-primary { background: var(--gradient-primary); color: white; }
+        .badge-success { background: var(--gradient-success); color: white; }
+        .badge-warning { background: var(--gradient-warning); color: white; }
+        .badge-danger { background: var(--gradient-danger); color: white; }
+        .badge-info { background: var(--gradient-secondary); color: white; }
+
+        .action-buttons {
+            display: flex;
+            gap: var(--space-xs);
+        }
+
+        .btn-sm {
+            padding: var(--space-xs) var(--space-sm);
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+        }
+
+        .btn-sm:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-sm:active {
+            transform: translateY(0);
+        }
+
+        .btn-edit {
+            background: var(--gradient-warning);
+            color: white;
+        }
+
+        .btn-delete {
+            background: var(--gradient-danger);
+            color: white;
+        }
+
+        .btn-sm:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .mobile-toggle {
+                display: flex !important;
+                width: 40px;
+                height: 40px;
+                font-size: 1.1rem;
+                border-radius: var(--radius-sm);
+            }
+
+            .page-title {
+                font-size: 1.1rem;
+                margin-left: var(--space-sm);
+            }
+
+            .nav-left {
+                gap: var(--space-sm);
+            }
+
+            .nav-right {
+                gap: var(--space-xs);
+            }
+
+            .action-button {
+                padding: var(--space-xs) var(--space-sm);
+                font-size: 0.85rem;
+                min-width: auto;
+            }
+
+            .content-area {
+                padding: var(--space-sm);
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-sm);
+                margin-bottom: var(--space-lg);
+            }
+
+            .stat-card {
+                padding: var(--space-md);
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .stat-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+
+            .filters-section {
+                padding: var(--space-md);
+                margin-bottom: var(--space-lg);
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-sm);
+            }
+
+            .filter-group {
+                gap: var(--space-xs);
+            }
+
+            .filter-label {
+                font-size: 0.8rem;
+            }
+
+            .filter-input {
+                padding: var(--space-sm);
+                font-size: 0.9rem;
+            }
+
+            .filter-button {
+                padding: var(--space-sm) var(--space-md);
+                font-size: 0.9rem;
+                width: 100%;
+            }
+
+            .table-section {
+                border-radius: var(--radius-md);
+            }
+
+            .table-header {
+                padding: var(--space-md);
+                flex-direction: column;
+                gap: var(--space-sm);
+                align-items: flex-start;
+            }
+
+            .table-title {
+                font-size: 1.1rem;
+            }
+
+            .table-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .action-button {
+                padding: var(--space-xs) var(--space-sm);
+                font-size: 0.85rem;
+            }
+
+            .table-container {
+                font-size: 0.8rem;
+                overflow-x: auto;
+            }
+
+            .table {
+                min-width: 600px;
+            }
+
+            .table th,
+            .table td {
+                padding: var(--space-xs) var(--space-sm);
+                white-space: nowrap;
+            }
+
+            .table th {
+                font-size: 0.75rem;
+                padding: var(--space-sm);
+            }
+
+            .user-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-xs);
+                min-width: 120px;
+            }
+
+            .user-avatar {
+                width: 32px;
+                height: 32px;
+            }
+
+            .user-details h6 {
+                font-size: 0.85rem;
+            }
+
+            .user-details small {
+                font-size: 0.7rem;
+            }
+
+            .badge {
+                padding: var(--space-xs);
+                font-size: 0.7rem;
+                white-space: nowrap;
+            }
+
+            .action-buttons {
+                display: flex;
+                gap: var(--space-xs);
+                flex-wrap: wrap;
+            }
+
+            .btn-sm {
+                padding: var(--space-xs);
+                font-size: 0.75rem;
+                min-width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Pagination responsive */
+            .pagination {
+                flex-wrap: wrap;
+                gap: var(--space-xs);
+            }
+
+            .page-link {
+                padding: var(--space-xs) var(--space-sm);
+                font-size: 0.85rem;
+            }
+
+            /* Top nav responsive */
+            .top-nav {
+                padding: var(--space-sm) var(--space-md);
+            }
+
+            .top-nav-content {
+                gap: var(--space-sm);
+            }
+        }
+
+        /* Extra small devices */
+        @media (max-width: 480px) {
+            .content-area {
+                padding: var(--space-xs);
+            }
+
+            .stats-grid {
+                gap: var(--space-xs);
+            }
+
+            .stat-card {
+                padding: var(--space-sm);
+            }
+
+            .stat-value {
+                font-size: 1.25rem;
+            }
+
+            .filters-section {
+                padding: var(--space-sm);
+            }
+
+            .table-header {
+                padding: var(--space-sm);
+            }
+
+            .mobile-toggle {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+
+            .page-title {
+                font-size: 1rem;
+            }
+
+            .action-button {
+                padding: var(--space-xs);
+                font-size: 0.8rem;
+            }
+
+            /* Settings mobile responsive */
+            .settings-grid {
+                grid-template-columns: 1fr;
+                gap: var(--space-md);
+            }
+
+            .settings-section {
+                padding: var(--space-md);
+            }
+
+            .settings-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-sm);
+            }
+
+            .settings-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+
+            .settings-title {
+                font-size: 1.1rem;
+            }
+
+            .setting-item {
+                padding: var(--space-sm);
+            }
+
+            .setting-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-sm);
+            }
+
+            .setting-control {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .settings-input {
+                padding: var(--space-sm);
+                font-size: 0.9rem;
+            }
+
+            .system-info {
+                grid-template-columns: repeat(2, 1fr);
+                gap: var(--space-sm);
+            }
+
+            .info-item {
+                padding: var(--space-sm);
+            }
+
+            .info-value {
+                font-size: 1rem;
+            }
+
+            .settings-actions {
+                flex-direction: column;
+                gap: var(--space-sm);
+            }
+
+            .settings-button {
+                width: 100%;
+                justify-content: center;
+                padding: var(--space-sm) var(--space-md);
+                font-size: 0.9rem;
+            }
+
+            .toggle-switch {
+                width: 50px;
+                height: 28px;
+            }
+
+            .slider:before {
+                height: 20px;
+                width: 20px;
+                left: 4px;
+                bottom: 4px;
+            }
+
+            input:checked + .slider:before {
+                transform: translateX(22px);
+            }
+        }
+
+        /* Loading Animation */
+        .loading {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .loaded .loading {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Overlay */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Settings Styles */
+        .settings-section {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            margin-bottom: var(--space-lg);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .settings-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--gradient-settings);
+        }
+
+        .settings-section:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .settings-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            margin-bottom: var(--space-lg);
+        }
+
+        .settings-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            background: var(--gradient-settings);
+        }
+
+        .settings-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .settings-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .setting-item {
+            background: var(--bg-glass);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-sm);
+            transition: all 0.3s ease;
+        }
+
+        .setting-item:hover {
+            background: var(--bg-glass-hover);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .setting-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-xs);
+        }
+
+        .setting-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .setting-description {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin: 0;
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: 0.4s;
+            border-radius: 34px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+            box-shadow: var(--shadow-sm);
+        }
+
+        input:checked + .slider {
+            background: var(--gradient-settings);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        /* Settings Input */
+        .settings-input {
+            background: var(--bg-glass);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            padding: var(--space-sm) var(--space-md);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .settings-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.1);
+        }
+
+        .settings-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Settings Buttons */
+        .settings-actions {
+            display: flex;
+            gap: var(--space-md);
+            justify-content: center;
+            margin-top: var(--space-xl);
+        }
+
+        .settings-button {
+            background: var(--gradient-settings);
+            border: none;
+            border-radius: var(--radius-md);
+            color: white;
+            padding: var(--space-sm) var(--space-lg);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .settings-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow-hover);
+        }
+
+        .settings-button.secondary {
+            background: var(--bg-glass);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .settings-button.danger {
+            background: var(--gradient-danger);
+        }
+
+        /* System Info */
+        .system-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .info-item {
+            background: var(--bg-glass);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            text-align: center;
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: var(--space-xs);
+        }
+
+        .info-value {
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        /* Settings Grid */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-lg);
+        }
+
+        /* Notification Styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            box-shadow: var(--shadow-xl);
+            z-index: 10000;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            max-width: 400px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification-content {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: var(--text-primary);
+        }
+
+        .notification-success {
+            border-left: 4px solid var(--success);
+        }
+
+        .notification-error {
+            border-left: 4px solid var(--danger);
+        }
+
+        .notification-info {
+            border-left: 4px solid var(--info);
+        }
+    </style>
+</head>
+<body :class="{ 'loaded': loaded }">
+    <!-- Floating Particles -->
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" :class="{ 'show': sidebarOpen }" @click="sidebarOpen = false"></div>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" :class="{ 'open': sidebarOpen }">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <img src="/static/assets/image/logo.png" alt="INEMI Logo" style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+                    <div class="logo-text">Admin Panel</div>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-item">
+                    <a href="{{ url_for('admin.dashboard') }}" class="nav-link">
+                        <i class="bi bi-speedometer2 nav-icon"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="{{ url_for('admin.users') }}" class="nav-link">
+                        <i class="bi bi-people nav-icon"></i>
+                        <span>Manajemen User</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.payment') }}">
+                        <div class="nav-icon">
+                            <i class="bi bi-credit-card"></i>
+                        </div>
+                        <span>Payment</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a class="nav-link" href="{{ url_for('admin.monitoring_post') }}">
+                        <div class="nav-icon">
+                            <i class="bi bi-eye"></i>
+                        </div>
+                        <span>Monitoring Post</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="{{ url_for('admin.analytics') }}" class="nav-link">
+                        <i class="bi bi-graph-up nav-icon"></i>
+                        <span>Analytics</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="{{ url_for('admin.products') }}" class="nav-link">
+                        <i class="bi bi-box nav-icon"></i>
+                        <span>Manajemen Produk</span>
+                    </a>
+                </div>
+                <div class="nav-item">
+                    <a href="{{ url_for('admin.settings') }}" class="nav-link active">
+                        <i class="bi bi-gear nav-icon"></i>
+                        <span>Pengaturan</span>
+                    </a>
+                </div>
+                
+                <div class="nav-item" style="margin-top: var(--space-lg);">
+                    <a href="{{ url_for('web_pages.home') }}" class="nav-link">
+                        <i class="bi bi-house nav-icon"></i>
+                        <span>Kembali ke Website</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Navigation -->
+            <nav class="top-nav">
+                <div class="top-nav-content">
+                    <div class="nav-left">
+                        <button class="mobile-toggle" @click="sidebarOpen = !sidebarOpen">
+                            <i class="bi bi-list mx-auto my-auto"></i>
+                        </button>
+                        <h1 class="page-title">Pengaturan Sistem</h1>
+                    </div>
+                    <div class="nav-right">
+                        <button class="action-button" onclick="exportSettings()">
+                            <i class="bi bi-download"></i>
+                            Export Config
+                        </button>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Settings Grid -->
+                <div class="settings-grid loading">
+                    <!-- General Settings -->
+                    <div class="settings-section">
+                        <div class="settings-header">
+                            <div class="settings-icon">
+                                <i class="bi bi-gear"></i>
+                            </div>
+                            <div>
+                                <h3 class="settings-title">Pengaturan Umum</h3>
+                                <p class="settings-description">Konfigurasi dasar sistem</p>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-header">
+                                <div>
+                                    <h6 class="setting-label">Nama Website</h6>
+                                    <p class="setting-description">Nama yang ditampilkan di website</p>
+                                </div>
+                                <div class="setting-control">
+                                    <input type="text" class="settings-input" value="INEMI" placeholder="Masukkan nama website">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-header">
+                                <div>
+                                    <h6 class="setting-label">Deskripsi Website</h6>
+                                    <p class="setting-description">Deskripsi singkat website</p>
+                                </div>
+                                <div class="setting-control">
+                                    <input type="text" class="settings-input" value="Platform konten digital terdepan" placeholder="Masukkan deskripsi">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-header">
+                                <div>
+                                    <h6 class="setting-label">Zona Waktu</h6>
+                                    <p class="setting-description">Zona waktu default sistem</p>
+                                </div>
+                                <div class="setting-control">
+                                    <select class="settings-input">
+                                        <option value="Asia/Jakarta" selected>Asia/Jakarta (WIB)</option>
+                                        <option value="Asia/Makassar">Asia/Makassar (WITA)</option>
+                                        <option value="Asia/Jayapura">Asia/Jayapura (WIT)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security Settings -->
+                    <div class="settings-section">
+                        <div class="settings-header">
+                            <div class="settings-icon" style="background: var(--gradient-security);">
+                                <i class="bi bi-shield-lock"></i>
+                            </div>
+                            <div>
+                                <h3 class="settings-title">Keamanan</h3>
+                                <p class="settings-description">Pengaturan keamanan sistem</p>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-header">
+                                <div>
+                                    <h6 class="setting-label">Two-Factor Authentication</h6>
+                                    <p class="setting-description">Aktifkan 2FA untuk admin</p>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-header">
+                                <div>
+                                    <h6 class="setting-label">Session Timeout</h6>
+                                    <p class="setting-description">Waktu timeout session (menit)</p>
+                                </div>
+                                <div class="setting-control">
+                                    <input type="number" class="settings-input" value="30" min="5" max="480">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-header">
+                                <div>
+                                    <h6 class="setting-label">Login Attempts</h6>
+                                    <p class="setting-description">Maksimal percobaan login</p>
+                                </div>
+                                <div class="setting-control">
+                                    <input type="number" class="settings-input" value="5" min="3" max="10">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notification Settings -->
+                    <div class="settings-section">
+                        <div class="settings-header">
+                            <div class="settings-icon" style="background: var(--gradient-notifications);">
+                                <i class="bi bi-bell"></i>
+                            </div>
+                            <div>
+                                <h3 class="settings-title">Notifikasi</h3>
+                                <p class="settings-description">Pengaturan notifikasi sistem</p>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-header">
+                                <div>
+                                    <h6 class="setting-label">Email Notifications</h6>
+                                    <p class="setting-description">Kirim notifikasi via email</p>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-header">
+                                <div>
+                                    <h6 class="setting-label">Push Notifications</h6>
+                                    <p class="setting-description">Notifikasi push browser</p>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-header">
+                                <div>
+                                    <h6 class="setting-label">Admin Alerts</h6>
+                                    <p class="setting-description">Alert untuk admin</p>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Settings -->
+                    <div class="settings-section">
+                        <div class="settings-header">
+                            <div class="settings-icon" style="background: var(--gradient-system);">
+                                <i class="bi bi-cpu"></i>
+                            </div>
+                            <div>
+                                <h3 class="settings-title">Sistem</h3>
+                                <p class="settings-description">Pengaturan performa sistem</p>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-header">
+                                <div>
+                                    <h6 class="setting-label">Debug Mode</h6>
+                                    <p class="setting-description">Aktifkan mode debug</p>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-header">
+                                <div>
+                                    <h6 class="setting-label">Cache Duration</h6>
+                                    <p class="setting-description">Durasi cache (detik)</p>
+                                </div>
+                                <div class="setting-control">
+                                    <input type="number" class="settings-input" value="3600" min="60" max="86400">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-header">
+                                <div>
+                                    <h6 class="setting-label">Auto Backup</h6>
+                                    <p class="setting-description">Backup otomatis database</p>
+                                </div>
+                                <div class="setting-control">
+                                    <label class="toggle-switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Information -->
+                <div class="settings-section loading">
+                    <div class="settings-header">
+                        <div class="settings-icon" style="background: var(--gradient-info);">
+                            <i class="bi bi-info-circle"></i>
+                        </div>
+                        <div>
+                            <h3 class="settings-title">Informasi Sistem</h3>
+                            <p class="settings-description">Status dan informasi sistem</p>
+                        </div>
+                    </div>
+                    
+                    <div class="system-info">
+                        <div class="info-item">
+                            <div class="info-label">Versi Aplikasi</div>
+                            <div class="info-value">1.0.0</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Database</div>
+                            <div class="info-value">SQLite</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Framework</div>
+                            <div class="info-value">Flask</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Python Version</div>
+                            <div class="info-value">3.8+</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Server Time</div>
+                            <div class="info-value" id="serverTime">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Uptime</div>
+                            <div class="info-value" id="uptime">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Memory Usage</div>
+                            <div class="info-value" id="memoryUsage">-</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Disk Usage</div>
+                            <div class="info-value" id="diskUsage">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="settings-actions loading">
+                    <button class="settings-button" onclick="saveSettings()">
+                        <i class="bi bi-check-circle"></i>
+                        Simpan Pengaturan
+                    </button>
+                    <button class="settings-button secondary" onclick="resetSettings()">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        Reset Default
+                    </button>
+                    <button class="settings-button danger" onclick="clearCache()">
+                        <i class="bi bi-trash"></i>
+                        Clear Cache
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Check screen size and set mobile state
+        function checkScreenSize() {
+            const isMobile = window.innerWidth <= 768;
+            const app = document.querySelector('[x-data]').__x.$data;
+            if (app) {
+                app.isMobile = isMobile;
+            }
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', function() {
+            checkScreenSize();
+        });
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            checkScreenSize();
+        });
+        
+        // Export settings function
+        function exportSettings() {
+            alert('Export settings configuration functionality will be implemented here');
+        }
+        
+        // Save settings function
+        function saveSettings() {
+            // Collect all settings values
+            const settings = {
+                websiteName: document.querySelector('input[placeholder="Masukkan nama website"]').value,
+                websiteDescription: document.querySelector('input[placeholder="Masukkan deskripsi"]').value,
+                timezone: document.querySelector('select').value,
+                twoFactorAuth: document.querySelector('input[type="checkbox"]').checked,
+                sessionTimeout: document.querySelector('input[value="30"]').value,
+                loginAttempts: document.querySelector('input[value="5"]').value,
+                emailNotifications: document.querySelectorAll('input[type="checkbox"]')[1].checked,
+                pushNotifications: document.querySelectorAll('input[type="checkbox"]')[2].checked,
+                adminAlerts: document.querySelectorAll('input[type="checkbox"]')[3].checked,
+                debugMode: document.querySelectorAll('input[type="checkbox"]')[4].checked,
+                cacheDuration: document.querySelector('input[value="3600"]').value,
+                autoBackup: document.querySelectorAll('input[type="checkbox"]')[5].checked
+            };
+            
+            // Here you would typically send the settings to the server
+            console.log('Saving settings:', settings);
+            
+            // Show success message
+            showNotification('Pengaturan berhasil disimpan!', 'success');
+        }
+        
+        // Reset settings function
+        function resetSettings() {
+            if (!confirm('Apakah Anda yakin ingin mereset semua pengaturan ke default? Tindakan ini tidak dapat dibatalkan!')) {
+                return;
+            }
+            
+            // Reset all form elements to default values
+            document.querySelector('input[placeholder="Masukkan nama website"]').value = 'INEMI';
+            document.querySelector('input[placeholder="Masukkan deskripsi"]').value = 'Platform konten digital terdepan';
+            document.querySelector('select').value = 'Asia/Jakarta';
+            document.querySelector('input[value="30"]').value = '30';
+            document.querySelector('input[value="5"]').value = '5';
+            document.querySelector('input[value="3600"]').value = '3600';
+            
+            // Reset checkboxes
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes[0].checked = true; // 2FA
+            checkboxes[1].checked = true; // Email notifications
+            checkboxes[2].checked = false; // Push notifications
+            checkboxes[3].checked = true; // Admin alerts
+            checkboxes[4].checked = false; // Debug mode
+            checkboxes[5].checked = true; // Auto backup
+            
+            showNotification('Pengaturan berhasil direset ke default!', 'success');
+        }
+        
+        // Clear cache function
+        function clearCache() {
+            if (!confirm('Apakah Anda yakin ingin membersihkan cache? Ini akan mempengaruhi performa sementara.')) {
+                return;
+            }
+            
+            // Here you would typically clear the cache
+            console.log('Clearing cache...');
+            
+            showNotification('Cache berhasil dibersihkan!', 'success');
+        }
+        
+        // Show notification function
+        function showNotification(message, type = 'info') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `notification notification-${type}`;
+            notification.innerHTML = `
+                <div class="notification-content">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            // Add to page
+            document.body.appendChild(notification);
+            
+            // Show notification
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            // Remove notification after 3 seconds
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Update system information
+        function updateSystemInfo() {
+            const now = new Date();
+            document.getElementById('serverTime').textContent = now.toLocaleString('id-ID');
+            document.getElementById('uptime').textContent = '2 hari 14 jam 32 menit';
+            document.getElementById('memoryUsage').textContent = '45.2%';
+            document.getElementById('diskUsage').textContent = '67.8%';
+        }
+
+        // Add staggered loading animation and initialize settings
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingElements = document.querySelectorAll('.loading');
+            loadingElements.forEach((element, index) => {
+                setTimeout(() => {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+            
+            // Initialize system information
+            updateSystemInfo();
+            
+            // Update system info every 30 seconds
+            setInterval(updateSystemInfo, 30000);
+        });
+    </script>
+</body>
+</html>

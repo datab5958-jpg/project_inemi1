@@ -1,0 +1,2850 @@
+{% extends "base.html" %}
+
+{% block head %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0c0c0c">
+<meta name="msapplication-navbutton-color" content="#0c0c0c">
+<meta name="apple-mobile-web-app-title" content="INEMI Feed">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Modern CSS Variables */
+  :root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --dark-gradient: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --text-primary: #ffffff;
+    --text-secondary: rgba(255, 255, 255, 0.8);
+    --text-muted: rgba(255, 255, 255, 0.6);
+    --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --shadow-strong: 0 20px 60px rgba(0, 0, 0, 0.5);
+    --border-radius: 20px;
+    --border-radius-lg: 30px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Global Styles */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--dark-gradient);
+    color: var(--text-primary);
+    overflow: hidden;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    /* Mobile full screen support */
+    height: 100vh;
+    height: 100dvh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+
+  /* Android specific fixes */
+  @supports (-webkit-touch-callout: none) {
+    .video-feed {
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+  }
+  
+  /* Fix for Android Chrome address bar */
+  .feed-container {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+  
+  .feed-wrapper {
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Modern Animated Background -->
+<div class="modern-background">
+  <div class="gradient-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="orb orb-4"></div>
+  </div>
+  <div class="geometric-shapes">
+    <div class="shape shape-triangle"></div>
+    <div class="shape shape-circle"></div>
+    <div class="shape shape-square"></div>
+    <div class="shape shape-hexagon"></div>
+  </div>
+  <div class="floating-particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+  <div class="grid-overlay"></div>
+</div>
+
+<style>
+  /* Modern Background Styles */
+  .modern-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+    background: var(--dark-gradient);
+  }
+
+  /* Gradient Orbs */
+  .gradient-orbs {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.6;
+    animation: orbFloat 20s ease-in-out infinite;
+  }
+
+  .orb-1 {
+    width: 300px;
+    height: 300px;
+    background: var(--primary-gradient);
+    top: 10%;
+    left: 10%;
+    animation-delay: 0s;
+  }
+
+  .orb-2 {
+    width: 200px;
+    height: 200px;
+    background: var(--secondary-gradient);
+    top: 60%;
+    right: 15%;
+    animation-delay: 5s;
+  }
+
+  .orb-3 {
+    width: 250px;
+    height: 250px;
+    background: var(--accent-gradient);
+    bottom: 20%;
+    left: 20%;
+    animation-delay: 10s;
+  }
+
+  .orb-4 {
+    width: 180px;
+    height: 180px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #feca57 100%);
+    top: 30%;
+    right: 30%;
+    animation-delay: 15s;
+  }
+
+  /* Geometric Shapes */
+  .geometric-shapes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .shape {
+    position: absolute;
+    opacity: 0.1;
+    animation: shapeRotate 30s linear infinite;
+  }
+
+  .shape-triangle {
+    width: 0;
+    height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-bottom: 50px solid rgba(102, 126, 234, 0.3);
+    top: 20%;
+    left: 80%;
+    animation-delay: 0s;
+  }
+
+  .shape-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(236, 72, 153, 0.2);
+    top: 70%;
+    left: 10%;
+    animation-delay: 7s;
+  }
+
+  .shape-square {
+    width: 40px;
+    height: 40px;
+    background: rgba(79, 172, 254, 0.2);
+    top: 40%;
+    left: 70%;
+    animation-delay: 14s;
+  }
+
+  .shape-hexagon {
+    width: 50px;
+    height: 50px;
+    background: rgba(255, 107, 107, 0.2);
+    clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+    top: 80%;
+    right: 20%;
+    animation-delay: 21s;
+  }
+
+  /* Floating Particles */
+  .floating-particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    animation: particleFloat 25s linear infinite;
+  }
+
+  .particle:nth-child(1) {
+    top: 20%;
+    left: 20%;
+    animation-delay: 0s;
+  }
+
+  .particle:nth-child(2) {
+    top: 40%;
+    left: 80%;
+    animation-delay: 4s;
+  }
+
+  .particle:nth-child(3) {
+    top: 60%;
+    left: 10%;
+    animation-delay: 8s;
+  }
+
+  .particle:nth-child(4) {
+    top: 80%;
+    left: 70%;
+    animation-delay: 12s;
+  }
+
+  .particle:nth-child(5) {
+    top: 30%;
+    left: 50%;
+    animation-delay: 16s;
+  }
+
+  .particle:nth-child(6) {
+    top: 70%;
+    left: 30%;
+    animation-delay: 20s;
+  }
+
+  /* Grid Overlay */
+  .grid-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+    opacity: 0.3;
+  }
+
+  /* Modern Animations */
+  @keyframes orbFloat {
+    0%, 100% { 
+      transform: translateY(0px) translateX(0px) scale(1);
+    }
+    25% { 
+      transform: translateY(-30px) translateX(20px) scale(1.1);
+    }
+    50% { 
+      transform: translateY(-60px) translateX(-10px) scale(0.9);
+    }
+    75% { 
+      transform: translateY(-30px) translateX(-20px) scale(1.05);
+    }
+  }
+
+  @keyframes shapeRotate {
+    0% { transform: rotate(0deg) scale(1); }
+    50% { transform: rotate(180deg) scale(1.2); }
+    100% { transform: rotate(360deg) scale(1); }
+  }
+
+  @keyframes particleFloat {
+    0% { 
+      transform: translateY(100vh) translateX(0px) scale(0);
+      opacity: 0;
+    }
+    10% { 
+      opacity: 1;
+      transform: translateY(90vh) translateX(10px) scale(1);
+    }
+    90% { 
+      opacity: 1;
+      transform: translateY(10vh) translateX(-10px) scale(1);
+    }
+    100% { 
+      transform: translateY(-10vh) translateX(20px) scale(0);
+      opacity: 0;
+    }
+  }
+  
+  @keyframes slideInUp {
+    0% { 
+      opacity: 0; 
+      transform: translateY(30px); 
+    }
+    100% { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+  
+  @keyframes likePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
+  
+  
+  @keyframes slideIn {
+    0% { transform: translateX(100%); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes slideOut {
+    0% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(100%); opacity: 0; }
+  }
+  
+
+  /* Modern Feed Container */
+  .feed-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
+    max-width: 100vw;
+    max-height: 100vh;
+    max-height: calc(var(--vh, 1vh) * 100);
+    padding: 20px;
+    background: transparent;
+    overflow: hidden;
+    box-sizing: border-box;
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin: 0 auto;
+    flex-direction: column;
+  }
+
+  .feed-wrapper {
+    width: 100%;
+    max-width: 420px;
+    height: 85vh;
+    height: calc(var(--vh, 1vh) * 85);
+    max-height: 85vh;
+    max-height: calc(var(--vh, 1vh) * 85);
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-strong);
+    position: relative;
+    box-sizing: border-box;
+    contain: layout style paint;
+    overscroll-behavior: contain;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(0);
+    align-self: center;
+  }
+
+  /* Modern Navigation */
+  .feed-nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25px;
+    z-index: 100;
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+  }
+
+  .feed-nav-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .feed-title {
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+  }
+
+  .feed-nav-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .feed-nav-btn {
+    width: 44px;
+    height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feed-nav-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--primary-gradient);
+    opacity: 0;
+    transition: var(--transition);
+    border-radius: 50%;
+  }
+
+  .feed-nav-btn:hover::before {
+    opacity: 0.1;
+  }
+
+  .feed-nav-btn:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: var(--shadow-soft);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .feed-nav-btn:active {
+    transform: translateY(0) scale(0.95);
+  }
+  
+  .feed-nav-btn.shuffling {
+    animation: shufflePulse 0.6s ease-in-out;
+  }
+  
+  @keyframes shufflePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); color: #ff6b6b; }
+    100% { transform: scale(1); }
+  }
+
+  /* Modern Video Feed */
+  .video-feed {
+    height: 100%;
+    max-height: 100%;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    padding-top: 70px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    box-sizing: border-box;
+    overscroll-behavior-y: contain;
+    overscroll-behavior-x: none;
+    scroll-behavior: smooth;
+    transition: var(--transition);
+    touch-action: pan-y;
+  }
+
+  /* Modern Video Items */
+  .video-item {
+    height: 100%;
+    max-height: 100%;
+    position: relative;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden;
+    contain: layout style paint;
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+    animation: modernSlideIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    margin: 10px;
+    border-radius: var(--border-radius);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .video-item:nth-child(1) { animation-delay: 0.1s; }
+  .video-item:nth-child(2) { animation-delay: 0.2s; }
+  .video-item:nth-child(3) { animation-delay: 0.3s; }
+  .video-item:nth-child(4) { animation-delay: 0.4s; }
+  .video-item:nth-child(5) { animation-delay: 0.5s; }
+  
+  .video-player {
+    width: 100%;
+    height: 100%;
+    max-height: 100%;
+    object-fit: cover;
+    background: #000;
+    box-sizing: border-box;
+    opacity: 0;
+    transition: var(--transition);
+    border-radius: var(--border-radius);
+  }
+  
+  .video-player.loaded {
+    opacity: 1;
+  }
+
+  @keyframes modernSlideIn {
+    0% { 
+      opacity: 0; 
+      transform: translateY(30px) scale(0.95);
+    }
+    100% { 
+      opacity: 1; 
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Modern Video Overlay */
+  .video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      transparent 50%,
+      rgba(0, 0, 0, 0.4) 100%
+    );
+    pointer-events: none;
+    border-radius: var(--border-radius);
+  }
+
+  /* Modern Video Info */
+  .video-info {
+    position: absolute;
+    bottom: 25px;
+    left: 25px;
+    right: 25px;
+    color: var(--text-primary);
+    z-index: 10;
+    opacity: 1;
+    transform: translateY(0);
+    transition: var(--transition);
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .video-item:hover .video-info {
+    opacity: 1;
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-strong);
+  }
+   
+  .video-author {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .video-author-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    object-fit: cover;
+    transition: var(--transition);
+  }
+
+  .video-author-avatar:hover {
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.05);
+  }
+  
+  .video-author-info h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+  }
+   
+  .video-author-info p {
+    margin: 0;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .video-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    line-height: 1.3;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+  }
+
+  .video-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    max-height: 4.5em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    word-wrap: break-word;
+    word-break: break-word;
+    font-weight: 400;
+  }
+  
+  .video-stats {
+    margin-top: 15px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .view-count {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .view-count::before {
+    content: '👁️';
+    font-size: 12px;
+  }
+
+  /* Modern Video Actions */
+  .video-actions {
+    position: absolute;
+    right: 20px;
+    bottom: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    z-index: 20;
+  }
+
+  .video-action-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 20px;
+    position: relative;
+    transform: scale(0.9);
+    opacity: 0.9;
+    box-shadow: var(--shadow-soft);
+  }
+
+  .video-action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--primary-gradient);
+    opacity: 0;
+    transition: var(--transition);
+    border-radius: 50%;
+  }
+
+  .video-action-btn:hover::before {
+    opacity: 0.1;
+  }
+
+  .video-action-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    opacity: 1;
+    box-shadow: var(--shadow-strong);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .video-action-btn:active {
+    transform: translateY(0) scale(0.95);
+  }
+  
+  .video-actions {
+    opacity: 1;
+    transform: translateX(0);
+    transition: var(--transition);
+  }
+  
+  .video-item:hover .video-actions {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .video-action-btn.liked {
+    color: #ff6b6b;
+    background: rgba(255, 107, 107, 0.1);
+    border-color: rgba(255, 107, 107, 0.3);
+  }
+
+  .video-action-btn.liked::before {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+  }
+
+  .video-action-btn .action-icon {
+    font-size: 22px;
+    margin-bottom: 3px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .video-action-btn .action-count {
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 2px;
+    position: relative;
+    z-index: 1;
+    color: var(--text-secondary);
+  }
+
+  /* Modern Play Button Overlay */
+  .play-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90px;
+    height: 90px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    z-index: 15;
+    opacity: 1;
+    scale: 1;
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .video-item:hover .play-overlay {
+    opacity: 1;
+    scale: 1;
+  }
+
+  .play-overlay:hover {
+    background: var(--glass-bg);
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: var(--shadow-strong);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .play-overlay::after {
+    content: '';
+    width: 0;
+    height: 0;
+    border-left: 28px solid var(--text-primary);
+    border-top: 18px solid transparent;
+    border-bottom: 18px solid transparent;
+    margin-left: 6px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  }
+
+  .play-overlay.hidden {
+    display: none;
+  }
+
+  /* Modern Loading States */
+  .video-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--text-primary);
+    font-size: 14px;
+    z-index: 10;
+    text-align: center;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .video-loading .spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-top: 3px solid var(--text-primary);
+    border-radius: 50%;
+    animation: modernSpin 1s linear infinite;
+    margin: 0 auto 15px;
+  }
+
+  @keyframes modernSpin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .video-error {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ff6b6b;
+    font-size: 14px;
+    text-align: center;
+    z-index: 10;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .video-error .error-icon {
+    font-size: 32px;
+    margin-bottom: 15px;
+  }
+
+  .video-error button {
+    background: var(--secondary-gradient);
+    color: #fff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    margin-top: 15px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: var(--transition);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .video-error button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-strong);
+  }
+  
+  
+
+
+  /* Modern Mobile Responsive - Full Screen */
+  @media (max-width: 768px) {
+    .feed-container {
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh; /* Dynamic viewport height for mobile */
+      max-width: 100vw;
+      max-height: 100vh;
+      max-height: 100dvh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+   
+    .feed-wrapper {
+      max-width: 100%;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      max-height: 100vh;
+      max-height: 100dvh;
+      border-radius: 0;
+      box-shadow: none;
+      overflow: hidden;
+      overscroll-behavior: contain;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-self: center;
+      position: relative;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border: none;
+    }
+    
+    .feed-nav {
+      height: 50px;
+      padding: 0 20px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      position: relative;
+      z-index: 1000;
+    }
+    
+    .feed-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    
+    .feed-nav-btn {
+      width: 40px;
+      height: 40px;
+    }
+    
+    .feed-nav-btn i {
+      font-size: 16px;
+    }
+    
+    .video-feed {
+      padding-top: 50px;
+      padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); /* Safe area for mobile + 100px margin bottom */
+      height: calc(100vh - 50px);
+      height: calc(100dvh - 50px);
+      max-height: calc(100vh - 50px);
+      max-height: calc(100dvh - 50px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      scroll-behavior: smooth;
+      touch-action: pan-y;
+      margin-bottom: 100px; /* Additional margin bottom for mobile */
+    }
+    
+    .video-item {
+      margin: 8px;
+      border-radius: var(--border-radius);
+      min-height: calc(100vh - 66px);
+      min-height: calc(100dvh - 66px);
+    }
+    
+    .video-info {
+      bottom: 20px;
+      left: 20px;
+      right: 20px;
+      padding: 18px;
+      border-radius: var(--border-radius);
+      margin-bottom: env(safe-area-inset-bottom, 0px); /* Safe area for mobile */
+    }
+    
+    .video-author-avatar {
+      width: 40px;
+      height: 40px;
+    }
+    
+    .video-author-info h4 {
+      font-size: 15px;
+    }
+    
+    .video-author-info p {
+      font-size: 12px;
+    }
+    
+    .video-title {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    
+    .video-description {
+      font-size: 13px;
+      line-height: 1.4;
+      max-height: 4.2em;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+    }
+
+    .video-actions {
+      right: 15px;
+      bottom: calc(300px + env(safe-area-inset-bottom, 0px)); /* Safe area for mobile + 300px margin bottom */
+      gap: 15px;
+    }
+
+    .video-action-btn {
+      width: 50px;
+      height: 50px;
+      font-size: 18px;
+    }
+
+    .video-action-btn .action-icon {
+      font-size: 20px;
+    }
+
+    .video-action-btn .action-count {
+      font-size: 10px;
+    }
+
+    .play-overlay {
+      width: 80px;
+      height: 80px;
+    }
+
+    .play-overlay::after {
+      border-left: 24px solid var(--text-primary);
+      border-top: 15px solid transparent;
+      border-bottom: 15px solid transparent;
+    }
+    
+  }
+
+  /* Modern Extra Small Mobile Devices - Full Screen */
+  @media (max-width: 480px) {
+    .feed-nav {
+      height: 45px;
+      padding: 0 15px;
+    }
+    
+    .feed-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+    
+    .feed-nav-btn {
+      width: 36px;
+      height: 36px;
+    }
+    
+    .feed-nav-btn i {
+      font-size: 14px;
+    }
+    
+    .video-feed {
+      padding-top: 45px;
+      padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); /* Safe area for mobile + 100px margin bottom */
+      height: calc(100vh - 45px);
+      height: calc(100dvh - 45px);
+      max-height: calc(100vh - 45px);
+      max-height: calc(100dvh - 45px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      scroll-behavior: smooth;
+      touch-action: pan-y;
+      margin-bottom: 100px; /* Additional margin bottom for mobile */
+    }
+    
+    .video-item {
+      margin: 6px;
+      min-height: calc(100vh - 57px);
+      min-height: calc(100dvh - 57px);
+    }
+    
+    .video-info {
+      bottom: 15px;
+      left: 15px;
+      right: 15px;
+      padding: 15px;
+      margin-bottom: env(safe-area-inset-bottom, 0px); /* Safe area for mobile */
+    }
+    
+    .video-author-avatar {
+      width: 35px;
+      height: 35px;
+    }
+    
+    .video-author-info h4 {
+      font-size: 14px;
+    }
+    
+    .video-author-info p {
+      font-size: 11px;
+    }
+    
+    .video-title {
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+    
+    .video-description {
+      font-size: 12px;
+      max-height: 3.6em;
+      -webkit-line-clamp: 3;
+      line-clamp: 3;
+    }
+
+    .video-actions {
+      right: 12px;
+      bottom: calc(300px + env(safe-area-inset-bottom, 0px)); /* Safe area for mobile + 300px margin bottom */
+      gap: 12px;
+    }
+
+    .video-action-btn {
+      width: 45px;
+      height: 45px;
+      font-size: 16px;
+    }
+
+    .video-action-btn .action-icon {
+      font-size: 18px;
+    }
+
+    .video-action-btn .action-count {
+      font-size: 9px;
+    }
+
+    .play-overlay {
+      width: 70px;
+      height: 70px;
+    }
+
+    .play-overlay::after {
+      border-left: 20px solid var(--text-primary);
+      border-top: 12px solid transparent;
+      border-bottom: 12px solid transparent;
+    }
+    
+  }
+
+  /* Modern Landscape Mobile Orientation - Full Screen */
+  @media (max-width: 768px) and (orientation: landscape) {
+    .feed-container {
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      max-width: 100vw;
+      max-height: 100vh;
+      max-height: 100dvh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .feed-wrapper {
+      height: 100vh;
+      height: 100dvh;
+      max-height: 100vh;
+      max-height: 100dvh;
+      overflow: hidden;
+      overscroll-behavior: contain;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-self: center;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+    }
+    
+    .feed-nav {
+      height: 40px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    
+    .video-feed {
+      height: calc(100vh - 40px);
+      height: calc(100dvh - 40px);
+      max-height: calc(100vh - 40px);
+      max-height: calc(100dvh - 40px);
+      overflow-y: auto;
+      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+      padding-top: 40px;
+      padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); /* Safe area for mobile + 100px margin bottom */
+      margin-bottom: 100px; /* Additional margin bottom for mobile landscape */
+    }
+    
+    .video-item {
+      min-height: calc(100vh - 56px);
+      min-height: calc(100dvh - 56px);
+    }
+    
+    .video-info {
+      bottom: 15px;
+      padding: 15px;
+      margin-bottom: env(safe-area-inset-bottom, 0px); /* Safe area for mobile */
+    }
+    
+    .video-actions {
+      bottom: calc(300px + env(safe-area-inset-bottom, 0px)); /* Safe area for mobile + 300px margin bottom */
+    }
+  }
+
+  /* Modern Scrollbar */
+  .video-feed::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .video-feed::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+  }
+  
+  .video-feed::-webkit-scrollbar-thumb {
+    background: var(--primary-gradient);
+    border-radius: 3px;
+    transition: var(--transition);
+  }
+  
+  .video-feed::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-gradient);
+  }
+  
+  .video-feed {
+    -ms-overflow-style: none;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(102, 126, 234, 0.6) rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Modern Scroll Indicator */
+  .scroll-indicator {
+    position: fixed;
+    right: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 120px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border);
+    border-radius: 3px;
+    z-index: 1000;
+    opacity: 0;
+    transition: var(--transition);
+    box-shadow: var(--shadow-soft);
+  }
+  
+  .scroll-indicator::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    background: var(--primary-gradient);
+    border-radius: 3px;
+    transition: var(--transition);
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  }
+  
+  .video-feed:hover + .scroll-indicator {
+    opacity: 1;
+  }
+
+  /* Prevent zoom on double tap */
+  .video-feed {
+    touch-action: pan-y;
+  }
+  
+  /* Mobile scroll fixes */
+  @media (max-width: 768px) {
+    body {
+      overflow: auto !important;
+      position: relative !important;
+    }
+    
+    html {
+      overflow: auto !important;
+    }
+    
+    .feed-container {
+      position: relative !important;
+      overflow: visible !important;
+    }
+    
+    .feed-wrapper {
+      overflow: visible !important;
+    }
+    
+    .video-feed {
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+    }
+  }
+  
+  /* Prevent body scroll */
+  body {
+    position: fixed;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Prevent document scroll */
+  document {
+    overflow: hidden;
+  }
+
+  /* Modern Mobile Touch Improvements */
+  @media (max-width: 768px) {
+    .video-action-btn {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .video-action-btn:active {
+      transform: translateY(0) scale(0.9);
+    }
+    
+    .feed-nav-btn {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .feed-nav-btn:active {
+      transform: translateY(0) scale(0.9);
+    }
+    
+    /* Prevent text selection on mobile */
+    .video-info, .video-actions {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+    
+    /* Improve touch targets */
+    .video-action-btn, .feed-nav-btn {
+      min-width: 44px;
+      min-height: 44px;
+    }
+     
+    /* Android scroll improvements */
+    .video-feed {
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      scroll-behavior: smooth;
+      touch-action: pan-y;
+      overflow-y: scroll !important;
+    }
+     
+    /* Prevent zoom on double tap */
+    .video-item {
+      touch-action: manipulation;
+    }
+     
+    /* Better scroll performance on Android */
+    .video-item {
+      will-change: transform;
+      transform: translateZ(0);
+    }
+     
+    /* Force scroll on mobile */
+    .feed-wrapper {
+      overflow: visible !important;
+    }
+     
+    .feed-container {
+      overflow: visible !important;
+    }
+     
+    /* Make sure video info and actions are visible on mobile */
+    .video-info {
+      opacity: 1 !important;
+      transform: translateY(0) !important;
+    }
+     
+    .video-actions {
+      opacity: 1 !important;
+      transform: translateX(0) !important;
+    }
+     
+    .play-overlay {
+      opacity: 1 !important;
+      scale: 1 !important;
+    }
+  }
+
+  /* Modern Performance Optimizations */
+  .video-item, .video-player, .video-info, .video-actions {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+  }
+
+  /* Modern Focus States */
+  .feed-nav-btn:focus,
+  .video-action-btn:focus,
+  .play-overlay:focus {
+    outline: 2px solid rgba(102, 126, 234, 0.6);
+    outline-offset: 2px;
+  }
+
+  /* Modern Selection States */
+  ::selection {
+    background: rgba(102, 126, 234, 0.3);
+    color: var(--text-primary);
+  }
+
+  ::-moz-selection {
+    background: rgba(102, 126, 234, 0.3);
+    color: var(--text-primary);
+  }
+
+  /* Modern Hover Effects */
+  .video-item:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: var(--shadow-strong);
+  }
+
+  .video-item:hover .video-player {
+    filter: brightness(1.1) contrast(1.05);
+  }
+
+  /* Modern Loading Animation */
+  @keyframes modernPulse {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.7;
+      transform: scale(1.05);
+    }
+  }
+
+  .video-loading .spinner {
+    animation: modernSpin 1s linear infinite, modernPulse 2s ease-in-out infinite;
+  }
+
+  /* Modern Gradient Text Animation */
+  @keyframes gradientShift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .feed-title {
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
+  }
+
+  /* Modern Glassmorphism Enhancement */
+  .feed-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    border-radius: var(--border-radius-lg);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Mobile Full Screen Enhancements */
+  @media (max-width: 768px) {
+    html {
+      height: 100vh;
+      height: 100dvh;
+      width: 100vw;
+      overflow: hidden;
+    }
+    
+    body {
+      height: 100vh;
+      height: 100dvh;
+      width: 100vw;
+      overflow: hidden;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+    
+    /* Ensure no content is cut off */
+    .video-info {
+      max-width: calc(100vw - 40px);
+    }
+    
+    .video-actions {
+      max-height: calc(100vh - 200px);
+      max-height: calc(100dvh - 200px);
+    }
+    
+    /* Prevent horizontal scroll */
+    .video-feed {
+      overflow-x: hidden;
+    }
+    
+    .video-item {
+      max-width: 100vw;
+      overflow: hidden;
+    }
+  }
+ </style>
+
+<!-- Feed Container -->
+<div class="feed-container">
+  <div class="feed-wrapper">
+    <div class="feed-nav">
+      <div class="feed-nav-left">
+        <!-- Title removed for mobile optimization -->
+      </div>
+      <div class="feed-nav-right">
+        <button class="feed-nav-btn" onclick="shuffleCurrentVideos()" title="Acak Video">
+          <i class="fas fa-random"></i>
+        </button>
+        <button class="feed-nav-btn" onclick="goToUpgrade()" title="Upgrade">
+          <i class="fas fa-crown"></i>
+        </button>
+        <button class="feed-nav-btn" onclick="goToProfile()" title="Profile">
+          <i class="fas fa-user"></i>
+        </button>
+      </div>
+        </div>
+   
+    <div class="video-feed" id="videoFeed">
+      <!-- Videos will be dynamically loaded here -->
+        </div>
+        
+        <!-- Scroll indicator -->
+        <div class="scroll-indicator" id="scrollIndicator"></div>
+        </div>
+      </div>
+
+<script>
+// Feed functionality
+let currentVideoIndex = 0;
+let videos = [];
+let isPlaying = false;
+let nextCursor = null;
+let isLoading = false;
+let hasMoreVideos = true;
+
+// Mobile detection function
+function isMobile() {
+  return window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+// Shuffle array function
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+// Shuffle current videos in the feed
+function shuffleCurrentVideos() {
+  if (videos.length === 0) {
+    console.log('No videos to shuffle');
+    return;
+  }
+  
+  console.log('Shuffling current videos...');
+  const feedContainer = document.getElementById('videoFeed');
+  
+  // Get all video elements
+  const videoElements = Array.from(feedContainer.children);
+  
+  // Shuffle the video elements
+  const shuffledElements = shuffleArray(videoElements);
+  
+  // Clear the container
+  feedContainer.innerHTML = '';
+  
+  // Re-append shuffled elements
+  shuffledElements.forEach((element, index) => {
+    feedContainer.appendChild(element);
+    // Update the video index
+    element.setAttribute('data-video-index', index);
+  });
+  
+  // Update videos array
+  videos = shuffledElements;
+  
+  // Reset current video index to 0
+  currentVideoIndex = 0;
+  
+  // Show first video
+  if (videos.length > 0) {
+    showVideo(0);
+  }
+  
+  console.log(`Shuffled ${videos.length} videos`);
+  
+  // Add visual feedback with CSS animation
+  const shuffleBtn = document.querySelector('[onclick="shuffleCurrentVideos()"]');
+  if (shuffleBtn) {
+    shuffleBtn.classList.add('shuffling');
+    setTimeout(() => {
+      shuffleBtn.classList.remove('shuffling');
+    }, 600);
+  }
+}
+
+// API Configuration
+const API_BASE_URL = '/api';
+
+// Initialize feed when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  // Prevent page scroll
+  document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden';
+  
+  // Test API endpoints first
+  testAPIEndpoints();
+  
+  // Add a fallback timer to ensure videos load
+  setTimeout(() => {
+    const feedContainer = document.getElementById('videoFeed');
+    if (feedContainer && feedContainer.children.length === 0) {
+      console.log('No videos loaded after 3 seconds, loading dummy videos...');
+      loadDummyVideos();
+    }
+  }, 3000);
+  
+  initFeed();
+  
+  // Handle orientation change
+  window.addEventListener('orientationchange', function() {
+    setTimeout(() => {
+      // Recalculate video positions after orientation change
+      const feedContainer = document.getElementById('videoFeed');
+      if (feedContainer) {
+        const containerHeight = feedContainer.clientHeight;
+        const scrollTop = feedContainer.scrollTop;
+        const newIndex = Math.round(scrollTop / containerHeight);
+        currentVideoIndex = newIndex;
+      }
+    }, 100);
+  });
+  
+  // Allow touch events for scrolling
+  document.addEventListener('touchstart', function(e) {
+    // Only prevent default for specific elements, not the video feed
+    if (e.target.closest('.video-action-btn') || e.target.closest('.play-overlay')) {
+      // Allow these to work normally
+      return;
+    }
+  }, { passive: true });
+  
+  // Allow window scroll for mobile
+  window.addEventListener('scroll', function(e) {
+    // Only prevent scroll if not on mobile
+    if (window.innerWidth > 768) {
+      e.preventDefault();
+      window.scrollTo(0, 0);
+    }
+  }, { passive: true });
+  
+  // Allow wheel scroll on mobile
+  document.addEventListener('wheel', function(e) {
+    // Only prevent wheel scroll on desktop
+    if (window.innerWidth > 768 && !e.target.closest('.video-feed')) {
+      e.preventDefault();
+    }
+  }, { passive: true });
+  
+  // Handle touch events for better mobile experience
+  let touchStartY = 0;
+  let touchEndY = 0;
+  let touchStartTime = 0;
+  let isScrolling = false;
+  
+  // Android-specific touch handling
+  document.addEventListener('touchstart', function(e) {
+    touchStartY = e.changedTouches[0].screenY;
+    touchStartTime = Date.now();
+    isScrolling = false;
+  }, { passive: true });
+  
+  document.addEventListener('touchmove', function(e) {
+    if (!isScrolling) {
+      const touchY = e.changedTouches[0].screenY;
+      const diff = Math.abs(touchY - touchStartY);
+      
+      if (diff > 10) {
+        isScrolling = true;
+      }
+    }
+  }, { passive: true });
+  
+  document.addEventListener('touchend', function(e) {
+    touchEndY = e.changedTouches[0].screenY;
+    const touchDuration = Date.now() - touchStartTime;
+    handleSwipe(touchDuration);
+  }, { passive: true });
+  
+  function handleSwipe(duration) {
+    const swipeThreshold = 50;
+    const diff = touchStartY - touchEndY;
+    
+    // Only handle swipe if it's a quick gesture (less than 300ms)
+    if (Math.abs(diff) > swipeThreshold && duration < 300) {
+      // Swipe detected, let the browser handle scroll
+      return;
+    }
+  }
+  
+  // Prevent pull-to-refresh on Android
+  document.addEventListener('touchstart', function(e) {
+    if (e.touches.length === 1) {
+      const touch = e.touches[0];
+      if (touch.clientY < 50) {
+        e.preventDefault();
+      }
+    }
+  }, { passive: false });
+  
+  // Handle Android Chrome address bar changes
+  function handleViewportChange() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }
+  
+  window.addEventListener('resize', handleViewportChange);
+  window.addEventListener('orientationchange', function() {
+    setTimeout(handleViewportChange, 100);
+  });
+  
+  // Initial viewport setup
+  handleViewportChange();
+  
+  // Mobile detection and scroll setup
+  
+  if (isMobile()) {
+    // Enable scroll on mobile
+    document.body.style.overflow = 'auto';
+    document.body.style.position = 'relative';
+    document.documentElement.style.overflow = 'auto';
+    
+    // Make sure video feed can scroll
+    const videoFeed = document.getElementById('videoFeed');
+    if (videoFeed) {
+      videoFeed.style.overflowY = 'auto';
+      videoFeed.style.webkitOverflowScrolling = 'touch';
+    }
+    
+    // Make sure video info and actions are visible
+    const videoInfos = document.querySelectorAll('.video-info');
+    const videoActions = document.querySelectorAll('.video-actions');
+    const playOverlays = document.querySelectorAll('.play-overlay');
+    
+    videoInfos.forEach(info => {
+      info.style.opacity = '1';
+      info.style.transform = 'translateY(0)';
+    });
+    
+    videoActions.forEach(actions => {
+      actions.style.opacity = '1';
+      actions.style.transform = 'translateX(0)';
+    });
+    
+    playOverlays.forEach(overlay => {
+      overlay.style.opacity = '1';
+      overlay.style.scale = '1';
+    });
+  }
+});
+
+// Initialize feed
+async function initFeed() {
+  const feedContainer = document.getElementById('videoFeed');
+  if (!feedContainer) {
+    console.error('Video feed container not found!');
+    return;
+  }
+  
+  console.log('Initializing video feed...');
+  
+  // Clear existing content
+  feedContainer.innerHTML = '';
+  videos = [];
+  nextCursor = null;
+  hasMoreVideos = true;
+  
+  // Show initial loading state
+  feedContainer.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #fff; text-align: center;">
+      <div>
+        <div class="spinner" style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+        <p>Memuat video feed...</p>
+        <p style="font-size: 12px; opacity: 0.7; margin-top: 10px;">Mencoba koneksi ke API...</p>
+      </div>
+    </div>
+  `;
+  
+  // Load initial videos from API
+  await loadVideosFromAPI();
+  
+  // Set up intersection observer for auto-play
+  setupIntersectionObserver();
+  
+  // Set up scroll listener
+  setupScrollListener();
+  
+  // Set up infinite scroll
+  setupInfiniteScroll();
+  
+  console.log('Video feed initialized successfully');
+}
+
+// Load videos from API using cursor-based pagination
+async function loadVideosFromAPI(append = false) {
+  if (isLoading || (!hasMoreVideos && append)) return;
+  
+  isLoading = true;
+  console.log('Loading videos from API...', { append, nextCursor });
+  
+  try {
+    // Try multiple API endpoints for better compatibility
+    let urls = [
+      `${API_BASE_URL}/feed/videos/cursor?limit=5`,
+      `${API_BASE_URL}/feed/videos?page=1&per_page=5`,
+      `${API_BASE_URL}/videos?page=1&per_page=5`,
+      `${API_BASE_URL}/list_videos_db`
+    ];
+    
+    if (nextCursor && append) {
+      urls[0] += `&cursor=${encodeURIComponent(nextCursor)}`;
+    }
+    
+    let data = null;
+    let response = null;
+    
+    // Try each endpoint until one works
+    for (let i = 0; i < urls.length; i++) {
+      try {
+        console.log(`Trying API endpoint ${i + 1}:`, urls[i]);
+        response = await fetch(urls[i]);
+        data = await response.json();
+        
+        // Handle different response formats
+        if (data.success && data.data && data.data.length > 0) {
+          console.log(`Success with endpoint ${i + 1}:`, data);
+          break;
+        } else if (Array.isArray(data) && data.length > 0) {
+          // Handle direct array response (like /api/list_videos_db)
+          console.log(`Success with endpoint ${i + 1} (array format):`, data);
+          data = { success: true, data: data };
+          break;
+        } else {
+          console.log(`Endpoint ${i + 1} failed:`, data);
+        }
+      } catch (err) {
+        console.log(`Endpoint ${i + 1} error:`, err);
+        continue;
+      }
+    }
+    
+    if (data && data.success && data.data && data.data.length > 0) {
+      const feedContainer = document.getElementById('videoFeed');
+      
+      if (!append) {
+        // Clear existing content for first load
+        feedContainer.innerHTML = '';
+        videos = [];
+      }
+      
+      // Shuffle the video data before creating elements
+      const shuffledVideos = shuffleArray(data.data);
+      console.log('Shuffled videos:', shuffledVideos);
+      
+      // Create video elements from shuffled API data
+      shuffledVideos.forEach((video, index) => {
+        console.log('Creating video element:', video);
+        const videoElement = createVideoElement(video, videos.length + index);
+        if (videoElement) {
+          feedContainer.appendChild(videoElement);
+          videos.push(videoElement);
+          
+          // Ensure mobile visibility
+          if (isMobile()) {
+            const videoInfo = videoElement.querySelector('.video-info');
+            const videoActions = videoElement.querySelector('.video-actions');
+            const playOverlay = videoElement.querySelector('.play-overlay');
+            
+            if (videoInfo) {
+              videoInfo.style.opacity = '1';
+              videoInfo.style.transform = 'translateY(0)';
+            }
+            if (videoActions) {
+              videoActions.style.opacity = '1';
+              videoActions.style.transform = 'translateX(0)';
+            }
+            if (playOverlay) {
+              playOverlay.style.opacity = '1';
+              playOverlay.style.scale = '1';
+            }
+          }
+        }
+      });
+      
+      // Update pagination info
+      hasMoreVideos = data.pagination ? data.pagination.has_more : false;
+      nextCursor = data.pagination ? data.pagination.next_cursor : null;
+      
+      // Re-setup intersection observer for new videos
+      if (append) {
+        setupIntersectionObserver();
+      } else {
+        // Setup intersection observer for initial load
+        setTimeout(() => {
+          setupIntersectionObserver();
+        }, 100);
+      }
+      
+      console.log(`Successfully loaded ${data.data.length} videos from API`);
+    } else {
+      console.error('All API endpoints failed, using dummy data');
+      // Show error message to user
+      if (!append) {
+        const feedContainer = document.getElementById('videoFeed');
+        feedContainer.innerHTML = `
+          <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #fff; text-align: center;">
+            <div>
+              <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+              <h3>Gagal Memuat Video</h3>
+              <p>API tidak dapat diakses. Menggunakan video demo...</p>
+              <button onclick="retryLoadVideos()" style="background: #ff6b6b; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px;">
+                Coba Lagi
+              </button>
+            </div>
+          </div>
+        `;
+        // Load dummy videos after showing error
+        setTimeout(() => {
+          loadDummyVideos();
+        }, 2000);
+      }
+    }
+  } catch (error) {
+    console.error('Error loading videos:', error);
+    // Show error message to user
+    if (!append) {
+      const feedContainer = document.getElementById('videoFeed');
+      feedContainer.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #fff; text-align: center;">
+          <div>
+            <div style="font-size: 48px; margin-bottom: 20px;">❌</div>
+            <h3>Terjadi Kesalahan</h3>
+            <p>Gagal memuat video: ${error.message}</p>
+            <button onclick="retryLoadVideos()" style="background: #ff6b6b; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px;">
+              Coba Lagi
+            </button>
+          </div>
+        </div>
+      `;
+    }
+  } finally {
+    isLoading = false;
+  }
+}
+
+// Fallback to dummy videos if API fails
+function loadDummyVideos() {
+  console.log('Loading dummy videos as fallback...');
+  const feedContainer = document.getElementById('videoFeed');
+  feedContainer.innerHTML = '';
+  videos = [];
+  
+  const dummyVideos = [
+    {
+      id: 1,
+      title: "Amazing AI Generated Music",
+      caption: "Check out this incredible music created with AI technology! 🎵",
+      video_url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+      thumbnail_url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
+      user: {
+        username: "AI Music Creator",
+        avatar_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face"
+      },
+      stats: {
+        likes: 150,
+        comments: 25,
+        views: 1000,
+        shares: 10
+      },
+      interactions: {
+        is_liked: false
+      },
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 2,
+      title: "Stunning AI Art Generation",
+      caption: "Watch as AI creates beautiful digital art in real-time! 🎨",
+      video_url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+      thumbnail_url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ElephantsDream.jpg",
+      user: {
+        username: "Digital Artist",
+        avatar_url: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face"
+      },
+      stats: {
+        likes: 200,
+        comments: 35,
+        views: 1500,
+        shares: 15
+      },
+      interactions: {
+        is_liked: false
+      },
+      created_at: new Date(Date.now() - 3600000).toISOString()
+    },
+    {
+      id: 3,
+      title: "AI Video Creation Magic",
+      caption: "See how AI transforms text into amazing videos! ✨",
+      video_url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+      thumbnail_url: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/ForBiggerBlazes.jpg",
+      user: {
+        username: "Video Creator",
+        avatar_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face"
+      },
+      stats: {
+        likes: 89,
+        comments: 12,
+        views: 500,
+        shares: 5
+      },
+      interactions: {
+        is_liked: false
+      },
+      created_at: new Date(Date.now() - 7200000).toISOString()
+    }
+  ];
+  
+  // Shuffle dummy videos before creating elements
+  const shuffledDummyVideos = shuffleArray(dummyVideos);
+  console.log('Shuffled dummy videos:', shuffledDummyVideos);
+  
+  shuffledDummyVideos.forEach((video, index) => {
+    console.log('Creating dummy video element:', video);
+    const videoElement = createVideoElement(video, index);
+    feedContainer.appendChild(videoElement);
+    videos.push(videoElement);
+    
+    // Ensure mobile visibility
+    if (isMobile()) {
+      const videoInfo = videoElement.querySelector('.video-info');
+      const videoActions = videoElement.querySelector('.video-actions');
+      const playOverlay = videoElement.querySelector('.play-overlay');
+      
+      if (videoInfo) {
+        videoInfo.style.opacity = '1';
+        videoInfo.style.transform = 'translateY(0)';
+      }
+      if (videoActions) {
+        videoActions.style.opacity = '1';
+        videoActions.style.transform = 'translateX(0)';
+      }
+      if (playOverlay) {
+        playOverlay.style.opacity = '1';
+        playOverlay.style.scale = '1';
+      }
+    }
+  });
+  
+  // Setup intersection observer after a short delay
+  setTimeout(() => {
+    setupIntersectionObserver();
+  }, 100);
+  
+  console.log(`Loaded ${dummyVideos.length} dummy videos`);
+}
+
+// Create individual video element
+function createVideoElement(video, index) {
+  const videoContainer = document.createElement('div');
+  videoContainer.className = 'video-item';
+  videoContainer.id = `video-${video.id}`;
+  
+  // Handle API data format - support multiple formats
+  const videoUrl = video.video_url || video.videoUrl || video.url;
+  const thumbnail = video.thumbnail_url || video.thumbnail || video.image_url || '/static/assets/image/default.jpg';
+  const title = video.title || video.caption || 'Untitled Video';
+  const caption = truncateText(video.caption || video.description || '', 300);
+  
+  const username = video.user?.username || video.username || video.author || 'Unknown User';
+  const userAvatar = video.user?.avatar_url || video.user_avatar || video.authorAvatar || '/static/assets/image/default.jpg';
+  const viewCount = video.stats?.views || video.view_count || video.views || 0;
+  const likesCount = video.stats?.likes || video.likes || 0;
+  const commentsCount = video.stats?.comments || video.comments || 0;
+  const sharesCount = video.stats?.shares || video.shares || 0;
+  const isLiked = video.interactions?.is_liked || video.isLiked || false;
+  
+  // Format time ago
+  const timeAgo = video.created_at ? formatTimeAgo(video.created_at) : '2 hours ago';
+  
+  // Debug logging
+  console.log('Creating video element with data:', {
+    id: video.id,
+    videoUrl,
+    thumbnail,
+    title,
+    username,
+    originalData: video
+  });
+  
+  // Validate video URL
+  if (!videoUrl || videoUrl === '') {
+    console.warn(`Video ${video.id} has no valid URL, skipping...`);
+    return null;
+  }
+  
+  // Add loading and error states
+  videoContainer.innerHTML = `
+    <div class="video-loading" id="loading-${video.id}">
+      <div class="spinner"></div>
+      <p>Memuat video...</p>
+    </div>
+    
+    <div class="video-error" id="error-${video.id}" style="display: none;">
+      <div class="error-icon">⚠️</div>
+      <p>Gagal memuat video</p>
+      <button onclick="retryVideo(${video.id})">Coba Lagi</button>
+    </div>
+    
+    <video 
+      class="video-player" 
+      preload="metadata"
+      poster="${thumbnail}"
+      muted
+      playsinline
+      loop
+      onloadstart="showVideoLoading(${video.id})"
+      onloadeddata="hideVideoLoading(${video.id}); this.classList.add('loaded')"
+      oncanplay="hideVideoLoading(${video.id}); this.classList.add('loaded')"
+      onerror="showVideoError(${video.id})"
+      onload="hideVideoLoading(${video.id}); this.classList.add('loaded')"
+      onloadedmetadata="console.log('Video ${video.id} metadata loaded')"
+    >
+      <source src="${videoUrl}" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    
+    <div class="play-overlay" onclick="toggleVideoPlay(this)"></div>
+    
+    <div class="video-overlay"></div>
+    
+    <div class="video-info">
+      <div class="video-author">
+        <img src="${userAvatar}" alt="${username}" class="video-author-avatar" onerror="this.src='/static/assets/image/default.jpg'">
+        <div class="video-author-info">
+          <h4>${username}</h4>
+          <p>${timeAgo}</p>
+        </div>
+      </div>
+      <div class="video-title">${title}</div>
+      <div class="video-description">${caption}</div>
+      <div class="video-stats">
+        <span class="view-count">${formatNumber(viewCount)} views</span>
+      </div>
+    </div>
+    
+    <div class="video-actions">
+      <button class="video-action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike(${video.id}, this)">
+        <div class="action-icon">❤️</div>
+        <div class="action-count">${formatNumber(likesCount)}</div>
+      </button>
+      <button class="video-action-btn" onclick="showComments(${video.id})">
+        <div class="action-icon">💬</div>
+        <div class="action-count">${formatNumber(commentsCount)}</div>
+      </button>
+      <button class="video-action-btn" onclick="shareVideo(${video.id})">
+        <div class="action-icon">📤</div>
+        <div class="action-count">${formatNumber(sharesCount)}</div>
+      </button>
+    </div>
+    
+  `;
+  
+  return videoContainer;
+}
+
+// Format time ago
+function formatTimeAgo(dateString) {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffInSeconds = Math.floor((now - date) / 1000);
+  
+  if (diffInSeconds < 60) {
+    return 'Just now';
+  } else if (diffInSeconds < 3600) {
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+  } else if (diffInSeconds < 86400) {
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  } else if (diffInSeconds < 2592000) {
+    const days = Math.floor(diffInSeconds / 86400);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+  } else {
+    return date.toLocaleDateString();
+  }
+}
+
+// Set up intersection observer for auto-play
+function setupIntersectionObserver() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      const video = entry.target.querySelector('video');
+      if (!video) return;
+      
+      if (entry.isIntersecting) {
+        // Video is in viewport - play it
+        if (video.readyState >= 2) { // HAVE_CURRENT_DATA
+          video.play().catch(e => {
+            console.log('Autoplay prevented:', e);
+            // Show play button if autoplay fails
+            const playOverlay = entry.target.querySelector('.play-overlay');
+            if (playOverlay) playOverlay.classList.remove('hidden');
+          });
+          isPlaying = true;
+        } else {
+          // Video not ready yet, wait for it to load
+          video.addEventListener('canplay', () => {
+            video.play().catch(e => console.log('Autoplay prevented:', e));
+            isPlaying = true;
+          }, { once: true });
+        }
+      } else {
+        // Video is out of viewport - pause it
+        video.pause();
+        isPlaying = false;
+      }
+    });
+  }, {
+    threshold: 0.5 // Trigger when 50% of video is visible
+  });
+
+  // Observe all video containers
+  videos.forEach(videoContainer => {
+    observer.observe(videoContainer);
+  });
+}
+
+// Set up scroll listener for navigation
+function setupScrollListener() {
+  const feedContainer = document.getElementById('videoFeed');
+  const scrollIndicator = document.getElementById('scrollIndicator');
+  if (!feedContainer) return;
+  
+  let scrollTimeout;
+  
+  feedContainer.addEventListener('scroll', () => {
+    // Throttle scroll events for better performance
+    if (scrollTimeout) {
+      clearTimeout(scrollTimeout);
+    }
+    
+    scrollTimeout = setTimeout(() => {
+      const scrollTop = feedContainer.scrollTop;
+      const containerHeight = feedContainer.clientHeight;
+      const scrollHeight = feedContainer.scrollHeight;
+      const newIndex = Math.round(scrollTop / containerHeight);
+      
+      // Update scroll indicator
+      if (scrollIndicator) {
+        const scrollProgress = scrollTop / (scrollHeight - containerHeight);
+        const indicatorHeight = Math.max(20, 100 * (containerHeight / scrollHeight));
+        const indicatorTop = scrollProgress * (100 - indicatorHeight);
+        
+        scrollIndicator.style.height = `${indicatorHeight}px`;
+        scrollIndicator.querySelector('::before')?.style.setProperty('top', `${indicatorTop}px`);
+      }
+      
+      if (newIndex !== currentVideoIndex && newIndex >= 0 && newIndex < videos.length) {
+        currentVideoIndex = newIndex;
+        console.log(`Now viewing video ${currentVideoIndex + 1}`);
+      }
+    }, 100);
+  });
+}
+
+// Set up infinite scroll
+function setupInfiniteScroll() {
+  const feedContainer = document.getElementById('videoFeed');
+  if (!feedContainer) return;
+  
+  feedContainer.addEventListener('scroll', () => {
+    const { scrollTop, scrollHeight, clientHeight } = feedContainer;
+    const threshold = 100; // Load more when 100px from bottom
+    
+    if (scrollHeight - scrollTop - clientHeight < threshold && hasMoreVideos && !isLoading) {
+      loadVideosFromAPI(true);
+    }
+  });
+}
+
+
+
+ 
+
+
+
+// Format numbers (e.g., 1000 -> 1K)
+function formatNumber(num) {
+  if (num >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M';
+  } else if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'K';
+  }
+  return num.toString();
+}
+
+// Truncate text to specified length with ellipsis
+function truncateText(text, maxLength = 300) {
+  if (!text || text.length <= maxLength) {
+    return text;
+  }
+  
+  // Find the last space before the limit to avoid cutting words
+  const truncated = text.substring(0, maxLength);
+  const lastSpaceIndex = truncated.lastIndexOf(' ');
+  
+  if (lastSpaceIndex > maxLength * 0.8) { // If we can find a space in the last 20%
+    return truncated.substring(0, lastSpaceIndex) + '...';
+  } else {
+    return truncated + '...';
+  }
+}
+
+
+// Video loading and error handling functions
+function showVideoLoading(videoId) {
+  const loadingEl = document.getElementById(`loading-${videoId}`);
+  const errorEl = document.getElementById(`error-${videoId}`);
+  if (loadingEl) loadingEl.style.display = 'block';
+  if (errorEl) errorEl.style.display = 'none';
+}
+
+function hideVideoLoading(videoId) {
+  const loadingEl = document.getElementById(`loading-${videoId}`);
+  if (loadingEl) loadingEl.style.display = 'none';
+}
+
+function showVideoError(videoId) {
+  const loadingEl = document.getElementById(`loading-${videoId}`);
+  const errorEl = document.getElementById(`error-${videoId}`);
+  if (loadingEl) loadingEl.style.display = 'none';
+  if (errorEl) errorEl.style.display = 'block';
+  console.error(`Video ${videoId} failed to load`);
+}
+
+function retryVideo(videoId) {
+  const videoContainer = document.getElementById(`video-${videoId}`);
+  const video = videoContainer.querySelector('video');
+  if (video) {
+    showVideoLoading(videoId);
+    video.load(); // Reload the video
+  }
+}
+
+// Video interaction functions
+function toggleVideoPlay(playButton) {
+  const videoContainer = playButton.closest('.video-item');
+  const video = videoContainer.querySelector('video');
+  const playOverlay = videoContainer.querySelector('.play-overlay');
+  
+  if (video.paused) {
+    video.play().catch(e => {
+      console.log('Video play failed:', e);
+      showToast('Gagal memutar video', 'error');
+    });
+    playOverlay.classList.add('hidden');
+  } else {
+    video.pause();
+    playOverlay.classList.remove('hidden');
+  }
+}
+
+async function toggleLike(videoId, button) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/feed/video/${videoId}/like`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      button.classList.toggle('liked', data.is_liked);
+      const countElement = button.querySelector('.action-count');
+      countElement.textContent = formatNumber(data.likes_count);
+      
+      // Add animation effect
+      button.style.animation = 'likePulse 0.3s ease';
+      setTimeout(() => {
+        button.style.animation = '';
+      }, 300);
+    }
+  } catch (error) {
+    console.error('Error toggling like:', error);
+    // Show error message to user
+    showToast('Gagal mengubah status like', 'error');
+  }
+}
+
+async function showComments(videoId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/feed/video/${videoId}/comments?page=1&per_page=10`);
+    const data = await response.json();
+    
+    if (data.success) {
+      // Create modal for comments
+      createCommentsModal(videoId, data.comments);
+    }
+  } catch (error) {
+    console.error('Error loading comments:', error);
+    showToast('Gagal memuat komentar', 'error');
+  }
+}
+
+async function shareVideo(videoId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/feed/video/${videoId}/share`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      // Use Web Share API if available
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Video Menarik',
+          text: 'Lihat video ini!',
+          url: window.location.href
+        });
+      } else {
+        // Fallback: copy to clipboard
+        await navigator.clipboard.writeText(window.location.href);
+        showToast('Link video telah disalin!', 'success');
+      }
+    }
+  } catch (error) {
+    console.error('Error sharing video:', error);
+    showToast('Gagal share video', 'error');
+  }
+}
+
+// Create comments modal
+function createCommentsModal(videoId, comments) {
+  // Remove existing modal if any
+  const existingModal = document.querySelector('.comments-modal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  const modal = document.createElement('div');
+  modal.className = 'comments-modal';
+  modal.innerHTML = `
+    <div class="modal-overlay" onclick="closeCommentsModal()"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Komentar</h3>
+        <button class="close-btn" onclick="closeCommentsModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="comments-list">
+          ${comments.map(comment => `
+            <div class="comment-item">
+              <img src="${comment.user.avatar_url}" alt="${comment.user.username}" class="comment-avatar">
+              <div class="comment-content">
+                <div class="comment-header">
+                  <span class="comment-username">${comment.user.username}</span>
+                  <span class="comment-time">${formatTimeAgo(comment.created_at)}</span>
+                </div>
+                <div class="comment-text">${comment.comment}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="comment-input">
+          <input type="text" placeholder="Tulis komentar..." id="commentInput">
+          <button onclick="addComment(${videoId})">Kirim</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Add modal styles
+  const style = document.createElement('style');
+  style.textContent = `
+    .comments-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+    }
+    
+    .modal-content {
+      background: #1a1a1a;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      z-index: 1001;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid #333;
+    }
+    
+    .modal-header h3 {
+      color: #fff;
+      margin: 0;
+    }
+    
+    .close-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    
+    .modal-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .comments-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+    
+    .comment-item {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    
+    .comment-avatar {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+    }
+    
+    .comment-content {
+      flex: 1;
+    }
+    
+    .comment-header {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+    
+    .comment-username {
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .comment-time {
+      color: #999;
+      font-size: 12px;
+    }
+    
+    .comment-text {
+      color: #fff;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    
+    .comment-input {
+      display: flex;
+      gap: 10px;
+      padding: 20px;
+      border-top: 1px solid #333;
+    }
+    
+    .comment-input input {
+      flex: 1;
+      background: #333;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 15px;
+      color: #fff;
+      font-size: 14px;
+    }
+    
+    .comment-input button {
+      background: #ff6b6b;
+      border: none;
+      border-radius: 20px;
+      padding: 10px 20px;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+    }
+  `;
+  
+  document.head.appendChild(style);
+  document.body.appendChild(modal);
+  
+  // Focus on input
+  setTimeout(() => {
+    const input = document.getElementById('commentInput');
+    if (input) input.focus();
+  }, 100);
+}
+
+function closeCommentsModal() {
+  const modal = document.querySelector('.comments-modal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+async function addComment(videoId) {
+  const input = document.getElementById('commentInput');
+  const comment = input.value.trim();
+  
+  if (!comment) return;
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/feed/video/${videoId}/comment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ comment })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      input.value = '';
+      showToast('Komentar berhasil ditambahkan!', 'success');
+      // Refresh comments
+      showComments(videoId);
+    }
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    showToast('Gagal menambahkan komentar', 'error');
+  }
+}
+
+// Toast notification function
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  
+  // Add toast styles
+  const style = document.createElement('style');
+  style.textContent = `
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #333;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      z-index: 10000;
+      animation: slideInRight 0.3s ease;
+    }
+    
+    .toast-success {
+      background: #4caf50;
+    }
+    
+    .toast-error {
+      background: #f44336;
+    }
+    
+    @keyframes slideInRight {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+  `;
+  
+  if (!document.querySelector('.toast-styles')) {
+    style.className = 'toast-styles';
+    document.head.appendChild(style);
+  }
+  
+  document.body.appendChild(toast);
+  
+  // Remove toast after 3 seconds
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
+
+// Retry loading videos function
+async function retryLoadVideos() {
+  console.log('Retrying to load videos...');
+  const feedContainer = document.getElementById('videoFeed');
+  
+  // Show loading state
+  feedContainer.innerHTML = `
+    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #fff; text-align: center;">
+      <div>
+        <div class="spinner" style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+        <p>Mencoba memuat ulang video...</p>
+      </div>
+    </div>
+  `;
+  
+  // Reset state
+  videos = [];
+  nextCursor = null;
+  hasMoreVideos = true;
+  isLoading = false;
+  
+  // Try to load videos again
+  await loadVideosFromAPI();
+}
+
+// Test API endpoints function
+async function testAPIEndpoints() {
+  console.log('Testing API endpoints...');
+  const endpoints = [
+    '/api/feed/videos/cursor?limit=5',
+    '/api/feed/videos?page=1&per_page=5',
+    '/api/videos?page=1&per_page=5',
+    '/api/list_videos_db'
+  ];
+  
+  for (let endpoint of endpoints) {
+    try {
+      console.log(`Testing: ${endpoint}`);
+      const response = await fetch(endpoint);
+      const data = await response.json();
+      console.log(`✅ ${endpoint}:`, data);
+    } catch (error) {
+      console.log(`❌ ${endpoint}:`, error);
+    }
+  }
+}
+
+// Navigation functions
+function goToUpgrade() {
+  window.location.href = '/upgrade';
+}
+
+function goToProfile() {
+  alert('Profile page coming soon! 👤');
+}
+</script>
+
+{% endblock %}

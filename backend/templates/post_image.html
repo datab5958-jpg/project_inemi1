@@ -1,0 +1,1336 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Safari-specific meta tags -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#070614">
+
+  <style>
+    /* === ANTI-BLUR GLOBAL OPTIMIZATION === */
+    * {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      font-smooth: never !important;
+    }
+    
+    html, body {
+      font-smooth: never !important;
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+    }
+    
+    /* === ENHANCED TYPOGRAPHY === */
+    .username, .caption-text, .prompt-text, .edit-content, .edit-header,
+    .action-btn, .control-btn, .btn, .form-control, .form-label,
+    span, div, p, h1, h2, h3, h4, h5, h6, small, label, button, input, textarea {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      text-shadow: 0 0 1px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    html {
+      background: linear-gradient(135deg, #070614, #0b0a13, #24243e) !important;
+      background: -webkit-linear-gradient(135deg, #070614, #0b0a13, #24243e) !important;
+      background: -moz-linear-gradient(135deg, #070614, #0b0a13, #24243e) !important;
+      background: -o-linear-gradient(135deg, #070614, #0b0a13, #24243e) !important;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #070614, #0b0a13, #24243e) !important;
+      background: -webkit-linear-gradient(135deg, #070614, #0b0a13, #24243e) !important;
+      background: -moz-linear-gradient(135deg, #070614, #0b0a13, #24243e) !important;
+      background: -o-linear-gradient(135deg, #070614, #0b0a13, #24243e) !important;
+      min-height: 100vh;
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+      padding: 2rem 1rem;
+    }
+
+    /* Safari-specific background fixes */
+    @supports (-webkit-appearance: none) {
+      html, body {
+        background: linear-gradient(135deg, #070614, #0b0a13, #24243e) !important;
+        background: -webkit-linear-gradient(135deg, #070614, #0b0a13, #24243e) !important;
+      }
+    }
+
+    /* Webkit-specific (Safari, Chrome) */
+    @media screen and (-webkit-min-device-pixel-ratio: 0) {
+      html, body {
+        background: linear-gradient(135deg, #070614, #0b0a13, #24243e) !important;
+        background: -webkit-linear-gradient(135deg, #070614, #0b0a13, #24243e) !important;
+      }
+    }
+
+    /* Force dark background for all elements in Safari */
+    @media screen and (-webkit-min-device-pixel-ratio: 0) and (max-width: 9999px) {
+      html, body, * {
+        background-color: transparent !important;
+      }
+      
+      html, body {
+        background: linear-gradient(135deg, #070614, #0b0a13, #24243e) !important;
+        background: -webkit-linear-gradient(135deg, #070614, #0b0a13, #24243e) !important;
+      }
+    }
+
+    /* Additional Safari fixes */
+    @supports (-webkit-touch-callout: none) {
+      html, body {
+        background: linear-gradient(135deg, #070614, #0b0a13, #24243e) !important;
+        background: -webkit-linear-gradient(135deg, #070614, #0b0a13, #24243e) !important;
+      }
+    }
+    .post-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      box-shadow: 0 8px 32px 0 rgba(108, 99, 255, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      margin: 0 auto;
+      max-width: 70%;
+      animation: fadeInUp 0.8s ease both;
+    }
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+    .post-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .profile-pic {
+      width: 52px;
+      height: 52px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 2px solid #6c63ff;
+      box-shadow: 0 0 8px #6c63ff66;
+    }
+    .username {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    .post-img {
+      width: 100%;
+      border-radius: 1rem;
+      object-fit: cover;
+      margin-bottom: 1rem;
+      max-height: 100%;
+    }
+    .post-content {
+      font-size: 1rem;
+      color: #ccc;
+      margin-bottom: 1rem;
+    }
+    .action-buttons {
+      display: flex;
+      justify-content: space-around;
+      gap: 1rem;
+      flex-direction: row;
+      flex-wrap: nowrap;
+    }
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      color: #ccc;
+      background: rgba(255, 255, 255, 0.07);
+      padding: 0.6rem 1rem;
+      border-radius: 2rem;
+      border: none;
+      transition: 0.2s;
+      backdrop-filter: blur(6px);
+    }
+    .action-btn:hover {
+      color: #fff;
+      transform: scale(1.05);
+      background: linear-gradient(90deg, #6c63ff, #ff4ecd);
+      box-shadow: 0 0 12px #ff4ecd55;
+    }
+
+    /* Download Button Styles */
+    .download-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+      backdrop-filter: blur(10px);
+      z-index: 10;
+      opacity: 0;
+      transform: scale(0.8);
+    }
+
+    .post-img-container {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .post-img-container:hover .download-btn {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .download-btn:hover {
+      background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+      transform: scale(1.1);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+    }
+
+    .download-btn:active {
+      transform: scale(0.95);
+    }
+
+    .download-btn.loading {
+      pointer-events: none;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.05);
+        opacity: 0.8;
+      }
+    }
+
+    .download-btn.success {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      animation: successPulse 0.6s ease-out;
+    }
+
+    @keyframes successPulse {
+      0% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.2);
+      }
+      100% {
+        transform: scale(1);
+      }
+    }
+
+    .comment-box {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .form-control:focus {
+        box-shadow: 0 0 0 0.2rem rgba(108, 99, 255, 0.2);
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    @media (max-width: 600px) {
+        .post-card {
+            max-width: 100%;
+            padding: 1rem;
+        }
+        .action-buttons {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            gap: 0.5rem;
+            font-size: 12px;
+            justify-content: space-between;
+            overflow-x: auto;
+            padding: 0.5rem 0;
+            width: 100%;
+        }
+        .action-btn {
+            display: flex !important;
+            flex-direction: row !important;
+            padding: 0.5rem 0.8rem;
+            min-width: auto;
+            flex: 1;
+            font-size: 11px;
+            border-radius: 1.5rem;
+            white-space: nowrap;
+            align-items: center;
+            justify-content: center;
+        }
+        .action-btn i {
+            font-size: 14px;
+        }
+        .photo-profile {
+            width: 80px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .action-buttons {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            gap: 0.3rem;
+            font-size: 10px;
+            justify-content: space-between;
+        }
+        .action-btn {
+            display: flex !important;
+            flex-direction: row !important;
+            padding: 0.4rem 0.6rem;
+            min-width: auto;
+            font-size: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+        .action-btn i {
+            font-size: 12px;
+        }
+    }
+
+    /* Share Modal Styles */
+    .modal-content {
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px 0 rgba(108, 99, 255, 0.25);
+    }
+    
+    .modal .btn {
+      transition: all 0.3s ease;
+      border: none;
+      font-weight: 500;
+    }
+    
+    .modal .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    .modal .btn-success {
+      background: linear-gradient(45deg, #25D366, #128C7E);
+    }
+    
+    .modal .btn-primary {
+      background: linear-gradient(45deg, #1877F2, #0D6EFD);
+    }
+    
+    .modal .btn-dark {
+      background: linear-gradient(45deg, #000000, #1DA1F2);
+    }
+    
+    .modal .btn-info {
+      background: linear-gradient(45deg, #0088cc, #229ED9);
+    }
+    
+    .modal .btn-outline-light {
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .modal .btn-outline-light:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Edit Overlay Styles */
+    .edit-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .edit-dialog {
+      background: rgba(40, 50, 60, 0.95);
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 500px;
+      width: 90%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .edit-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .edit-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #6c63ff, #ff4ecd);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 16px;
+    }
+
+    .edit-icon i {
+      font-size: 20px;
+      color: white;
+    }
+
+    .edit-content {
+      color: white;
+    }
+
+    .prompt-text {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 80px;
+      cursor: text;
+      transition: all 0.3s ease;
+    }
+
+    .prompt-text:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .prompt-text:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #6c63ff;
+      box-shadow: 0 0 2px rgba(108, 99, 255, 0.2);
+    }
+
+    .edit-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .control-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .control-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+
+    .control-btn.active {
+      background: linear-gradient(135deg, #6c63ff, #ff4ecd);
+      border-color: transparent;
+      color: white;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
+    .action-btn {
+      flex: 1;
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600 !important;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      letter-spacing: 0.02em !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .action-btn.primary {
+      background: linear-gradient(135deg, #6c63ff, #ff4ecd);
+      color: white;
+      font-weight: 700 !important;
+      letter-spacing: 0.03em !important;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .action-btn.primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(108, 99, 255, 0.3);
+    }
+
+    .action-btn.secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-weight: 600 !important;
+      letter-spacing: 0.02em !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    .action-btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    /* === ENHANCED CONTROL BUTTONS === */
+    .control-btn {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.02em !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    .control-btn.active {
+      font-weight: 700 !important;
+      letter-spacing: 0.03em !important;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    /* === ENHANCED PROMPT TEXT === */
+    .prompt-text {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      font-weight: 500 !important;
+      letter-spacing: 0.02em !important;
+      line-height: 1.6 !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    /* === ENHANCED CAPTION TEXT === */
+    .caption-text {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      font-weight: 500 !important;
+      letter-spacing: 0.02em !important;
+      line-height: 1.6 !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    /* === ENHANCED USERNAME === */
+    .username {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.03em !important;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    /* === ENHANCED SMALL TEXT === */
+    small {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      font-weight: 500 !important;
+      letter-spacing: 0.01em !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    /* === ENHANCED BUTTONS === */
+    .btn {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.02em !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    /* === ENHANCED FORM ELEMENTS === */
+    .form-control, .form-label {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      font-weight: 500 !important;
+      letter-spacing: 0.02em !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    /* === ENHANCED ICONS === */
+    .bi, i {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    /* === ENHANCED EDIT OVERLAY === */
+    .edit-overlay, .edit-dialog, .edit-header, .edit-content, .edit-controls {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+    }
+    
+    /* === ENHANCED EDIT ICON === */
+    .edit-icon {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+    }
+    
+    .edit-icon i {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    /* === ENHANCED ALL TEXT ELEMENTS === */
+    .text-white, .text-light, .text-muted, .text-secondary,
+    .fw-semibold, .fw-bold, .fw-normal,
+    .comment-box, .like-count, .share-count,
+    .photo-profile, .rounded-circle {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      text-shadow: 0 0 1px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    /* === ENHANCED COMMENT TEXT === */
+    .comment-box .text-light, .comment-box .fw-semibold {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      font-weight: 500 !important;
+      letter-spacing: 0.02em !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    /* === ENHANCED PLACEHOLDER TEXT === */
+    ::placeholder {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      opacity: 1 !important;
+      font-weight: 400 !important;
+    }
+    
+    /* === ENHANCED FOCUS STATES === */
+    .form-control:focus, .btn:focus, .action-btn:focus, .control-btn:focus {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      outline: none !important;
+    }
+    
+    /* === ENHANCED HOVER STATES === */
+    .action-btn:hover, .control-btn:hover, .btn:hover {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+    }
+    
+    /* === ENHANCED ACTIVE STATES === */
+    .control-btn.active, .action-btn.active, .btn.active {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.03em !important;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    /* === ENHANCED DISABLED STATES === */
+    .action-btn:disabled, .btn:disabled, .form-control:disabled {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      opacity: 0.6 !important;
+    }
+    
+    /* === ENHANCED ANIMATIONS === */
+    @keyframes fadeInUp {
+      -webkit-font-smoothing: antialiased !important;
+      -moz-osx-font-smoothing: grayscale !important;
+      text-rendering: optimizeLegibility !important;
+      font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+    }
+    
+    /* === ENHANCED RESPONSIVE === */
+    @media (max-width: 600px) {
+      * {
+        -webkit-font-smoothing: antialiased !important;
+        -moz-osx-font-smoothing: grayscale !important;
+        text-rendering: optimizeLegibility !important;
+        font-feature-settings: "kern" 1, "liga" 1, "calt" 1 !important;
+      }
+      
+      .edit-dialog {
+        margin: 20px;
+        padding: 20px;
+      }
+      
+      .control-buttons {
+        justify-content: center;
+      }
+      
+      .action-buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+
+  <div class="post-card">
+    <!-- Header -->
+    <div class="post-header">
+      <img src="{{ user.avatar_url or '/static/assets/image/default.jpg' }}" alt="Profile" class="profile-pic">
+      <div>
+        <div class="username">{{ user.username }}</div>
+        <small>
+          Dibuat: {{ (image.created_at|utc_to_wib)|format_tanggal_id if image.created_at else 'Baru saja' }}
+          {% if image.updated_at and image.updated_at != image.created_at %}
+            <span style="color:#a5b4fc;">&nbsp;|&nbsp;Diedit: {{ (image.updated_at|utc_to_wib)|format_tanggal_id }}</span>
+          {% endif %}
+        </small>
+      </div>
+    </div>
+    <!-- Caption -->
+    <div class="post-content" id="caption-display">
+        <div class="d-flex justify-content-between align-items-start">
+            <div class="caption-text">{{ image.caption or 'Tidak ada caption' }}</div>
+            <!-- Hapus info diedit di sini -->
+            {% if 'user_id' in session and session['user_id'] == image.user_id %}
+            <button class="btn btn-sm btn-outline-light" onclick="editPrompt()" style="margin-left: 10px;">
+                <i class="bi bi-pencil"></i> Edit
+            </button>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Edit Prompt Overlay (Hidden by default) -->
+    <div id="edit-overlay" class="edit-overlay" style="display: none;">
+      <div class="edit-dialog">
+        <div class="edit-header">
+          <div class="edit-icon">
+            <i class="bi bi-plus-circle"></i>
+          </div>
+        </div>
+        <div class="edit-content">
+          <div class="prompt-text" id="overlay-prompt-text">
+            {{ image.caption or 'Tidak ada caption' }}
+          </div>
+          <div class="edit-controls">
+            <div class="control-buttons">           <button class="control-btn active">
+                <i class="bi bi-image"></i>
+                <span>Image</span>
+              </button>
+              <button class="control-btn active">
+                <i class="bi bi-aspect-ratio"></i>
+                <span>2:3</span>
+              </button>
+              <button class="control-btn">
+                <i class="bi bi-grid-3x3"></i>
+                <span>2v</span>
+              </button>
+              <button class="control-btn">
+                <i class="bi bi-question-circle"></i>
+                <span>?</span>
+              </button>
+            </div>
+            <div class="action-buttons">           <button class="action-btn primary" onclick="regenerateImage()">
+                <i class="bi bi-arrow-clockwise"></i>
+                <span>Generate</span>
+              </button>
+              <button class="action-btn secondary" onclick="closeEditOverlay()">
+                <i class="bi bi-x"></i>
+                <span>Cancel</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden textarea for editing -->
+    <textarea id="hidden-prompt-input" style="display: none;">{{ image.caption or '' }}</textarea>
+    
+    <!-- Edit Prompt Form (Hidden by default) -->
+    <div class="post-content" id="caption-edit" style="display: none;">
+        <div class="mb-3">
+            <label for="prompt-input" class="form-label text-white">Edit Prompt:</label>
+            <textarea class="form-control bg-dark text-white border border-secondary" id="prompt-input" rows="3" placeholder="Masukkan prompt baru...">{{ image.caption or '' }}</textarea>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary btn-sm" onclick="regenerateImage()">
+                <i class="bi bi-arrow-clockwise"></i> Generate Ulang
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="cancelEdit()">
+                <i class="bi bi-x"></i> Batal
+            </button>
+        </div>
+    </div>
+    <!-- Gambar Post -->
+    <div class="post-img-container">
+      <img src="{{ image.image_url }}" alt="Post Image" class="post-img">
+      {% if 'user_id' in session and session['user_id'] == image.user_id %}
+      <button class="download-btn" onclick="downloadImage()" title="Download Image">
+        <i class="bi bi-download"></i>
+      </button>
+      {% endif %}
+    </div>
+
+    <!-- Tombol Aksi -->
+    <div class="action-buttons">
+      <button class="action-btn like-btn" data-content-type="image" data-content-id="{{ image.id }}" data-liked="{{ 'true' if is_liked else 'false' }}">
+        <i class="bi bi-heart{% if is_liked %}-fill text-danger{% endif %}"></i> 
+        <span class="like-count">{{ likes_count }}</span> Like
+      </button>
+      <button class="action-btn">
+        <i class="bi bi-chat-left-dots"></i> {{ comments|length }} Comment
+      </button>
+      <button class="action-btn" onclick="openShareModal()">
+        <i class="bi bi-share-fill"></i> Share
+      </button>
+    </div>
+
+    <div class="mt-4">
+        <h5 class="mb-3 text-white">Komentar ({{ comments|length }})</h5>
+      
+        {% if comments %}
+          {% for comment in comments %}
+          <div class="d-flex mb-3 bg-transparent rounded-4 p-3 comment-box" data-comment-id="{{ comment.id }}">
+            <img src="{{ comment.user.avatar_url or '/static/assets/image/default.jpg' }}" class="rounded-circle me-3" width="48" height="48" style="object-fit:cover; border:2px solid #6c63ff; box-shadow:0 0 8px #6c63ff55;">
+            <div class="flex-grow-1">
+              <div class="fw-semibold text-white">{{ comment.user.username }} <small class="ms-2">{{ (comment.created_at|utc_to_wib)|format_tanggal_id if comment.created_at else 'Baru saja' }}</small></div>
+              <div class="text-light">{{ comment.text }}</div>
+              {% if 'user_id' in session %}
+              <div class="mt-2">
+                <button class="btn btn-sm btn-outline-primary reply-btn" onclick="showReplyForm({{ comment.id }})">
+                  <i class="bi bi-reply"></i> Balas
+                </button>
+              </div>
+              {% endif %}
+              
+              <!-- Reply form (hidden by default) -->
+              <div class="reply-form mt-3" id="reply-form-{{ comment.id }}" style="display: none;">
+                <form class="reply-comment-form" data-parent-comment-id="{{ comment.id }}">
+                  <div class="d-flex">
+                    <img src="{{ session.avatar_url or '/static/assets/image/default.jpg' }}" class="rounded-circle me-2" width="32" height="32" style="object-fit:cover; border:2px solid #00e0ff;">
+                    <input type="text" class="form-control form-control-sm rounded-pill bg-dark border border-white text-white px-3" placeholder="Tulis balasan..." required>
+                    <button type="submit" class="btn btn-primary btn-sm ms-2 rounded-pill">Kirim</button>
+                    <button type="button" class="btn btn-secondary btn-sm ms-1 rounded-pill" onclick="hideReplyForm({{ comment.id }})">Batal</button>
+                  </div>
+                </form>
+              </div>
+              
+              <!-- Show replies -->
+              {% if comment.replies %}
+                {% for reply in comment.replies %}
+                <div class="d-flex mt-2 ms-4 bg-transparent rounded-3 p-2 reply-box">
+                  <img src="{{ reply.user.avatar_url or '/static/assets/image/default.jpg' }}" class="rounded-circle me-2" width="32" height="32" style="object-fit:cover; border:2px solid #f59e0b;">
+                  <div>
+                    <div class="fw-semibold text-white small">{{ reply.user.username }} <small class="ms-1">{{ (reply.created_at|utc_to_wib)|format_tanggal_id if reply.created_at else 'Baru saja' }}</small></div>
+                    <div class="text-light small">{{ reply.text }}</div>
+                  </div>
+                </div>
+                {% endfor %}
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="text-center py-3">
+            Belum ada komentar. Jadilah yang pertama berkomentar!
+          </div>
+        {% endif %}
+      
+        <!-- Tambah Komentar -->
+        {% if 'user_id' in session %}
+        <form class="mt-4" id="comment-form" data-content-type="image" data-content-id="{{ image.id }}">
+          <div class="d-flex">
+            <img src="{{ session.avatar_url or '/static/assets/image/default.jpg' }}" class="rounded-circle photo-profile me-3" width="48" height="48" style="object-fit:cover; border:2px solid #00e0ff; box-shadow:0 0 8px #00e0ff55;">
+            <input type="text" class="form-control rounded-pill bg-dark border border-white text-white px-4" placeholder="Tulis komentar..." id="comment-input">
+            <button type="submit" class="btn btn-primary ms-2 rounded-pill">Kirim</button>
+          </div>
+        </form>
+        {% else %}
+        <div class="text-center text-muted py-3">
+          <a href="{{ url_for('web_pages.login') }}" class="text-decoration-none">Login</a> untuk berkomentar
+        </div>
+        {% endif %}
+      </div>
+  </div>
+
+  <!-- Share Modal -->
+  <div id="shareModal" class="modal fade" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark text-white border-0" style="backdrop-filter: blur(15px); background: rgba(33, 37, 41, 0.9) !important;">
+        <div class="modal-header border-0">
+          <h5 class="modal-title" id="shareModalLabel">Bagikan ke</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <!-- WhatsApp -->
+            <div class="col-6">
+              <button class="btn btn-success w-100 py-3 rounded-3" onclick="shareToWhatsApp()">
+                <i class="bi bi-whatsapp fs-4"></i>
+                <div class="mt-2">WhatsApp</div>
+              </button>
+            </div>
+            <!-- Facebook -->
+            <div class="col-6">
+              <button class="btn btn-primary w-100 py-3 rounded-3" onclick="shareToFacebook()">
+                <i class="bi bi-facebook fs-4"></i>
+                <div class="mt-2">Facebook</div>
+              </button>
+            </div>
+            <!-- Twitter/X -->
+            <div class="col-6">
+              <button class="btn btn-dark w-100 py-3 rounded-3" onclick="shareToTwitter()">
+                <i class="bi bi-twitter-x fs-4"></i>
+                <div class="mt-2">Twitter/X</div>
+              </button>
+            </div>
+            <!-- Telegram -->
+            <div class="col-6">
+              <button class="btn btn-info w-100 py-3 rounded-3" onclick="shareToTelegram()">
+                <i class="bi bi-telegram fs-4"></i>
+                <div class="mt-2">Telegram</div>
+              </button>
+            </div>
+            <!-- Copy Link -->
+            <div class="col-12">
+              <button class="btn btn-outline-light w-100 py-3 rounded-3" onclick="copyLink(event)">
+                <i class="bi bi-link-45deg fs-4"></i>
+                <div class="mt-2">Salin Link</div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Share functionality
+    function openShareModal() {
+      const modal = new bootstrap.Modal(document.getElementById('shareModal'));
+      modal.show();
+    }
+
+    function getShareUrl() {
+      return window.location.href;
+    }
+
+    function getShareText() {
+      const caption = `{{ image.caption or 'Lihat gambar menarik ini!' }}`;
+      const username = "{{ user.username }}";
+      return `${caption} - Dibagikan oleh ${username} di Inemi`;
+    }
+
+    function shareToWhatsApp() {
+      const url = encodeURIComponent(getShareUrl());
+      const text = encodeURIComponent(getShareText());
+      window.open(`https://wa.me/?text=${text}%20${url}`, '_blank');
+    }
+
+    function shareToFacebook() {
+      const url = encodeURIComponent(getShareUrl());
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+    }
+
+    function shareToTwitter() {
+      const url = encodeURIComponent(getShareUrl());
+      const text = encodeURIComponent(getShareText());
+      window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+    }
+
+    function shareToTelegram() {
+      const url = encodeURIComponent(getShareUrl());
+      const text = encodeURIComponent(getShareText());
+      window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
+    }
+
+    function copyLink(event) {
+      const url = getShareUrl();
+      navigator.clipboard.writeText(url).then(() => {
+        // Show success message
+        const button = event.target.closest('button');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="bi bi-check-circle fs-4"></i><div class="mt-2">Tersalin!</div>';
+        button.classList.remove('btn-outline-light');
+        button.classList.add('btn-success');
+        setTimeout(() => {
+          button.innerHTML = originalText;
+          button.classList.remove('btn-success');
+          button.classList.add('btn-outline-light');
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy: ', err);
+        alert('Gagal menyalin link');
+      });
+    }
+
+    // Like functionality
+    document.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const contentType = this.dataset.contentType;
+        const contentId = this.dataset.contentId;
+        const isLiked = this.dataset.liked === 'true';
+        fetch('/like', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `content_type=${contentType}&content_id=${contentId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const icon = this.querySelector('i');
+            const likeCount = this.querySelector('.like-count');
+            if (data.liked) {
+              icon.className = 'bi bi-heart-fill text-danger';
+              this.dataset.liked = 'true';
+            } else {
+              icon.className = 'bi bi-heart';
+              this.dataset.liked = 'false';
+            }
+            likeCount.textContent = data.like_count;
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+      });
+    });
+
+    // Comment form functionality
+    const commentForm = document.getElementById('comment-form');
+    if (commentForm) {
+      commentForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const contentType = this.dataset.contentType;
+        const contentId = this.dataset.contentId;
+        const commentInput = document.getElementById('comment-input');
+        const commentText = commentInput.value.trim();
+        if (!commentText) return;
+        fetch('/comment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `content_type=${contentType}&content_id=${contentId}&text=${encodeURIComponent(commentText)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            // Reload the page to show the new comment
+            location.reload();
+          } else {
+            alert('Gagal menambahkan komentar: ' + data.error);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          alert('Terjadi kesalahan saat menambahkan komentar');
+        });
+      });
+    }
+
+    // Edit Prompt functionality
+    function editPrompt() {
+      const captionDisplay = document.getElementById('caption-display');
+      const captionEdit = document.getElementById('caption-edit');
+      const editOverlay = document.getElementById('edit-overlay');
+      const hiddenPromptInput = document.getElementById('hidden-prompt-input');
+
+      captionDisplay.style.display = 'none';
+      captionEdit.style.display = 'none';
+      editOverlay.style.display = 'flex'; // Changed to flex to center content
+
+      // Make prompt text editable
+      const overlayPromptText = document.getElementById('overlay-prompt-text');
+      overlayPromptText.contentEditable = true;
+      overlayPromptText.focus();
+      
+      // Set initial text
+      overlayPromptText.textContent = hiddenPromptInput.value || captionDisplay.querySelector('.caption-text').textContent;
+    }
+
+    function closeEditOverlay() {
+      const captionDisplay = document.getElementById('caption-display');
+      const captionEdit = document.getElementById('caption-edit');
+      const editOverlay = document.getElementById('edit-overlay');
+      const hiddenPromptInput = document.getElementById('hidden-prompt-input');
+
+      captionDisplay.style.display = 'block';
+      captionEdit.style.display = 'block';
+      editOverlay.style.display = 'none';
+      hiddenPromptInput.value = ''; // Clear input field
+      // Make prompt text non-editable
+      const overlayPromptText = document.getElementById('overlay-prompt-text');
+      overlayPromptText.contentEditable = false;
+    }
+
+    function regenerateImage() {
+      const overlayPromptText = document.getElementById('overlay-prompt-text');
+      const prompt = overlayPromptText.textContent.trim();
+      if (!prompt) {
+        showNotification('Prompt tidak boleh kosong!', false);
+        return;
+      }
+      // Show loading state
+      const generateBtn = document.querySelector('.action-btn.primary');
+      const originalText = generateBtn.innerHTML;
+      generateBtn.innerHTML = '<i class="bi bi-hourglass-split"></i><span>Generating...</span>';
+      generateBtn.disabled = true;
+      fetch(`/regenerate_image/{{ image.id }}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: prompt,
+          aspect_ratio: '1:1',
+          negative_prompt: ''
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Update the image and caption
+          document.querySelector('.post-img').src = data.image_url + '?t=' + new Date().getTime(); // force refresh
+          document.getElementById('caption-display').querySelector('.caption-text').textContent = data.caption;
+          document.getElementById('hidden-prompt-input').value = data.caption;
+          closeEditOverlay();
+          showNotification(data.message || 'Berhasil generate ulang!', true);
+        } else {
+          showNotification(data.message || data.error || 'Gagal generate ulang', false);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showNotification('Terjadi kesalahan saat generate ulang', false);
+      })
+      .finally(() => {
+        // Restore button state
+        generateBtn.innerHTML = originalText;
+        generateBtn.disabled = false;
+      });
+    }
+
+    // Download functionality
+    function downloadImage() {
+      const downloadBtn = document.querySelector('.download-btn');
+      const originalIcon = downloadBtn.innerHTML;
+      
+      // Show loading state
+      downloadBtn.classList.add('loading');
+      downloadBtn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+      
+      fetch(`/download_image/{{ image.id }}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Download failed');
+        }
+        return response.blob();
+      })
+      .then(blob => {
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = `image_{{ image.id }}.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        // Show success state
+        downloadBtn.classList.remove('loading');
+        downloadBtn.classList.add('success');
+        downloadBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
+        
+        setTimeout(() => {
+          downloadBtn.classList.remove('success');
+          downloadBtn.innerHTML = originalIcon;
+        }, 2000);
+        
+        showNotification('Image berhasil diunduh!', true);
+      })
+      .catch(error => {
+        console.error('Download error:', error);
+        downloadBtn.classList.remove('loading');
+        downloadBtn.innerHTML = originalIcon;
+        showNotification('Gagal mengunduh image', false);
+      });
+    }
+
+    // Reply comment functions
+    function showReplyForm(commentId) {
+      const replyForm = document.getElementById(`reply-form-${commentId}`);
+      if (replyForm) {
+        replyForm.style.display = 'block';
+        replyForm.querySelector('input').focus();
+      }
+    }
+
+    function hideReplyForm(commentId) {
+      const replyForm = document.getElementById(`reply-form-${commentId}`);
+      if (replyForm) {
+        replyForm.style.display = 'none';
+        replyForm.querySelector('input').value = '';
+      }
+    }
+
+    // Handle reply form submission
+    document.addEventListener('DOMContentLoaded', function() {
+      document.addEventListener('submit', function(e) {
+        if (e.target.classList.contains('reply-comment-form')) {
+          e.preventDefault();
+          
+          const form = e.target;
+          const parentCommentId = form.getAttribute('data-parent-comment-id');
+          const input = form.querySelector('input');
+          const text = input.value.trim();
+          
+          if (!text) return;
+          
+          const submitBtn = form.querySelector('button[type="submit"]');
+          const originalText = submitBtn.innerHTML;
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+          
+          const formData = new FormData();
+          formData.append('parent_comment_id', parentCommentId);
+          formData.append('text', text);
+          
+          fetch('/comment/reply', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              showNotification('Balasan berhasil dikirim!', true);
+              input.value = '';
+              hideReplyForm(parentCommentId);
+              // Reload page to show new reply
+              setTimeout(() => location.reload(), 1000);
+            } else {
+              showNotification(data.error || 'Gagal mengirim balasan', false);
+            }
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            showNotification('Terjadi kesalahan saat mengirim balasan', false);
+          })
+          .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+          });
+        }
+      });
+    });
+
+    // Notification modal
+    function showNotification(message, isSuccess) {
+      let notif = document.getElementById('notif-modal');
+      if (!notif) {
+        notif = document.createElement('div');
+        notif.id = 'notif-modal';
+        notif.style.position = 'fixed';
+        notif.style.top = '50%';
+        notif.style.left = '50%';
+        notif.style.transform = 'translate(-50%, -50%)';
+        notif.style.background = 'rgba(30,30,40,0.98)';
+        notif.style.color = isSuccess ? '#4efc7a' : '#ff4e6a';
+        notif.style.padding = '32px 24px';
+        notif.style.borderRadius = '18px';
+        notif.style.zIndex = 99999;
+        notif.style.boxShadow = '0 8px 32px 0 rgba(108, 99, 255, 0.25)';
+        notif.style.textAlign = 'center';
+        notif.style.fontSize = '1.1rem';
+        notif.innerHTML = `<div style="margin-bottom:16px;"><b>${isSuccess ? 'Sukses' : 'Gagal'}</b></div><div>${message}</div><br><button onclick="this.parentNode.remove();" style="margin-top:10px;padding:8px 24px;border-radius:8px;border:none;background:${isSuccess ? '#4efc7a' : '#ff4e6a'};color:#222;font-weight:600;cursor:pointer;">Tutup</button>`;
+        document.body.appendChild(notif);
+      } else {
+        notif.style.color = isSuccess ? '#4efc7a' : '#ff4e6a';
+        notif.innerHTML = `<div style="margin-bottom:16px;"><b>${isSuccess ? 'Sukses' : 'Gagal'}</b></div><div>${message}</div><br><button onclick="this.parentNode.remove();" style="margin-top:10px;padding:8px 24px;border-radius:8px;border:none;background:${isSuccess ? '#4efc7a' : '#ff4e6a'};color:#222;font-weight:600;cursor:pointer;">Tutup</button>`;
+        notif.style.display = 'block';
+      }
+      setTimeout(() => { if (notif) notif.remove(); }, 6000);
+    }
+  </script>
+
+{% endblock %}

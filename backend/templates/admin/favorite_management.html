@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="id" x-data="{ sidebarCollapsed: false, isMobile: false, loaded: false }" x-init="checkScreenSize(); window.addEventListener('resize', checkScreenSize); loaded = true;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Favorite Management - Admin Panel</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ url_for('static', filename='logo/logo.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo/logo.png') }}">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --bg-primary: #0f0f23;
+            --bg-secondary: #1a1a2e;
+            --bg-card: rgba(255, 255, 255, 0.05);
+            --text-primary: #ffffff;
+            --text-secondary: #a0aec0;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .admin-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            background: var(--bg-secondary);
+            min-height: 100vh;
+            border-right: 1px solid var(--border-color);
+            width: 280px;
+            transition: all 0.3s ease;
+            position: fixed;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .admin-main {
+            flex: 1;
+            margin-left: 280px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filters-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .form-select, .form-control {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .content-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .content-media {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+            background: var(--bg-secondary);
+        }
+
+        .content-media img, .content-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .content-type-badge {
+            position: absolute;
+            top: 0.5rem;
+            left: 0.5rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .favorite-badge {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .content-body {
+            padding: 1rem;
+        }
+
+        .content-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .content-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+        }
+
+        .stat-number {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .content-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+            border: none;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white;
+            border: none;
+        }
+
+        .btn-outline-secondary {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .btn-outline-secondary:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .page-link {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .page-link:hover {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .page-link.active {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .admin-main {
+                margin-left: 0;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-header" style="padding: 1.5rem; border-bottom: 1px solid var(--border-color);">
+                <div class="logo-container" style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="logo-icon" style="width: 40px; height: 40px; background: var(--primary-gradient); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center; color: white;">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <div class="logo-text" style="font-size: 1.25rem; font-weight: 700; background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        Admin Panel
+                    </div>
+                </div>
+            </div>
+            
+            <nav style="padding: 1rem;">
+                <ul class="nav-menu" style="list-style: none; padding: 0; margin: 0;">
+                    <!-- Dashboard -->
+                    <li style="margin-bottom: 0.5rem;">
+                        <a href="{{ url_for('admin.dashboard') }}" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; color: var(--text-secondary); text-decoration: none; border-radius: 0.5rem; transition: all 0.3s ease;">
+                            <i class="bi bi-speedometer2"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Manajemen User -->
+                    <li style="margin-bottom: 0.5rem;">
+                        <a href="{{ url_for('admin.users') }}" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; color: var(--text-secondary); text-decoration: none; border-radius: 0.5rem; transition: all 0.3s ease;">
+                            <i class="bi bi-people"></i>
+                            <span>Manajemen User</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Payment -->
+                    <li style="margin-bottom: 0.5rem;">
+                        <a href="{{ url_for('admin.payment') }}" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; color: var(--text-secondary); text-decoration: none; border-radius: 0.5rem; transition: all 0.3s ease;">
+                            <i class="bi bi-credit-card"></i>
+                            <span>Payment</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Monitoring Post -->
+                    <li style="margin-bottom: 0.5rem;">
+                        <a href="{{ url_for('admin.monitoring_post') }}" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; color: var(--text-secondary); text-decoration: none; border-radius: 0.5rem; transition: all 0.3s ease;">
+                            <i class="bi bi-eye"></i>
+                            <span>Monitoring Post</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Favorite Management (Active) -->
+                    <li style="margin-bottom: 0.5rem;">
+                        <a href="{{ url_for('admin.favorite_management') }}" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--primary-gradient); color: white; text-decoration: none; border-radius: 0.5rem;">
+                            <i class="bi bi-star-fill"></i>
+                            <span>Favorite Management</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Analytics -->
+                    <li style="margin-bottom: 0.5rem;">
+                        <a href="{{ url_for('admin.analytics') }}" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; color: var(--text-secondary); text-decoration: none; border-radius: 0.5rem; transition: all 0.3s ease;">
+                            <i class="bi bi-graph-up"></i>
+                            <span>Analytics</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Manajemen Produk -->
+                    <li style="margin-bottom: 0.5rem;">
+                        <a href="{{ url_for('admin.products') }}" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; color: var(--text-secondary); text-decoration: none; border-radius: 0.5rem; transition: all 0.3s ease;">
+                            <i class="bi bi-box"></i>
+                            <span>Manajemen Produk</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Pengaturan -->
+                    <li style="margin-bottom: 0.5rem;">
+                        <a href="{{ url_for('admin.settings') }}" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; color: var(--text-secondary); text-decoration: none; border-radius: 0.5rem; transition: all 0.3s ease;">
+                            <i class="bi bi-gear"></i>
+                            <span>Pengaturan</span>
+                        </a>
+                    </li>
+                    
+                    <!-- Divider -->
+                    <li style="margin: 1.5rem 0; height: 1px; background: var(--border-color);"></li>
+                    
+                    <!-- Kembali ke Website -->
+                    <li style="margin-bottom: 0.5rem;">
+                        <a href="{{ url_for('web_pages.home') }}" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; color: var(--text-secondary); text-decoration: none; border-radius: 0.5rem; transition: all 0.3s ease;">
+                            <i class="bi bi-house"></i>
+                            <span>Kembali ke Website</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <div class="page-header" style="margin-bottom: 1.5rem;">
+                <h1 class="page-title">Favorite Management</h1>
+                <p style="color: var(--text-secondary); font-size: 1.1rem;">Kelola konten favorite berdasarkan like terbanyak, view terbanyak, dan whitelist manual</p>
+                
+                {% if request.args.get('filter_type') and request.args.get('filter_type') != 'all' %}
+                <div style="background: rgba(102, 126, 234, 0.1); border: 1px solid rgba(102, 126, 234, 0.3); border-radius: 0.5rem; padding: 0.75rem; margin-top: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-funnel-fill" style="color: var(--primary);"></i>
+                        <span style="color: var(--text-primary); font-weight: 500;">
+                            Active Filter: 
+                            {% if request.args.get('filter_type') == 'most_likes' %}
+                                Most Likes (Top 50)
+                            {% elif request.args.get('filter_type') == 'most_views' %}
+                                Most Views (Top 50)
+                            {% elif request.args.get('filter_type') == 'manual_whitelist' %}
+                                Manual Whitelist
+                            {% elif request.args.get('filter_type') == 'high_engagement' %}
+                                High Engagement (Score ≥ 10)
+                            {% elif request.args.get('filter_type') == 'auto_favorite' %}
+                                Auto Favorite Candidates (Likes ≥ 5 or Views ≥ 20)
+                            {% endif %}
+                        </span>
+                        <a href="{{ url_for('admin.favorite_management') }}" style="margin-left: auto; color: var(--text-secondary); text-decoration: none;">
+                            <i class="bi bi-x-circle"></i> Clear Filter
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Statistics -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon primary">
+                        <i class="bi bi-collection"></i>
+                    </div>
+                    <div class="stat-value">{{ stats.total_content }}</div>
+                    <div class="stat-label">Total Konten</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon primary" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);">
+                        <i class="bi bi-star-fill"></i>
+                    </div>
+                    <div class="stat-value">{{ stats.favorite_content }}</div>
+                    <div class="stat-label">Konten Favorite</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon primary" style="background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);">
+                        <i class="bi bi-fire"></i>
+                    </div>
+                    <div class="stat-value">{{ stats.high_engagement }}</div>
+                    <div class="stat-label">High Engagement</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon primary" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);">
+                        <i class="bi bi-images"></i>
+                    </div>
+                    <div class="stat-value">{{ stats.images }}</div>
+                    <div class="stat-label">Images</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon primary" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);">
+                        <i class="bi bi-camera-video"></i>
+                    </div>
+                    <div class="stat-value">{{ stats.videos }}</div>
+                    <div class="stat-label">Videos</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon primary" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);">
+                        <i class="bi bi-music-note"></i>
+                    </div>
+                    <div class="stat-value">{{ stats.songs }}</div>
+                    <div class="stat-label">Songs</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-section">
+                <h3 style="font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">Filter & Sorting</h3>
+                <form method="GET" action="{{ url_for('admin.favorite_management') }}">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
+                        <div>
+                            <label style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">Filter Type</label>
+                            <select name="filter_type" class="form-select">
+                                <option value="all" {% if request.args.get('filter_type', 'all') == 'all' %}selected{% endif %}>All Content</option>
+                                <option value="most_likes" {% if request.args.get('filter_type') == 'most_likes' %}selected{% endif %}>Most Likes (Top 50)</option>
+                                <option value="most_views" {% if request.args.get('filter_type') == 'most_views' %}selected{% endif %}>Most Views (Top 50)</option>
+                                <option value="manual_whitelist" {% if request.args.get('filter_type') == 'manual_whitelist' %}selected{% endif %}>Manual Whitelist</option>
+                                <option value="high_engagement" {% if request.args.get('filter_type') == 'high_engagement' %}selected{% endif %}>High Engagement</option>
+                                <option value="auto_favorite" {% if request.args.get('filter_type') == 'auto_favorite' %}selected{% endif %}>Auto Favorite Candidates</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">Content Type</label>
+                            <select name="content_type" class="form-select">
+                                <option value="all" {% if content_type_filter == 'all' %}selected{% endif %}>All Types</option>
+                                <option value="image" {% if content_type_filter == 'image' %}selected{% endif %}>Images</option>
+                                <option value="video" {% if content_type_filter == 'video' %}selected{% endif %}>Videos</option>
+                                <option value="song" {% if content_type_filter == 'song' %}selected{% endif %}>Songs</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">Favorite Status</label>
+                            <select name="favorite" class="form-select">
+                                <option value="all" {% if favorite_filter == 'all' %}selected{% endif %}>All Content</option>
+                                <option value="favorite" {% if favorite_filter == 'favorite' %}selected{% endif %}>Favorite Only</option>
+                                <option value="not_favorite" {% if favorite_filter == 'not_favorite' %}selected{% endif %}>Not Favorite</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">Sort By</label>
+                            <select name="sort_by" class="form-select">
+                                <option value="created_at" {% if sort_by == 'created_at' %}selected{% endif %}>Date Created</option>
+                                <option value="likes" {% if sort_by == 'likes' %}selected{% endif %}>Most Likes</option>
+                                <option value="views" {% if sort_by == 'views' %}selected{% endif %}>Most Views</option>
+                                <option value="engagement" {% if sort_by == 'engagement' %}selected{% endif %}>Engagement Score</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-funnel"></i> Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Quick Actions -->
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem; backdrop-filter: blur(10px);">
+                <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">Quick Actions</h4>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <a href="{{ url_for('admin.favorite_management', filter_type='most_likes') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); color: white; border: none; text-decoration: none;">
+                        <i class="bi bi-heart-fill"></i> Most Likes
+                    </a>
+                    <a href="{{ url_for('admin.favorite_management', filter_type='most_views') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; border: none; text-decoration: none;">
+                        <i class="bi bi-eye-fill"></i> Most Views
+                    </a>
+                    <a href="{{ url_for('admin.favorite_management', filter_type='manual_whitelist') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; border: none; text-decoration: none;">
+                        <i class="bi bi-star-fill"></i> Manual Whitelist
+                    </a>
+                    <a href="{{ url_for('admin.favorite_management', filter_type='high_engagement') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); color: white; border: none; text-decoration: none;">
+                        <i class="bi bi-fire"></i> High Engagement
+                    </a>
+                    <a href="{{ url_for('admin.favorite_management', filter_type='auto_favorite') }}" class="btn btn-sm" style="background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%); color: white; border: none; text-decoration: none;">
+                        <i class="bi bi-lightning-fill"></i> Auto Favorite
+                    </a>
+                    <a href="{{ url_for('admin.favorite_management', filter_type='all') }}" class="btn btn-sm" style="background: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border-color); text-decoration: none;">
+                        <i class="bi bi-collection"></i> All Content
+                    </a>
+                </div>
+            </div>
+
+            <!-- Bulk Actions -->
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1rem; margin-bottom: 1rem; backdrop-filter: blur(10px);">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-primary); cursor: pointer;">
+                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" style="width: 18px; height: 18px;">
+                            <span>Select All</span>
+                        </label>
+                        <span id="selectedCount" style="color: var(--text-secondary); font-size: 0.9rem;">0 items selected</span>
+                    </div>
+                    
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-sm btn-success" onclick="bulkAction('favorite')" disabled id="bulkFavoriteBtn">
+                            <i class="bi bi-star-fill"></i> Add to Favorite
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="bulkAction('unfavorite')" disabled id="bulkUnfavoriteBtn">
+                            <i class="bi bi-star"></i> Remove from Favorite
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="clearSelection()">
+                            <i class="bi bi-x-circle"></i> Clear Selection
+                        </button>
+                        <button class="btn btn-sm" style="background: linear-gradient(135deg, #38a169 0%, #2f855a 100%); color: white; border: none;" onclick="exportFavorites()">
+                            <i class="bi bi-download"></i> Export CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Grid -->
+            <div class="content-grid">
+                {% for item in content %}
+                <div class="content-card" x-data="{ isFavorite: {{ 'true' if item.is_favorite else 'false' }} }">
+                    <div style="position: absolute; top: 0.5rem; left: 0.5rem; z-index: 10;">
+                        <input type="checkbox" class="content-checkbox" 
+                               data-content-type="{{ item.content_type }}" 
+                               data-content-id="{{ item.content_id }}"
+                               onchange="updateSelection()"
+                               style="width: 18px; height: 18px; cursor: pointer;">
+                    </div>
+                    <div class="content-media">
+                        {% if item.content_type == 'image' %}
+                            <img src="{{ item.url }}" alt="{{ item.title }}" loading="lazy">
+                        {% elif item.content_type == 'video' %}
+                            <video src="{{ item.url }}" poster="{{ item.url }}?thumb=1" preload="metadata"></video>
+                        {% elif item.content_type == 'song' %}
+                            <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <i class="bi bi-music-note-beamed" style="font-size: 3rem; color: white;"></i>
+                            </div>
+                        {% endif %}
+                        
+                        <div class="content-type-badge">
+                            {{ item.content_type.upper() }}
+                        </div>
+                        
+                        <div class="favorite-badge" x-show="isFavorite">
+                            <i class="bi bi-star-fill"></i> Favorite
+                        </div>
+                    </div>
+                    
+                    <div class="content-body">
+                        <h4 class="content-title">{{ item.title[:50] }}{% if item.title|length > 50 %}...{% endif %}</h4>
+                        
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem; font-size: 0.9rem; color: var(--text-secondary);">
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <i class="bi bi-person"></i>
+                                <span>{{ item.user.username if item.user else 'Unknown' }}</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <i class="bi bi-calendar"></i>
+                                <span>{{ item.created_at.strftime('%d/%m/%Y') }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="content-stats">
+                            <div class="stat-item">
+                                <div class="stat-number">{{ item.like_count }}</div>
+                                <div class="stat-label">Likes</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">{{ item.view_count }}</div>
+                                <div class="stat-label">Views</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number">{{ "%.1f"|format(item.engagement_score) }}</div>
+                                <div class="stat-label">Score</div>
+                            </div>
+                        </div>
+                        
+                        {% if item.whitelist_reason %}
+                        <div style="background: rgba(66, 153, 225, 0.1); border: 1px solid rgba(66, 153, 225, 0.3); border-radius: 0.5rem; padding: 0.5rem; margin-bottom: 1rem; font-size: 0.8rem;">
+                            <strong>Reason:</strong> {{ item.whitelist_reason }}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="content-actions">
+                            <button class="btn btn-sm" 
+                                    :class="isFavorite ? 'btn-danger' : 'btn-success'"
+                                    @click="toggleFavorite('{{ item.content_type }}', '{{ item.content_id }}', isFavorite)">
+                                <i :class="isFavorite ? 'bi bi-star' : 'bi bi-star-fill'"></i>
+                                <span x-text="isFavorite ? 'Remove' : 'Add'"></span>
+                            </button>
+                            
+                            <button class="btn btn-outline-secondary btn-sm" 
+                                    @click="showWhitelistModal('{{ item.content_type }}', '{{ item.content_id }}', '{{ item.whitelist_reason or '' }}')">
+                                <i class="bi bi-pencil"></i> Reason
+                            </button>
+                            
+                            <button class="btn btn-outline-secondary btn-sm" 
+                                    @click="viewContent('{{ item.content_type }}', '{{ item.content_id }}')">
+                                <i class="bi bi-eye"></i> View
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if total_pages > 1 %}
+            <div class="pagination-container">
+                {% if page > 1 %}
+                    <a href="{{ url_for('admin.favorite_management', page=page-1, sort_by=sort_by, content_type=content_type_filter, favorite=favorite_filter) }}" class="page-link">
+                        <i class="bi bi-chevron-left"></i> Previous
+                    </a>
+                {% endif %}
+                
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                        <span class="page-link active">{{ p }}</span>
+                    {% elif p <= 3 or p > total_pages - 3 or (p >= page - 1 and p <= page + 1) %}
+                        <a href="{{ url_for('admin.favorite_management', page=p, sort_by=sort_by, content_type=content_type_filter, favorite=favorite_filter) }}" class="page-link">{{ p }}</a>
+                    {% elif p == 4 and page > 5 %}
+                        <span class="page-link">...</span>
+                    {% elif p == total_pages - 3 and page < total_pages - 4 %}
+                        <span class="page-link">...</span>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page < total_pages %}
+                    <a href="{{ url_for('admin.favorite_management', page=page+1, sort_by=sort_by, content_type=content_type_filter, favorite=favorite_filter) }}" class="page-link">
+                        Next <i class="bi bi-chevron-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </main>
+    </div>
+
+    <!-- Whitelist Reason Modal -->
+    <div class="modal fade" id="whitelistModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content" style="background: var(--bg-secondary); border: 1px solid var(--border-color); color: var(--text-primary);">
+                <div class="modal-header" style="border-bottom: 1px solid var(--border-color);">
+                    <h5 class="modal-title">Set Whitelist Reason</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div>
+                        <label style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem; display: block;">Reason for whitelisting</label>
+                        <textarea id="whitelistReason" class="form-control" rows="3" placeholder="Enter reason for adding to favorites..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid var(--border-color);">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveWhitelistReason()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Global variables for modal
+        let currentContentType = '';
+        let currentContentId = '';
+        
+        function checkScreenSize() {
+            this.isMobile = window.innerWidth <= 768;
+            if (this.isMobile) {
+                this.sidebarCollapsed = true;
+            }
+        }
+        
+        function toggleFavorite(contentType, contentId, currentStatus) {
+            const reason = currentStatus ? '' : prompt('Enter reason for adding to favorites (optional):');
+            
+            fetch('/admin/api/favorite/toggle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    content_type: contentType,
+                    content_id: contentId,
+                    reason: reason || ''
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the UI
+                    const card = event.target.closest('.content-card');
+                    const alpineData = Alpine.$data(card);
+                    alpineData.isFavorite = data.is_favorite;
+                    
+                    // Show success message
+                    showNotification(data.message, 'success');
+                    
+                    // Reload page after a short delay to update stats
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Failed to update favorite status', 'error');
+            });
+        }
+        
+        function showWhitelistModal(contentType, contentId, currentReason) {
+            currentContentType = contentType;
+            currentContentId = contentId;
+            document.getElementById('whitelistReason').value = currentReason;
+            
+            const modal = new bootstrap.Modal(document.getElementById('whitelistModal'));
+            modal.show();
+        }
+        
+        function saveWhitelistReason() {
+            const reason = document.getElementById('whitelistReason').value;
+            
+            fetch('/admin/api/favorite/toggle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    content_type: currentContentType,
+                    content_id: currentContentId,
+                    reason: reason
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('Whitelist reason updated successfully', 'success');
+                    location.reload();
+                } else {
+                    showNotification(data.error, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Failed to update whitelist reason', 'error');
+            });
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('whitelistModal'));
+            modal.hide();
+        }
+        
+        function viewContent(contentType, contentId) {
+            // Open content in new tab or modal
+            if (contentType === 'image') {
+                window.open(`/api/images/${contentId}`, '_blank');
+            } else if (contentType === 'video') {
+                window.open(`/api/videos/${contentId}`, '_blank');
+            } else if (contentType === 'song') {
+                window.open(`/api/songs/${contentId}`, '_blank');
+            }
+        }
+        
+                 function showNotification(message, type) {
+             // Create notification element
+             const notification = document.createElement('div');
+             notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed`;
+             notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+             notification.innerHTML = `
+                 ${message}
+                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+             `;
+             
+             document.body.appendChild(notification);
+             
+             // Auto remove after 5 seconds
+             setTimeout(() => {
+                 if (notification.parentNode) {
+                     notification.remove();
+                 }
+             }, 5000);
+         }
+         
+         // Bulk selection functions
+         function updateSelection() {
+             const checkboxes = document.querySelectorAll('.content-checkbox:checked');
+             const selectedCount = checkboxes.length;
+             
+             document.getElementById('selectedCount').textContent = `${selectedCount} items selected`;
+             
+             // Enable/disable bulk action buttons
+             const bulkFavoriteBtn = document.getElementById('bulkFavoriteBtn');
+             const bulkUnfavoriteBtn = document.getElementById('bulkUnfavoriteBtn');
+             
+             bulkFavoriteBtn.disabled = selectedCount === 0;
+             bulkUnfavoriteBtn.disabled = selectedCount === 0;
+             
+             // Update select all checkbox
+             const allCheckboxes = document.querySelectorAll('.content-checkbox');
+             const selectAllCheckbox = document.getElementById('selectAll');
+             
+             if (selectedCount === 0) {
+                 selectAllCheckbox.checked = false;
+                 selectAllCheckbox.indeterminate = false;
+             } else if (selectedCount === allCheckboxes.length) {
+                 selectAllCheckbox.checked = true;
+                 selectAllCheckbox.indeterminate = false;
+             } else {
+                 selectAllCheckbox.checked = false;
+                 selectAllCheckbox.indeterminate = true;
+             }
+         }
+         
+         function toggleSelectAll() {
+             const selectAllCheckbox = document.getElementById('selectAll');
+             const checkboxes = document.querySelectorAll('.content-checkbox');
+             
+             checkboxes.forEach(checkbox => {
+                 checkbox.checked = selectAllCheckbox.checked;
+             });
+             
+             updateSelection();
+         }
+         
+         function clearSelection() {
+             const checkboxes = document.querySelectorAll('.content-checkbox');
+             checkboxes.forEach(checkbox => {
+                 checkbox.checked = false;
+             });
+             
+             updateSelection();
+         }
+         
+         function bulkAction(action) {
+             const checkboxes = document.querySelectorAll('.content-checkbox:checked');
+             
+             if (checkboxes.length === 0) {
+                 showNotification('Please select at least one item', 'warning');
+                 return;
+             }
+             
+             const contentIds = [];
+             checkboxes.forEach(checkbox => {
+                 contentIds.push({
+                     content_type: checkbox.dataset.contentType,
+                     content_id: checkbox.dataset.contentId
+                 });
+             });
+             
+             let reason = '';
+             if (action === 'favorite') {
+                 reason = prompt('Enter reason for adding to favorites (optional):');
+                 if (reason === null) return; // User cancelled
+             }
+             
+             fetch('/admin/api/favorite/bulk-action', {
+                 method: 'POST',
+                 headers: {
+                     'Content-Type': 'application/json',
+                 },
+                 body: JSON.stringify({
+                     action: action,
+                     content_ids: contentIds,
+                     reason: reason || ''
+                 })
+             })
+             .then(response => response.json())
+             .then(data => {
+                 if (data.success) {
+                     showNotification(data.message, 'success');
+                     
+                     // Clear selection and reload page
+                     clearSelection();
+                     setTimeout(() => {
+                         location.reload();
+                     }, 1000);
+                 } else {
+                     showNotification(data.error, 'error');
+                 }
+             })
+             .catch(error => {
+                 console.error('Error:', error);
+                 showNotification('Failed to perform bulk action', 'error');
+             });
+         }
+         
+         function exportFavorites() {
+             // Get current filter parameters
+             const urlParams = new URLSearchParams(window.location.search);
+             const filterType = urlParams.get('filter_type') || 'all';
+             const contentType = urlParams.get('content_type') || 'all';
+             const favorite = urlParams.get('favorite') || 'all';
+             
+             // Create export URL
+             const exportUrl = `/admin/api/favorite/export?filter_type=${filterType}&content_type=${contentType}&favorite=${favorite}`;
+             
+             // Download file
+             window.open(exportUrl, '_blank');
+             
+             showNotification('Export started. File will download shortly.', 'success');
+         }
+    </script>
+</body>
+</html>

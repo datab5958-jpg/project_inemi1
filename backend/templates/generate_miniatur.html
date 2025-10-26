@@ -1,0 +1,3510 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-3 py-md-5"
+     x-data="alpineData()"
+     x-init="initTooltips(); init()">
+  <!-- Modern Tab Switcher -->
+  <div class="mb-5 modern-tab-container" :class="{ 'loading': loading }">
+    <div class="modern-tab-wrapper">
+      <div class="modern-tab-background" 
+           :data-tab="tab"
+           :style="getTabBackgroundStyle()"></div>
+      <button type="button" 
+              class="modern-tab-btn" 
+              :class="{ 'active': tab==='miniatur' }" 
+              @click="switchTab('miniatur')">
+        <div class="tab-icon">
+          <i class="bi bi-magic"></i>
+        </div>
+        <div class="tab-content">
+          <span class="tab-title">Generate Miniatur</span>
+          <span class="tab-subtitle">Ubah gambar jadi figurine</span>
+        </div>
+        <div class="tab-indicator" :class="{ 'active': tab==='miniatur' }"></div>
+      </button>
+      
+      <button type="button" 
+              class="modern-tab-btn" 
+              :class="{ 'active': tab==='image2video' }" 
+              @click="switchTab('image2video')">
+        <div class="tab-icon">
+          <i class="bi bi-play-circle"></i>
+        </div>
+        <div class="tab-content">
+          <span class="tab-title">Image to Video</span>
+          <span class="tab-subtitle">Buat video dari gambar</span>
+        </div>
+        <div class="tab-indicator" :class="{ 'active': tab==='image2video' }"></div>
+      </button>
+    </div>
+  </div>
+  
+  <!-- Informasi Biaya Generate Miniatur -->
+  <div class="mb-4" x-show="tab === 'miniatur'">
+    <div class="glass-panel p-3 cost-info-panel">
+      <div class="d-flex align-items-center cost-info-content">
+        <i class="bi bi-info-circle text-info me-3 fs-4 cost-info-icon"></i>
+        <div class="cost-info-text">
+          <div class="text-white fw-semibold cost-info-main">
+            Permintaan Anda akan dikenakan biaya 
+            <strong class="text-warning">10 kredit</strong>
+          </div>
+          <div class="text-light cost-info-sub" style="opacity: 0.9;">Edit gambar dengan AI menggunakan prompt instruksi</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Informasi Biaya Image to Video -->
+  <div class="mb-4" x-show="tab === 'image2video'">
+    <div class="glass-panel p-3 cost-info-panel">
+      <div class="d-flex align-items-center cost-info-content">
+        <i class="bi bi-info-circle text-info me-3 fs-4 cost-info-icon"></i>
+        <div class="cost-info-text">
+          <div class="text-white fw-semibold cost-info-main">
+            Permintaan Anda akan dikenakan biaya 
+            <strong class="text-warning">25 kredit</strong>
+          </div>
+          <div class="text-light cost-info-sub" style="opacity: 0.9;">Ubah gambar menjadi video dengan AI</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="row justify-content-center align-items-stretch g-3 g-md-4">
+    <!-- Form Kiri -->
+    <div class="col-12 col-lg-6 d-flex">
+      <div class="glass-panel p-3 p-md-4 w-100 d-flex flex-column justify-content-between">
+        <div>
+          <!-- Form Generate Miniatur -->
+          <form x-show="tab==='miniatur'" @submit.prevent="submitMiniatur()">
+            <!-- Workflow Guide - Simplified -->
+            <div class="alert alert-primary mb-4 py-3">
+              <h6 class="fw-bold mb-2">
+                <i class="bi bi-info-circle me-2"></i>Cara Membuat Figurine Miniatur
+              </h6>
+              <div class="row g-2 small">
+                <div class="col-12 col-md-4">
+                  <div class="d-flex align-items-center">
+                    <span class="badge bg-warning text-dark me-2">1</span>
+                    <span><strong>Upload Gambar</strong></span>
+                  </div>
+                </div>
+                <div class="col-12 col-md-4">
+                  <div class="d-flex align-items-center">
+                    <span class="badge bg-warning text-dark me-2">2</span>
+                    <span><strong>Pilih cara</strong></span>
+                  </div>
+                </div>
+                <div class="col-12 col-md-4">
+                  <div class="d-flex align-items-center">
+                    <span class="badge bg-success me-2">3</span>
+                    <span><strong>Dapatkan figurine</strong></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Prompt Editing Section -->
+            <div class="mb-4 prompt-section">
+              <div class="prompt-label-container">
+                <label class="form-label fw-bold d-flex align-items-center mb-2">
+                  <i class="bi bi-magic me-2"></i>Instruksi Edit
+                </label>
+                <small class="text-light d-block mb-3" style="opacity: 0.9;">Berikan instruksi bagaimana gambar harus diedit</small>
+              </div>
+
+              <div class="textarea-container">
+                <textarea 
+                  class="form-control form-dark focus-ring prompt-textarea" 
+                  x-model="miniatur.prompt"
+                  rows="6"
+                  placeholder="Masukkan instruksi edit gambar Anda... Contoh: 'Change background to Christmas tree', 'Remove the background', 'Add snow effect', dll."
+                  ></textarea>
+                <div class="char-counter" :class="miniaturPromptCharCounterClass">
+                  <span class="char-counter-text" x-text="`${miniatur.prompt.length}`"></span>
+                </div>
+              </div>
+              
+            </div>
+
+            <!-- Model Selection Section -->
+            <div class="mb-4">
+              <label class="form-label fw-bold d-flex align-items-center mb-2">
+                <i class="bi bi-cpu me-2"></i>Pilih Model AI
+              </label>
+              <small class="text-light d-block mb-3" style="opacity: 0.9;">Pilih model AI yang akan digunakan untuk generate miniatur</small>
+              
+              <div class="model-selection-container">
+                <select class="form-select form-dark" x-model="miniatur.selectedModel" @change="onModelChange()">
+                  <option value="banana">Banana AI (Default)</option>
+                  <option value="wavespeed">ByteDance Seedream v4</option>
+                </select>
+                
+                <!-- Model Info -->
+                <div class="model-info mt-2" x-show="miniatur.selectedModel">
+                  <div class="alert alert-info py-2 px-3 mb-0" x-show="miniatur.selectedModel === 'banana'">
+                    <small class="d-flex align-items-center">
+                      <i class="bi bi-info-circle me-2"></i>
+                      <span>Banana AI - Model default untuk generate miniatur dengan kualitas tinggi (proses ~30-60 detik)</span>
+                    </small>
+                  </div>
+                  <div class="alert alert-warning py-2 px-3 mb-0" x-show="miniatur.selectedModel === 'wavespeed'">
+                    <small class="d-flex align-items-center">
+                      <i class="bi bi-lightning me-2"></i>
+                      <span>ByteDance Seedream v4 - Model canggih untuk edit gambar dengan hasil yang lebih detail (proses ~2-5 menit)</span>
+                    </small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Upload Gambar Section -->
+            <div class="mb-4">
+              <label class="form-label fw-bold">
+                <i class="bi bi-images me-2"></i>Upload Gambar
+              </label>
+              <small class="text-light d-block mb-3" style="opacity: 0.9;">Upload gambar yang akan diedit</small>
+              
+              <div class="modern-upload-area mb-3" :class="{ 'has-preview': miniatur.imagePreview, 'dragover': miniatur.dragover }"
+                   @dragover.prevent="miniatur.dragover = true"
+                   @drop.prevent="handleMiniaturFileDrop($event)"
+                   @dragenter.prevent="miniatur.dragover = true"
+                   @dragleave.prevent="miniatur.dragover = false">
+                <!-- Upload Placeholder -->
+                <div x-show="!miniatur.imagePreview" class="upload-placeholder" @click="$refs.miniaturFileInput.click()">
+                  <i class="bi bi-cloud-upload upload-icon"></i>
+                  <h5>Upload Gambar</h5>
+                  <p>Klik untuk memilih file atau drag & drop</p>
+                  <div class="upload-hint">Supports: JPG, PNG, WEBP (Max: 10MB)</div>
+                </div>
+                
+                <!-- Image Preview -->
+                <div x-show="miniatur.imagePreview" class="image-preview-container">
+                  <img :src="miniatur.imagePreview" class="preview-img" alt="Preview" @click="openFullscreenPreview(miniatur.imagePreview)">
+                  <div class="image-actions">
+                    <button type="button" class="btn btn-sm btn-outline-primary" @click="$refs.miniaturFileInput.click()">
+                      <i class="bi bi-arrow-repeat"></i> Ganti
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info" @click="openFullscreenPreview(miniatur.imagePreview)">
+                      <i class="bi bi-zoom-in"></i> Fullscreen
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info" @click="openMiniaturGallery()">
+                      <i class="bi bi-images"></i> Galeri
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-warning" @click="removeMiniaturImage()">
+                      <i class="bi bi-trash"></i> Hapus
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Hidden File Input -->
+                <input type="file" 
+                       x-ref="miniaturFileInput"
+                       accept="image/*" 
+                       @change="handleMiniaturFile($event)" 
+                       style="display: none;">
+                
+                <!-- URL Input -->
+                <div class="url-input-container mt-2">
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="bi bi-link-45deg"></i>
+                    </span>
+                    <input type="text" 
+                           class="form-control form-dark" 
+                           x-model="miniatur.imageUrl"
+                           @input="loadMiniaturImageFromUrl()"
+                           placeholder="Atau masukkan URL gambar...">
+                    <button type="button" class="btn btn-outline-secondary" @click="openMiniaturGallery()" title="Pilih dari galeri">
+                      <i class="bi bi-images"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+
+            <!-- Action Buttons Section -->
+            <div class="action-buttons-section mt-4">
+              <div class="row g-2">
+                <!-- Generate Langsung Button -->
+                <div class="col-12 col-md-6">
+                  <button 
+                    type="button"
+                    class="btn btn-warning w-100 py-2 fw-semibold" 
+                    @click="generateMiniaturDirect()" 
+                    :disabled="!miniatur.imagePreview || loading"
+                    title="Upload gambar, AI buat instruksi, langsung proses - semua otomatis!">
+                    <i class="bi bi-lightning-fill me-2"></i>Generate Langsung
+                  </button>
+                </div>
+                
+                <!-- Generate Manual Button -->
+                <div class="col-12 col-md-6">
+                  <button 
+                    type="submit" 
+                    class="btn btn-gradient w-100 py-2 fw-semibold" 
+                    :disabled="loading === true || !miniatur.imagePreview || !miniatur.prompt.trim()">
+                    <span x-show="loading === false">
+                      <i class="bi bi-gear-fill me-2"></i>Generate Manual
+                    </span>
+                    <span x-show="loading === true">
+                      <span class="spinner-border spinner-border-sm me-2"></span>Memproses...
+                    </span>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Helper Text - Simplified -->
+              <div class="alert alert-info mt-3 py-2 px-3">
+                <div class="row g-2 text-sm">
+                  <div class="col-12 col-md-6">
+                    <div class="d-flex align-items-start">
+                      <i class="bi bi-lightning-fill text-warning me-2 mt-1"></i>
+                      <div>
+                        <strong>Generate Langsung</strong><br>
+                        <small>AI otomatis buat instruksi dan proses</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-12 col-md-6">
+                    <div class="d-flex align-items-start">
+                      <i class="bi bi-gear-fill text-primary me-2 mt-1"></i>
+                      <div>
+                        <strong>Generate Manual</strong><br>
+                        <small>Kontrol penuh atas instruksi</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+
+          <!-- Form Image to Video -->
+          <form x-show="tab==='image2video'" @submit.prevent="submitImage2Video()">
+            <!-- Workflow Guide -->
+            <div class="alert alert-primary mb-4 py-3">
+              <div class="d-flex align-items-start">
+                <i class="bi bi-lightbulb text-warning me-3 fs-4"></i>
+                <div>
+                  <h6 class="text-warning fw-bold mb-2">Cara Menggunakan Image to Video:</h6>
+                  <ol class="mb-0 small text-white">
+                    <li>Upload gambar yang ingin diubah menjadi video</li>
+                    <li>Tulis deskripsi gerakan atau efek yang diinginkan</li>
+                    <li>Pilih durasi video (3-10 detik)</li>
+                    <li>Klik "Generate Video" untuk memulai proses</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            <!-- Prompt Section -->
+            <div class="mb-4">
+              <label class="form-label text-secondary d-flex align-items-center mb-3">
+                <i class="bi bi-pencil-square me-2"></i>Deskripsi Gerakan
+              </label>
+              
+              <textarea 
+                class="form-control form-dark focus-ring prompt-textarea" 
+                x-model="image2video.prompt"
+                rows="6" 
+                placeholder="Deskripsikan gerakan atau efek yang diinginkan... Contoh: 'Gambar bergerak dengan efek zoom in, cahaya berkedip, dan partikel berterbangan'"
+                maxlength="300"></textarea>
+              <div class="text-end mt-1">
+                <small class="text-light" style="opacity: 0.9;" x-text="`${image2video.prompt.length}/300`"></small>
+              </div>
+            </div>
+
+            <!-- Upload Image Section -->
+            <div class="mb-4">
+              <label class="form-label text-secondary d-flex align-items-center mb-3">
+                <i class="bi bi-cloud-upload me-2"></i>Upload Gambar
+              </label>
+              
+              <!-- Upload Area -->
+              <div class="modern-upload-area" :class="{ 'has-preview': image2video.imagePreview, 'dragover': image2video.imageDragover }"
+                   @dragover.prevent="image2video.imageDragover = true"
+                   @drop.prevent="handleImage2VideoDrop($event)"
+                   @dragenter.prevent="image2video.imageDragover = true"
+                   @dragleave.prevent="image2video.imageDragover = false">
+                <!-- Upload Placeholder -->
+                <div x-show="!image2video.imagePreview" class="upload-placeholder" @click="$refs.image2VideoFileInput.click()">
+                  <i class="bi bi-cloud-upload upload-icon"></i>
+                  <h5>Upload Gambar</h5>
+                  <p>Klik untuk memilih file atau drag & drop</p>
+                  <div class="upload-hint">Supports: JPG, PNG, WEBP (Max: 10MB)</div>
+                </div>
+                
+                <!-- Image Preview -->
+                <div x-show="image2video.imagePreview" class="image-preview-container">
+                  <img :src="image2video.imagePreview" class="preview-img" alt="Preview">
+                  <div class="image-actions">
+                    <button type="button" class="btn btn-sm btn-outline-primary" @click="$refs.image2VideoFileInput.click()">
+                      <i class="bi bi-arrow-repeat"></i> Ganti
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-info" @click="openImage2VideoGallery()">
+                      <i class="bi bi-images"></i> Galeri
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-warning" @click="removeImage2VideoImage()">
+                      <i class="bi bi-trash"></i> Hapus
+                    </button>
+                  </div>
+                </div>
+                
+                <!-- Hidden File Input -->
+                <input type="file" 
+                       x-ref="image2VideoFileInput"
+                       accept="image/*" 
+                       @change="handleImage2VideoFile($event)" 
+                       style="display: none;">
+                
+                <!-- URL Input -->
+                <div class="url-input-container mt-2">
+                  <div class="input-group">
+                    <span class="input-group-text">
+                      <i class="bi bi-link-45deg"></i>
+                    </span>
+                    <input type="text" 
+                           class="form-control form-dark" 
+                           x-model="image2video.imageUrl"
+                           @input="loadImage2VideoImageFromUrl()"
+                           placeholder="Atau masukkan URL gambar...">
+                    <button type="button" class="btn btn-outline-secondary" @click="openImage2VideoGallery()" title="Pilih dari galeri">
+                      <i class="bi bi-images"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Duration and Seed Selection -->
+            <div class="mb-4 row g-2">
+              <div class="col-md-6">
+                <label class="form-label text-secondary">
+                  <i class="bi bi-clock me-2"></i>Durasi (detik)
+                </label>
+                <select class="form-select form-dark" x-model="image2video.duration">
+                  <option value="3">3</option>
+                  <option value="5">5</option>
+                  <option value="8">8</option>
+                  <option value="10">10</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label text-secondary">
+                  <i class="bi bi-dice-6 me-2"></i>Seed
+                </label>
+                <input type="number" class="form-control form-dark" x-model="image2video.seed" placeholder="-1 (acak)">
+                <small class="text-light" style="opacity: 0.9;">Seed -1 untuk hasil random, atau masukkan angka untuk hasil yang konsisten</small>
+              </div>
+            </div>
+
+            <!-- Generate Button -->
+            <div class="d-grid mt-4">
+              <button type="submit" class="btn btn-gradient py-3 fw-bold fs-5" :disabled="loading === true || !image2video.imagePreview || !image2video.prompt.trim()">
+                <span x-show="loading === false">Generate Video</span>
+                <span x-show="loading === true"><span class="spinner-border spinner-border-sm me-2"></span>Memproses...</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hasil Kanan -->
+    <div class="col-12 col-lg-6 d-flex">
+      <div class="glass-panel p-3 p-md-4 w-100 d-flex flex-column justify-content-between">
+        <div>
+          <h5 class="text-white mb-4 d-flex align-items-center">
+            <i class="bi bi-image me-2"></i>Hasil Generate
+          </h5>
+          
+          <!-- Loading State -->
+          <template x-if="loading === true">
+            <div class="text-center py-5">
+              <div class="spinner-border text-primary mb-3" role="status"></div>
+              <p class="text-light" style="opacity: 0.9;">Sedang memproses permintaan Anda...</p>
+            </div>
+          </template>
+          
+          <!-- Error State -->
+          <template x-if="errorMsg && errorMsg !== ''">
+            <div class="alert alert-danger">
+              <i class="bi bi-exclamation-triangle me-2"></i>
+              <span x-text="errorMsg"></span>
+            </div>
+          </template>
+          
+          <!-- Success State -->
+          <template x-if="resultUrl && resultUrl !== '' && loading === false">
+            <div class="text-center">
+            <div class="result-container mb-4">
+              <div class="result-card">
+                <div class="result-header">
+                  <h6 class="text-white mb-0">
+                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                    <span x-text="tab === 'miniatur' ? 'Hasil Generate Miniatur' : 'Hasil Generate Video'"></span>
+                  </h6>
+                </div>
+                <div class="result-image-container">
+                  <!-- Image Result -->
+                  <img x-show="tab === 'miniatur'" 
+                       :src="resultUrl" 
+                       alt="Hasil Miniatur" 
+                       class="img-fluid rounded result-image"
+                       @click="showResultPreview({url: resultUrl, type: 'image', prompt: miniatur.prompt})">
+                  
+                  <!-- Video Result -->
+                  <video x-show="tab === 'image2video'" 
+                         :src="resultUrl" 
+                         class="img-fluid rounded result-image"
+                         controls
+                         preload="metadata"
+                         @click="showResultPreview({url: resultUrl, type: 'video', prompt: image2video.prompt})">
+                    Browser Anda tidak mendukung video.
+                  </video>
+                  
+                  <!-- Overlay for Image -->
+                  <div x-show="tab === 'miniatur'" class="result-overlay" @click="showResultPreview({url: resultUrl, type: 'image', prompt: miniatur.prompt})">
+                    <i class="bi bi-eye-fill"></i>
+                  </div>
+                  
+                  <!-- Overlay for Video (only show when not playing) -->
+                  <div x-show="tab === 'image2video'" class="result-overlay video-overlay" @click="showResultPreview({url: resultUrl, type: 'video', prompt: image2video.prompt})">
+                    <i class="bi bi-play-circle-fill"></i>
+                  </div>
+                </div>
+                <div class="result-info">
+                  <div class="result-prompt" x-text="tab === 'miniatur' ? miniatur.prompt : image2video.prompt"></div>
+                  <div class="result-actions mt-3">
+                    <button @click="downloadResult(resultUrl, tab === 'miniatur' ? 'hasil-miniatur' : 'hasil-video')" class="btn btn-primary me-2">
+                      <i class="bi bi-download me-1"></i>Download
+                    </button>
+                    <button @click="showResultPreview({url: resultUrl, type: tab === 'miniatur' ? 'image' : 'video', prompt: tab === 'miniatur' ? miniatur.prompt : image2video.prompt})" class="btn btn-outline-info me-2">
+                      <i class="bi bi-eye me-1"></i>Preview
+                    </button>
+                    <button @click="shareResult()" class="btn btn-outline-success">
+                      <i class="bi bi-share me-1"></i>Share
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          </template>
+          
+          <!-- Empty State -->
+          <template x-if="(!resultUrl || resultUrl === '') && loading === false && (!errorMsg || errorMsg === '')">
+            <div class="text-center py-5">
+              <i class="bi bi-image fs-1 text-light mb-3" style="opacity: 0.6;"></i>
+              <p class="text-light" style="opacity: 0.8;">Hasil generate akan muncul di sini</p>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gambar & Video Hasil Section -->
+  <div class="row mt-5">
+    <div class="col-12">
+      <div class="glass-panel p-4">
+        <!-- Header Section -->
+        <div class="results-header mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="header-content">
+              <h4 class="text-white mb-1 d-flex align-items-center">
+                <i class="bi bi-collection me-3 text-primary"></i>Gambar & Video Hasil
+              </h4>
+              <p class="text-light mb-0" style="opacity: 0.9;">Koleksi hasil generate miniatur dan video Anda</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn btn-outline-warning btn-sm me-2" @click="migrateImageToVideo()" title="Migrate Image to Video data">
+                <i class="bi bi-arrow-right-circle me-1"></i>Migrate
+              </button>
+              <button class="btn btn-outline-primary btn-sm" @click="loadAllResults()" title="Refresh hasil">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+              </button>
+            </div>
+          </div>
+          
+          <!-- Info Panel -->
+          <div class="info-panel">
+            <div class="row g-3">
+              <div class="col-md-4">
+                <div class="info-card">
+                  <div class="info-icon">
+                    <i class="bi bi-magic text-warning"></i>
+                  </div>
+                  <div class="info-content">
+                    <h6 class="text-white mb-1">Generate Miniatur</h6>
+                    <p class="text-light small mb-0" style="opacity: 0.9;">Ubah gambar menjadi figurine 1/7 scale</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="info-card">
+                  <div class="info-icon">
+                    <i class="bi bi-play-circle text-danger"></i>
+                  </div>
+                  <div class="info-content">
+                    <h6 class="text-white mb-1">Image to Video</h6>
+                    <p class="text-light small mb-0" style="opacity: 0.9;">Ubah gambar menjadi video animasi</p>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="info-card">
+                  <div class="info-icon">
+                    <i class="bi bi-download text-success"></i>
+                  </div>
+                  <div class="info-content">
+                    <h6 class="text-white mb-1">Download & Share</h6>
+                    <p class="text-light small mb-0" style="opacity: 0.9;">Simpan dan bagikan hasil Anda</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gallery Tabs -->
+        <div class="gallery-tabs-container mb-4">
+          <div class="gallery-tabs">
+            <button class="gallery-tab" :class="{ 'active': activeGalleryTab === 'miniatur' }" @click="activeGalleryTab = 'miniatur'; loadMiniaturResults()">
+              <i class="bi bi-magic me-2"></i>Hasil Miniatur
+              <span class="tab-count" x-text="activeGalleryTab === 'miniatur' ? results.length : ''"></span>
+            </button>
+            <button class="gallery-tab" :class="{ 'active': activeGalleryTab === 'video' }" @click="console.log('=== VIDEO TAB CLICKED ==='); console.log('Before: activeGalleryTab =', activeGalleryTab); console.log('Before: results.length =', results.length); activeGalleryTab = 'video'; console.log('After: activeGalleryTab =', activeGalleryTab); console.log('About to call loadVideoResults'); loadVideoResults()">
+              <i class="bi bi-play-circle me-2"></i>Hasil Video
+              <span class="tab-count" x-text="activeGalleryTab === 'video' ? results.length : ''"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading State -->
+        <div x-show="loadingResults" class="text-center py-5">
+          <div class="spinner-border text-primary mb-3" role="status"></div>
+          <p class="text-light" style="opacity: 0.9;">Memuat hasil generate...</p>
+        </div>
+
+        <!-- Results Grid -->
+        <div x-show="!loadingResults && results && results.length > 0" 
+             x-data="{ debugShow: !loadingResults && results && results.length > 0 }"
+             @click="console.log('Results grid click, debugShow:', debugShow, 'loadingResults:', loadingResults, 'results:', results, 'results.length:', results.length)"
+             class="results-grid">
+          <div class="results-stats mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="stats-info">
+                <span class="text-light" style="opacity: 0.9;">Menampilkan </span>
+                <strong class="text-white" x-text="results.length"></strong>
+                <span class="text-light" style="opacity: 0.9;"> hasil</span>
+              </div>
+              <div class="view-options">
+                <button class="btn btn-sm btn-outline-secondary" @click="toggleGridView()" title="Ubah tampilan">
+                  <i class="bi bi-grid-3x3-gap" x-show="!gridView"></i>
+                  <i class="bi bi-list" x-show="gridView"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row g-3">
+            <template x-for="(result, index) in results" :key="index">
+              <div class="col-6 col-md-4 col-lg-3">
+                <div class="result-item glass-panel p-3">
+                  <div class="result-preview" @click="showResultPreview(result)">
+                    <!-- Video Preview -->
+                    <div x-show="result.type === 'video'" class="video-preview-container">
+                      <video :src="result.url" 
+                             class="img-fluid rounded result-thumbnail video-thumbnail"
+                             muted
+                             preload="metadata"
+                             @error="handleVideoError($event)"
+                             @loadedmetadata="handleVideoLoad($event)">
+                        Browser Anda tidak mendukung video.
+                      </video>
+                      <div class="video-play-overlay" @click="showResultPreview(result)">
+                        <i class="bi bi-play-circle-fill"></i>
+                      </div>
+                    </div>
+                    
+                    <!-- Image Preview -->
+                    <div x-show="result.type !== 'video'" class="image-preview-container">
+                      <img :src="result.thumbnail || result.url" 
+                           :alt="'Hasil Miniatur'"
+                           class="img-fluid rounded result-thumbnail"
+                           @error="handleImageError($event)"
+                           @load="handleImageLoad($event)">
+                      <div class="image-placeholder" style="display: none;">
+                        <i class="bi bi-image text-light" style="opacity: 0.6;"></i>
+                        <span class="text-light small" style="opacity: 0.8;">Gambar tidak tersedia</span>
+                      </div>
+                      <!-- Image overlay -->
+                      <div class="result-overlay">
+                        <i class="bi bi-eye-fill"></i>
+                      </div>
+                    </div>
+                    
+                    <!-- Type Badge -->
+                    <div class="result-type-badge" :class="result.type === 'video' ? 'badge-video' : 'badge-image'">
+                      <i :class="result.type === 'video' ? 'bi bi-play-circle' : 'bi bi-image'"></i>
+                      <span x-text="result.type === 'video' ? 'Video' : 'Gambar'"></span>
+                    </div>
+                    
+                  </div>
+                  <div class="result-info mt-3">
+                    <div class="result-prompt" x-text="result.prompt"></div>
+                    <div class="result-date mt-2" x-text="formatDate(result.created_at)"></div>
+                    <div class="result-actions mt-3 d-flex gap-1">
+                      <button class="btn btn-sm btn-outline-primary" @click="downloadResult(result.url, result.filename)" title="Download">
+                        <i class="bi bi-download"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-info" @click="showResultPreview(result)" title="Preview">
+                        <i class="bi bi-eye"></i>
+                      </button>
+                      <button class="btn btn-sm btn-outline-danger" @click="deleteResult(result.id)" title="Hapus">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="!loadingResults && (!results || results.length === 0)" 
+             x-data="{ debugEmpty: !loadingResults && (!results || results.length === 0) }"
+             @click="console.log('Empty state click, debugEmpty:', debugEmpty, 'loadingResults:', loadingResults, 'results:', results, 'results.length:', results ? results.length : 'undefined')"
+             class="empty-state">
+          <div class="empty-content text-center py-5">
+            <div class="empty-icon mb-4">
+              <i class="bi bi-collection fs-1 text-light" style="opacity: 0.6;"></i>
+            </div>
+            <h4 class="text-white mb-3">Belum ada hasil generate</h4>
+            <p class="text-light mb-4" style="opacity: 0.9;">Mulai generate miniatur atau video untuk melihat hasilnya di sini</p>
+            
+            <div class="empty-actions">
+              <button class="btn btn-gradient me-3" @click="tab='miniatur'">
+                <i class="bi bi-magic me-2"></i>Generate Miniatur
+              </button>
+              <button class="btn btn-outline-primary" @click="tab='image2video'">
+                <i class="bi bi-play-circle me-2"></i>Generate Video
+              </button>
+            </div>
+            
+            <div class="empty-tips mt-4">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <div class="tip-card">
+                    <i class="bi bi-upload text-primary"></i>
+                    <h6 class="text-white">Upload Gambar</h6>
+                    <p class="text-light small" style="opacity: 0.9;">Pilih gambar yang ingin diubah</p>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="tip-card">
+                    <i class="bi bi-magic text-warning"></i>
+                    <h6 class="text-white">Generate</h6>
+                    <p class="text-light small" style="opacity: 0.9;">Klik tombol generate untuk memproses</p>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="tip-card">
+                    <i class="bi bi-download text-success"></i>
+                    <h6 class="text-white">Download</h6>
+                    <p class="text-light small" style="opacity: 0.9;">Simpan hasil yang sudah jadi</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Gallery Modal -->
+  {% raw %}
+  <template x-if="showGallery !== false">
+    <div class="gallery-overlay" @click.self="showGallery = false">
+      <div class="gallery-popup animate__animated animate__zoomIn">
+        <!-- Header -->
+        <div class="gallery-header">
+          <div class="gallery-title">
+            <i class="bi bi-images me-2"></i>
+            <span class="text-gradient">Galeri Gambar</span>
+          </div>
+          <button type="button" class="gallery-close-btn" @click="showGallery = false">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="gallery-instructions">
+          <i class="bi bi-mouse me-2"></i>
+          <span>Klik gambar untuk memilih dan otomatis akan ditutup</span>
+        </div>
+        
+        <!-- Gallery Tabs -->
+        <div class="gallery-tabs">
+          <button class="gallery-tab" :class="{ 'active': galleryTab === 'uploaded' }" @click="galleryTab = 'uploaded'">
+            <i class="bi bi-upload me-2"></i>Gambar Upload
+          </button>
+          <button class="gallery-tab" :class="{ 'active': galleryTab === 'generated' }" @click="galleryTab = 'generated'">
+            <i class="bi bi-magic me-2"></i>Hasil Generate
+          </button>
+        </div>
+        
+        <!-- Uploaded Images Tab -->
+        <div x-show="galleryTab === 'uploaded'" class="gallery-content">
+          <div class="gallery-section-header">
+            <i class="bi bi-cloud-arrow-up me-2"></i>
+            <span>Gambar yang Telah Diupload</span>
+            <span class="gallery-count" x-text="`(${galleryImages.length})`"></span>
+          </div>
+          
+          <div class="gallery-grid">
+            <template x-for="img in galleryImages" :key="img.id">
+              <div class="gallery-item" @click="selectImageFromGallery(img.url)">
+                <div class="gallery-item-overlay">
+                  <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <img :src="img.url" :alt="img.caption" class="gallery-item-img">
+                <div class="gallery-item-caption" :title="img.caption || 'Gambar Upload'">
+                  <span x-text="img.caption || 'Gambar Upload'"></span>
+                </div>
+              </div>
+            </template>
+          </div>
+          
+          <div x-show="galleryImages.length === 0" class="gallery-empty">
+            <i class="bi bi-inbox fs-1 text-muted"></i>
+            <p>Belum ada gambar yang diupload</p>
+          </div>
+        </div>
+        
+        <!-- Generated Images Tab -->
+        <div x-show="galleryTab === 'generated'" class="gallery-content">
+          <div class="gallery-section-header">
+            <i class="bi bi-stars me-2"></i>
+            <span>Gambar Hasil Generate AI</span>
+            <span class="gallery-count" x-text="`(${galleryGenerated.length})`"></span>
+          </div>
+          
+          <div class="gallery-grid">
+            <template x-for="img in galleryGenerated" :key="img.id">
+              <div class="gallery-item" @click="selectImageFromGallery(img.url)">
+                <div class="gallery-item-overlay">
+                  <i class="bi bi-check-circle-fill"></i>
+                </div>
+                <img :src="img.url" :alt="img.caption" class="gallery-item-img">
+                <div class="gallery-item-caption" :title="img.caption || 'Hasil AI'">
+                  <span x-text="img.caption || 'Hasil AI'"></span>
+                </div>
+              </div>
+            </template>
+          </div>
+          
+          <div x-show="galleryGenerated.length === 0" class="gallery-empty">
+            <i class="bi bi-magic fs-1 text-muted"></i>
+            <p>Belum ada hasil generate AI</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+  {% endraw %}
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1050;">
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+<style>
+  /* === MODERN GLASSMORPHISM EFFECT === */
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .glass-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    border-radius: 1.5rem 1.5rem 0 0;
+  }
+  
+  .glass-panel:focus-within, .glass-panel:hover {
+    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+    border-color: rgba(102, 126, 234, 0.3);
+    transform: translateY(-2px);
+  }
+  
+  /* === OPTIMIZED FORM STYLING === */
+  .form-dark {
+    background: rgba(30, 41, 59, 0.8) !important;
+    color: #ffffff !important;
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    font-size: 0.95rem !important;
+    transition: all 0.3s ease !important;
+  }
+  
+  .form-dark:focus {
+    background: rgba(30, 41, 59, 0.9) !important;
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+    color: #ffffff !important;
+  }
+  
+  .form-dark::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+  }
+  
+  /* === ENHANCED BUTTON STYLING === */
+  .btn-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    border-radius: 12px;
+    padding: 12px 24px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .btn-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+  
+  .btn-gradient:hover::before {
+    left: 100%;
+  }
+  
+  .btn-gradient:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  }
+  
+  .btn-gradient:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  /* === MODERN TAB SWITCHER === */
+  .modern-tab-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+  }
+  
+  .modern-tab-wrapper {
+    position: relative;
+    display: flex;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 20px;
+    padding: 8px;
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  .modern-tab-background {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: calc(50% - 4px);
+    height: calc(100% - 16px);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    z-index: 1;
+  }
+  
+  .modern-tab-btn {
+    position: relative;
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 20px 24px;
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    z-index: 2;
+    min-height: 80px;
+    overflow: hidden;
+  }
+  
+  .modern-tab-btn:hover {
+    color: white;
+    transform: translateY(-2px);
+  }
+  
+  .modern-tab-btn.active {
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  .tab-icon {
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+  }
+  
+  .modern-tab-btn.active .tab-icon {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+    box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+  }
+  
+  .tab-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    flex: 1;
+  }
+  
+  .tab-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    line-height: 1.2;
+    transition: all 0.3s ease;
+  }
+  
+  .tab-subtitle {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    line-height: 1.2;
+    transition: all 0.3s ease;
+  }
+  
+  .modern-tab-btn.active .tab-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+  
+  .modern-tab-btn.active .tab-subtitle {
+    opacity: 0.9;
+  }
+  
+  .tab-indicator {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 30px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .tab-indicator.active {
+    transform: translateX(-50%) scaleX(1);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  }
+  
+  /* Hover Effects */
+  .modern-tab-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 16px;
+  }
+  
+  .modern-tab-btn:hover::before {
+    opacity: 1;
+  }
+  
+  .modern-tab-btn.active::before {
+    opacity: 0;
+  }
+  
+  /* Loading State Animation */
+  .modern-tab-container.loading .modern-tab-wrapper {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+  
+  .modern-tab-container.loading .modern-tab-background {
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+      transform: translateX(0%);
+    }
+    50% {
+      opacity: 0.8;
+      transform: translateX(0%) scale(1.02);
+    }
+  }
+  
+  /* Mobile-specific animations */
+  @media (max-width: 768px) {
+    .modern-tab-background {
+      transform: translateY(0%);
+    }
+    
+    .modern-tab-background[data-tab="image2video"] {
+      transform: translateY(100%);
+    }
+  }
+  
+  /* === ENHANCED COST INFO PANEL === */
+  .cost-info-panel {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.05) 100%);
+    border: 1px solid rgba(102, 126, 234, 0.2);
+    backdrop-filter: blur(15px);
+  }
+  
+  .cost-info-content {
+    gap: 0.5rem;
+  }
+  
+  .cost-info-icon {
+    font-size: 1.5rem;
+  }
+  
+  .cost-info-main {
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .cost-info-sub {
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+  
+  /* === MODERN UPLOAD AREA STYLING === */
+  .modern-upload-area {
+    border: 2px dashed rgba(102, 126, 234, 0.4);
+    border-radius: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+    min-height: 200px;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(10px);
+  }
+  
+  .modern-upload-area:hover {
+    border-color: rgba(102, 126, 234, 0.6);
+    background: rgba(102, 126, 234, 0.05);
+  }
+  
+  .modern-upload-area.dragover {
+    border-color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+    transform: scale(1.02);
+  }
+  
+  .modern-upload-area.has-preview {
+    min-height: auto;
+    padding: 1rem;
+  }
+  
+  .upload-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  .upload-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: rgba(102, 126, 234, 0.6);
+  }
+  
+  .upload-placeholder h5 {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 0.5rem;
+  }
+  
+  .upload-placeholder p {
+    color: rgba(255, 255, 255, 0.6);
+    margin-bottom: 0.5rem;
+  }
+  
+  .upload-hint {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* === IMAGE PREVIEW STYLING === */
+  .image-preview-container {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  
+  .preview-img {
+    width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    display: block;
+    border-radius: 8px;
+  }
+  
+  /* Responsive preview sizing */
+  @media (max-width: 768px) {
+    .preview-img {
+      max-height: 250px;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .preview-img {
+      max-height: 200px;
+    }
+  }
+  
+  /* === VIDEO PREVIEW STYLING === */
+  .video-preview-container {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  
+  .video-thumbnail {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+    background: #1a1a2e;
+  }
+  
+  .video-play-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    z-index: 10;
+  }
+  
+  .video-play-overlay i {
+    color: white;
+    font-size: 2rem;
+    margin-left: 4px; /* Slight offset for play icon */
+  }
+  
+  .video-preview-container:hover .video-play-overlay {
+    background: rgba(102, 126, 234, 0.8);
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  
+  
+  .image-preview-container {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  
+  .image-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .image-actions .btn {
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  /* === CHARACTER COUNTER === */
+  .char-counter {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .char-counter.danger {
+    background: rgba(220, 53, 69, 0.8);
+  }
+  
+  .char-counter.warning {
+    background: rgba(255, 193, 7, 0.8);
+    color: #000;
+  }
+  
+  .char-counter.success {
+    background: rgba(25, 135, 84, 0.8);
+  }
+  
+  /* === PROMPT SECTION === */
+  .prompt-section {
+    position: relative;
+  }
+  
+  .textarea-container {
+    position: relative;
+  }
+  
+  .prompt-textarea {
+    resize: vertical;
+    min-height: 150px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  /* === AI HELPER SECTION === */
+  .ai-helper-section .btn.generating {
+    background: linear-gradient(135deg, #ffc107, #fd7e14);
+    color: #000;
+  }
+  
+  .ai-helper-section .btn.generating .spinner {
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  
+  /* === RESULT STYLING === */
+  .result-container {
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  
+  .result-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    border-radius: 20px 20px 0 0;
+  }
+  
+  .result-header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .result-image-container {
+    position: relative;
+    margin: 0 auto 1rem auto;
+    border-radius: 15px;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 400px;
+    width: 100%;
+  }
+  
+  .result-image {
+    max-width: 100%;
+    max-height: 350px;
+    object-fit: cover;
+    display: block;
+    border: 2px solid #667eea;
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    margin: 0 auto;
+  }
+  
+  .result-image-container video {
+    max-width: 100%;
+    max-height: 350px;
+    object-fit: cover;
+    display: block;
+    border: 2px solid #667eea;
+    transition: all 0.3s ease;
+    border-radius: 15px;
+    margin: 0 auto;
+    background: #000;
+  }
+  
+  .result-image:hover,
+  .result-image-container video:hover {
+    transform: scale(1.02);
+    box-shadow: 0 12px 40px rgba(102, 126, 234, 0.4);
+  }
+  
+  .result-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+    border-radius: 15px;
+  }
+  
+  .result-image-container:hover .result-overlay {
+    opacity: 1;
+  }
+  
+  .result-overlay i {
+    font-size: 2.5rem;
+    color: white;
+  }
+  
+  .video-overlay {
+    opacity: 0.8;
+    transition: opacity 0.3s ease;
+  }
+  
+  .result-image-container:hover .video-overlay {
+    opacity: 1;
+  }
+  
+  .result-info {
+    text-align: center;
+  }
+  
+  .result-prompt {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.75rem;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-height: 80px;
+    overflow-y: auto;
+  }
+  
+  .result-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .result-actions .btn {
+    flex: 1;
+    min-width: 100px;
+    font-size: 0.9rem;
+  }
+  
+  @media (max-width: 576px) {
+    .result-actions {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .result-actions .btn {
+      flex: none;
+      width: 100%;
+    }
+  }
+  
+  /* === RESPONSIVE DESIGN === */
+  @media (max-width: 991.98px) {
+    .glass-panel {
+      margin-bottom: 1.2rem;
+      border-radius: 1rem;
+    }
+    
+    .btn-gradient {
+      padding: 14px 24px;
+      font-size: 1rem;
+    }
+    
+    /* Tablet modern tab switcher */
+    .modern-tab-wrapper {
+      max-width: 500px;
+    }
+    
+    .modern-tab-btn {
+      padding: 16px 20px;
+      min-height: 70px;
+    }
+    
+    .tab-icon {
+      width: 35px;
+      height: 35px;
+      font-size: 1.3rem;
+    }
+    
+    .tab-title {
+      font-size: 1rem;
+    }
+    
+    .tab-subtitle {
+      font-size: 0.8rem;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .modern-tab-container {
+      margin-bottom: 1.5rem;
+      padding: 0 0.5rem;
+    }
+    
+    .container {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+    
+    .modern-tab-wrapper {
+      flex-direction: column;
+      gap: 8px;
+      padding: 6px;
+      border-radius: 16px;
+      max-width: 100%;
+    }
+    
+    .modern-tab-background {
+      width: calc(100% - 12px);
+      height: calc(50% - 4px);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .modern-tab-btn {
+      padding: 16px 20px;
+      min-height: 60px;
+      justify-content: flex-start;
+    }
+    
+    .tab-icon {
+      width: 32px;
+      height: 32px;
+      font-size: 1.2rem;
+    }
+    
+    .tab-title {
+      font-size: 0.95rem;
+    }
+    
+    .tab-subtitle {
+      font-size: 0.75rem;
+    }
+    
+    .glass-panel {
+      border-radius: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .modern-upload-area {
+      min-height: 150px;
+    }
+    
+    .upload-placeholder {
+      height: 150px;
+    }
+    
+    .upload-icon {
+      font-size: 2rem;
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .glass-panel {
+      border-radius: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .tab-switcher {
+      padding: 0.25rem;
+      border-radius: 10px;
+      max-width: 280px;
+    }
+    
+    .tab-btn {
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      border-radius: 6px;
+    }
+    
+    .btn-gradient {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+    }
+    
+    .glass-panel {
+      padding: 0.75rem !important;
+      border-radius: 0.75rem;
+    }
+  }
+  
+  /* === ENHANCED SHADOWS === */
+  .glass-panel,
+  .btn-gradient {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+  }
+  
+  /* === FOCUS RING === */
+  .focus-ring:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+  }
+  
+  /* === ALERT STYLING === */
+  .alert {
+    border: none;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+  }
+  
+  .alert-primary {
+    background: rgba(13, 110, 253, 0.1);
+    border: 1px solid rgba(13, 110, 253, 0.2);
+    color: #b3d7ff;
+  }
+  
+  .alert-info {
+    background: rgba(13, 202, 240, 0.1);
+    border: 1px solid rgba(13, 202, 240, 0.2);
+    color: #b3ecff;
+  }
+  
+  .alert-light {
+    background: rgba(248, 249, 250, 0.1);
+    border: 1px solid rgba(248, 249, 250, 0.2);
+    color: #f8f9fa;
+  }
+  
+  .alert-danger {
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.2);
+    color: #f5c2c7;
+  }
+  
+  /* === BADGE STYLING === */
+  .badge {
+    font-weight: 600;
+    border-radius: 8px;
+  }
+  
+  /* === INPUT GROUP === */
+  .input-group-text {
+    background: rgba(30, 41, 59, 0.8);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  .input-group .form-control {
+    border-left: none;
+  }
+  
+  .input-group .form-control:focus {
+    border-left: none;
+  }
+  
+  /* === SPINNER === */
+  .spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+  }
+  
+  /* === UTILITY CLASSES === */
+  .text-sm {
+    font-size: 0.875rem;
+  }
+  
+  .text-xs {
+    font-size: 0.75rem;
+  }
+  
+  /* === RESULTS HEADER === */
+  .results-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 1.5rem;
+  }
+  
+  .header-content h4 {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  
+  .info-panel {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .info-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+  }
+  
+  .info-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+  }
+  
+  .info-icon {
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+  }
+  
+  .info-content h6 {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  
+  /* === GALLERY TABS === */
+  .gallery-tabs-container {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 15px;
+    padding: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .gallery-tabs {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 0.25rem;
+  }
+  
+  .gallery-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  
+  .gallery-tab.active {
+    background: linear-gradient(135deg, #667eea, #8b5cf6);
+    color: #ffffff;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  }
+  
+  .gallery-tab:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
+  
+  .tab-count {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  
+  /* === RESULTS GRID === */
+  .results-grid {
+    max-height: 600px;
+    overflow-y: auto;
+  }
+  
+  .results-stats {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .result-item {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+  }
+  
+  .result-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+    border-color: rgba(102, 126, 234, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .result-prompt {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    max-height: 60px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  
+  .result-date {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+  }
+  
+  .result-preview {
+    position: relative;
+    cursor: pointer;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .result-thumbnail {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    transition: all 0.3s ease;
+  }
+  
+  .image-placeholder {
+    width: 100%;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .image-placeholder i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .result-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+  
+  .result-preview:hover .result-overlay {
+    opacity: 1;
+  }
+  
+  .result-overlay i {
+    font-size: 2rem;
+    color: white;
+  }
+  
+  .result-type-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  
+  .badge-image {
+    background: rgba(34, 197, 94, 0.9);
+    color: white;
+  }
+  
+  .badge-video {
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+  }
+  
+  .result-info {
+    padding: 0.5rem 0;
+  }
+  
+  .result-date {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 500;
+  }
+  
+  .result-actions {
+    justify-content: center;
+  }
+  
+  .result-actions .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  /* === EMPTY STATE === */
+  .empty-state {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  .empty-content {
+    padding: 3rem 2rem;
+  }
+  
+  .empty-icon {
+    opacity: 0.5;
+  }
+  
+  .empty-actions {
+    margin-bottom: 2rem;
+  }
+  
+  .empty-tips {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .tip-card {
+    text-align: center;
+    padding: 1.5rem 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+  }
+  
+  .tip-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-2px);
+  }
+  
+  .tip-card i {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    display: block;
+  }
+  
+  .tip-card h6 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* === RESPONSIVE GALLERY === */
+  @media (max-width: 768px) {
+    .gallery-tabs {
+      flex-direction: column;
+    }
+    
+    .gallery-tab {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.9rem;
+    }
+    
+    .result-thumbnail {
+      height: 100px;
+    }
+    
+    .result-actions .btn {
+      padding: 0.2rem 0.4rem;
+      font-size: 0.7rem;
+    }
+  }
+  
+  /* === GALLERY MODAL === */
+  .gallery-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 1050;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+  
+  .gallery-popup {
+    background: rgba(30, 41, 59, 0.95);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    max-width: 90vw;
+    max-height: 90vh;
+    width: 800px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  }
+  
+  .gallery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .gallery-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+  }
+  
+  .gallery-close-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+  }
+  
+  .gallery-close-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+  
+  .gallery-instructions {
+    padding: 1rem 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .gallery-tabs {
+    display: flex;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .gallery-tab {
+    flex: 1;
+    padding: 1rem;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+  }
+  
+  .gallery-tab.active {
+    color: white;
+    border-bottom-color: #667eea;
+    background: rgba(102, 126, 234, 0.1);
+  }
+  
+  .gallery-tab:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .gallery-content {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 1.5rem;
+  }
+  
+  .gallery-section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: white;
+  }
+  
+  .gallery-count {
+    background: rgba(102, 126, 234, 0.2);
+    color: #667eea;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+  }
+  
+  .gallery-item {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+  
+  .gallery-item:hover {
+    transform: scale(1.05);
+    border-color: #667eea;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  }
+  
+  .gallery-item-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .gallery-item-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .gallery-item:hover .gallery-item-overlay {
+    opacity: 1;
+  }
+  
+  .gallery-item-overlay i {
+    font-size: 2rem;
+    color: #22c55e;
+  }
+  
+  .gallery-item-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    color: white;
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .gallery-item-caption span {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .gallery-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  
+  .gallery-empty i {
+    margin-bottom: 1rem;
+  }
+  
+  .gallery-empty p {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+</style>
+
+<script>
+function alpineData() {
+  return {
+    tab: 'miniatur',
+    loading: false,
+    errorMsg: '',
+    resultUrl: '',
+    
+    // Generate Miniatur data
+    miniatur: {
+      prompt: '',
+      imageUrl: '',
+      imagePreview: '',
+      uploadProgress: 0,
+      dragover: false,
+      selectedModel: 'banana',
+    },
+    
+    // Image to Video data
+    image2video: {
+      prompt: '',
+      imageUrl: '',
+      imagePreview: '',
+      duration: '5',
+      seed: '-1',
+      uploadProgress: 0,
+      dragover: false
+    },
+    
+    // Results data
+    results: [],
+    loadingResults: false,
+    activeGalleryTab: 'miniatur',
+    gridView: true,
+    
+    // Gallery data
+    showGallery: false,
+    galleryImages: [],
+    galleryGenerated: [],
+    galleryTab: 'uploaded',
+    
+    init() {
+      console.log('Miniatur Generator initialized');
+      // Reset all states to ensure clean initial state
+      this.loading = false;
+      this.errorMsg = '';
+      this.resultUrl = '';
+      console.log('Reset loading state:', this.loading);
+      console.log('Reset errorMsg:', this.errorMsg);
+      console.log('Reset resultUrl:', this.resultUrl);
+      // Auto-load miniatur results when page loads
+      this.loadMiniaturResults();
+      // Load gallery images
+      this.loadGalleryImages();
+      // Initialize tooltips
+      this.initTooltips();
+    },
+    
+    initTooltips() {
+      // Inisialisasi tooltip Bootstrap
+      const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+      tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+      });
+    },
+    
+    cleanupEventListeners() {
+      // Cleanup any existing event listeners if needed
+    },
+    
+    // Get tab background style based on screen size
+    getTabBackgroundStyle() {
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        return {
+          transform: `translateY(${this.tab === 'miniatur' ? '0%' : '100%'})`
+        };
+      } else {
+        return {
+          transform: `translateX(${this.tab === 'miniatur' ? '0%' : '100%'})`
+        };
+      }
+    },
+    
+    // Modern tab switching with smooth animations
+    switchTab(newTab) {
+      if (this.tab === newTab) return;
+      
+      // Add loading state for smooth transition
+      this.loading = true;
+      
+      // Clear previous states
+      this.errorMsg = '';
+      this.resultUrl = '';
+      
+      // Switch tab with delay for smooth animation
+      setTimeout(() => {
+        this.tab = newTab;
+        this.loading = false;
+        
+        // Load appropriate results based on tab
+        if (newTab === 'miniatur') {
+          this.loadMiniaturResults();
+        } else if (newTab === 'image2video') {
+          this.loadVideoResults();
+        }
+        
+        // Show notification for tab switch
+        this.showNotification(`Berpindah ke ${newTab === 'miniatur' ? 'Generate Miniatur' : 'Image to Video'}`, 'info');
+      }, 200);
+    },
+    
+    // Character counter classes
+    get miniaturPromptCharCounterClass() {
+      const length = this.miniatur.prompt.length;
+      if (length === 0) return '';
+      if (length >= 900) return 'danger';
+      if (length >= 800) return 'warning';
+      if (length >= 600) return 'success';
+      return '';
+    },
+    
+    // Generate Miniatur Functions
+    async handleMiniaturFile(e) {
+      const file = e.target.files[0];
+      if (file) {
+        // Show preview immediately
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.miniatur.imagePreview = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        
+        // Upload file
+        await this.uploadMiniaturFile(file);
+      }
+    },
+    
+    async handleMiniaturFileDrop(e) {
+      e.preventDefault();
+      this.miniatur.dragover = false;
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        const file = files[0];
+        if (file.type.startsWith('image/')) {
+          // Show preview immediately
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            this.miniatur.imagePreview = e.target.result;
+          };
+          reader.readAsDataURL(file);
+          
+          // Upload file
+          await this.uploadMiniaturFile(file);
+        }
+      }
+    },
+    
+    async uploadMiniaturFile(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      try {
+        this.miniatur.uploadProgress = 10;
+        
+        const res = await fetch('/upload_image_to_miniatur', { 
+          method: 'POST', 
+          body: formData,
+          credentials: 'same-origin'
+        });
+        
+        this.miniatur.uploadProgress = 50;
+        
+        if (res.status === 401) {
+          this.errorMsg = 'Session Anda telah expired. Silakan login ulang.';
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 2000);
+          return;
+        }
+        
+        const data = await res.json();
+        this.miniatur.uploadProgress = 100;
+        
+        if (data.url) {
+          this.miniatur.imageUrl = data.url;
+          this.showNotification('Gambar berhasil diupload!', 'success');
+        } else if (data.error) {
+          this.errorMsg = data.error;
+          this.miniatur.imagePreview = '';
+        }
+        
+        setTimeout(() => {
+          this.miniatur.uploadProgress = 0;
+        }, 1000);
+        
+      } catch (e) {
+        console.error('Upload error:', e);
+        this.errorMsg = 'Gagal upload file.';
+        this.miniatur.imagePreview = '';
+        this.miniatur.uploadProgress = 0;
+      }
+    },
+    
+    loadMiniaturImageFromUrl() {
+      if (this.miniatur.imageUrl && this.miniatur.imageUrl.trim()) {
+        this.miniatur.imagePreview = this.miniatur.imageUrl;
+      } else {
+        this.miniatur.imagePreview = '';
+      }
+    },
+    
+    removeMiniaturImage() {
+      this.miniatur.imageUrl = '';
+      this.miniatur.imagePreview = '';
+      this.miniatur.uploadProgress = 0;
+      this.$refs.miniaturFileInput.value = '';
+    },
+    
+    // Model selection handler
+    onModelChange() {
+      console.log('Model changed to:', this.miniatur.selectedModel);
+    },
+    
+    async generateMiniaturDirect() {
+      if (!this.miniatur.imagePreview) {
+        this.showNotification('Upload gambar terlebih dahulu.', 'warning');
+        return;
+      }
+      
+      // Generate prompt otomatis terlebih dahulu
+      
+      try {
+        const promptRes = await fetch('/api/generate-miniatur-prompt', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image_url: this.miniatur.imageUrl
+          }),
+          credentials: 'same-origin'
+        });
+        
+        const promptData = await promptRes.json();
+        
+        if (promptRes.ok && promptData.prompt) {
+          this.miniatur.prompt = promptData.prompt;
+          
+          // Langsung submit
+          this.showNotification('Memulai generate miniatur dengan instruksi otomatis...', 'info');
+          await this.submitMiniatur();
+        } else {
+          this.showNotification(promptData.error || 'Gagal generate instruksi otomatis.', 'danger');
+        }
+      } catch (error) {
+        console.error('Generate direct error:', error);
+        this.showNotification('Terjadi kesalahan saat generate otomatis.', 'danger');
+      }
+    },
+    
+    async submitMiniatur() {
+      // Validasi input
+      if (!this.miniatur.prompt.trim()) {
+        this.errorMsg = 'Instruksi edit wajib diisi.';
+        this.showNotification(this.errorMsg, 'warning');
+        return;
+      }
+      
+      // Check if image is available (either uploaded URL or preview)
+      if (!this.miniatur.imageUrl || !this.miniatur.imageUrl.trim()) {
+        if (!this.miniatur.imagePreview) {
+          this.errorMsg = 'Gambar wajib diupload atau URL gambar harus diisi.';
+          this.showNotification(this.errorMsg, 'warning');
+          return;
+        } else {
+          // If we have preview but no URL, try to upload first
+          this.showNotification('Sedang memproses gambar...', 'info');
+          // The imageUrl will be set after upload completes
+          // For now, we'll proceed with the preview
+        }
+      }
+      
+      console.log('Submitting miniatur with:', {
+        prompt: this.miniatur.prompt,
+        imageUrl: this.miniatur.imageUrl,
+        model: this.miniatur.selectedModel
+      });
+      
+      this.loading = true;
+      this.resultUrl = '';
+      this.errorMsg = '';
+      
+      try {
+        const requestBody = {
+          prompt: this.miniatur.prompt,
+          image_url: this.miniatur.imageUrl || this.miniatur.imagePreview,
+          model: this.miniatur.selectedModel
+        };
+        
+        const res = await fetch('/generate-miniatur', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
+          credentials: 'same-origin'
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          this.resultUrl = data.result_url;
+          this.showNotification('Miniatur berhasil digenerate!', 'success');
+          // Reload results to show new generated item
+          setTimeout(() => {
+            this.loadMiniaturResults();
+          }, 1000);
+        } else {
+          this.errorMsg = data.error || 'Gagal generate miniatur';
+          this.showNotification(this.errorMsg, 'danger');
+        }
+      } catch (e) {
+        console.error('Generate miniatur error:', e);
+        this.errorMsg = 'Gagal generate miniatur';
+        this.showNotification(this.errorMsg, 'danger');
+      }
+      
+      this.loading = false;
+    },
+    
+    // Image to Video Functions
+    async handleImage2VideoFile(e) {
+      const file = e.target.files[0];
+      if (file) {
+        // Show preview immediately
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          this.image2video.imagePreview = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        
+        // Upload file
+        await this.uploadImage2VideoFile(file);
+      }
+    },
+    
+    async handleImage2VideoDrop(e) {
+      e.preventDefault();
+      this.image2video.dragover = false;
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        const file = files[0];
+        if (file.type.startsWith('image/')) {
+          // Show preview immediately
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            this.image2video.imagePreview = e.target.result;
+          };
+          reader.readAsDataURL(file);
+          
+          // Upload file
+          await this.uploadImage2VideoFile(file);
+        }
+      }
+    },
+    
+    async uploadImage2VideoFile(file) {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      try {
+        this.image2video.uploadProgress = 10;
+        
+        const res = await fetch('/upload_image_to_video', { 
+          method: 'POST', 
+          body: formData,
+          credentials: 'same-origin'
+        });
+        
+        this.image2video.uploadProgress = 50;
+        
+        if (res.status === 401) {
+          this.errorMsg = 'Session Anda telah expired. Silakan login ulang.';
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 2000);
+          return;
+        }
+        
+        const data = await res.json();
+        this.image2video.uploadProgress = 100;
+        
+        if (data.url) {
+          this.image2video.imageUrl = data.url;
+          this.showNotification('Gambar berhasil diupload!', 'success');
+        } else if (data.error) {
+          this.errorMsg = data.error;
+          this.image2video.imagePreview = '';
+        }
+        
+        setTimeout(() => {
+          this.image2video.uploadProgress = 0;
+        }, 1000);
+        
+      } catch (e) {
+        console.error('Upload error:', e);
+        this.errorMsg = 'Gagal upload file.';
+        this.image2video.imagePreview = '';
+        this.image2video.uploadProgress = 0;
+      }
+    },
+    
+    loadImage2VideoImageFromUrl() {
+      if (this.image2video.imageUrl && this.image2video.imageUrl.trim()) {
+        this.image2video.imagePreview = this.image2video.imageUrl;
+      } else {
+        this.image2video.imagePreview = '';
+      }
+    },
+    
+    removeImage2VideoImage() {
+      this.image2video.imageUrl = '';
+      this.image2video.imagePreview = '';
+      this.image2video.uploadProgress = 0;
+      this.$refs.image2VideoFileInput.value = '';
+    },
+    
+    
+    async submitImage2Video() {
+      if (!this.image2video.imageUrl || !this.image2video.prompt.trim()) {
+        this.errorMsg = 'Silakan upload gambar dan masukkan deskripsi gerakan';
+        this.showNotification(this.errorMsg, 'warning');
+        return;
+      }
+      
+      this.loading = true;
+      this.errorMsg = '';
+      this.resultUrl = '';
+      
+      try {
+        const res = await fetch('/api/generate_image_video', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: this.image2video.imageUrl,
+            prompt: this.image2video.prompt,
+            duration: parseInt(this.image2video.duration),
+            seed: parseInt(this.image2video.seed)
+          }),
+          credentials: 'same-origin'
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          this.resultUrl = data.video_url;
+          this.showNotification('Video berhasil digenerate!', 'success');
+          // Reload results to show new generated item
+          setTimeout(() => {
+            this.loadVideoResults();
+          }, 1000);
+        } else {
+          this.errorMsg = data.error || 'Gagal generate video';
+          this.showNotification(this.errorMsg, 'danger');
+        }
+      } catch (e) {
+        console.error('Generate video error:', e);
+        this.errorMsg = 'Gagal generate video';
+        this.showNotification(this.errorMsg, 'danger');
+      } finally {
+        this.loading = false;
+      }
+    },
+    
+    // Utility Functions
+    downloadResult(url, filename) {
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${filename}_${Date.now()}.${url.includes('video') ? 'mp4' : 'jpg'}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+    
+    shareResult() {
+      if (navigator.share) {
+        navigator.share({
+          title: 'Hasil Generate AI',
+          text: 'Lihat hasil generate AI saya!',
+          url: this.resultUrl
+        });
+      } else {
+        // Fallback: copy to clipboard
+        navigator.clipboard.writeText(this.resultUrl).then(() => {
+          this.showNotification('Link hasil telah disalin ke clipboard!', 'success');
+        });
+      }
+    },
+    
+    showNotification(message, type = 'info') {
+      // Create toast notification
+      const toast = document.createElement('div');
+      toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'danger' ? 'danger' : type === 'warning' ? 'warning' : 'info'} border-0`;
+      toast.setAttribute('role', 'alert');
+      toast.setAttribute('aria-live', 'assertive');
+      toast.setAttribute('aria-atomic', 'true');
+      
+      toast.innerHTML = `
+        <div class="d-flex">
+          <div class="toast-body">
+            ${message}
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      `;
+      
+      const toastContainer = document.querySelector('.toast-container');
+      toastContainer.appendChild(toast);
+      
+      const bsToast = new bootstrap.Toast(toast);
+      bsToast.show();
+      
+      // Remove toast element after it's hidden
+      toast.addEventListener('hidden.bs.toast', () => {
+        toast.remove();
+      });
+    },
+    
+    // Results Management Functions
+    async loadMiniaturResults() {
+      this.loadingResults = true;
+      try {
+        const res = await fetch('/api/get-miniatur-results', {
+          method: 'GET',
+          credentials: 'same-origin'
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          // Filter results to ensure only valid data is shown
+          this.results = data.results
+            .filter(result => result.url && result.url.trim() !== '')
+            .map(result => ({
+              ...result,
+              type: 'image'
+            }));
+          
+          console.log(`Loaded ${this.results.length} miniatur results for current user`);
+        } else {
+          this.results = [];
+          console.error('Failed to load miniatur results:', data.error);
+        }
+      } catch (e) {
+        console.error('Load miniatur results error:', e);
+        this.results = [];
+      }
+      this.loadingResults = false;
+    },
+    
+    async loadVideoResults() {
+      this.loadingResults = true;
+      console.log('loadVideoResults called, activeGalleryTab:', this.activeGalleryTab);
+      console.log('Current results before loadVideoResults:', this.results);
+      try {
+        console.log('Loading video results...');
+        const res = await fetch('/api/get-video-results', {
+          method: 'GET',
+          credentials: 'same-origin'
+        });
+        
+        console.log('Video results API response status:', res.status);
+        console.log('Video results API response headers:', res.headers);
+        
+        const data = await res.json();
+        console.log('Video results response:', data);
+        console.log('Response data type:', typeof data);
+        console.log('Response data keys:', Object.keys(data));
+        console.log('Response success:', data.success);
+        console.log('Response results:', data.results);
+        console.log('Response results type:', typeof data.results);
+        console.log('Response results length:', data.results ? data.results.length : 'undefined');
+        
+        if (data.success) {
+          console.log('Raw video results from API:', data.results);
+          if (data.results && Array.isArray(data.results)) {
+            this.results = data.results.map(result => ({
+              ...result,
+              type: 'video'
+            }));
+            console.log(`Loaded ${this.results.length} video results`);
+            console.log('Processed video results:', this.results);
+            console.log('Results array after loadVideoResults:', this.results);
+            console.log('Results length after loadVideoResults:', this.results.length);
+          } else {
+            console.error('data.results is not an array:', data.results);
+            this.results = [];
+          }
+        } else {
+          this.results = [];
+          console.error('Failed to load video results:', data.error);
+        }
+      } catch (e) {
+        console.error('Load video results error:', e);
+        this.results = [];
+      }
+      this.loadingResults = false;
+    },
+    
+    showResultPreview(result) {
+      if (result.type === 'video') {
+        // Show video preview modal
+        this.showVideoPreview(result);
+      } else {
+        // Show image preview modal
+        this.showImagePreview(result);
+      }
+    },
+    
+    showVideoPreview(result) {
+      // Create video preview modal
+      const modal = document.createElement('div');
+      modal.className = 'modal fade';
+      modal.setAttribute('tabindex', '-1');
+      modal.setAttribute('aria-hidden', 'true');
+      
+      modal.innerHTML = `
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+          <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary">
+              <h5 class="modal-title">
+                <i class="bi bi-play-circle me-2"></i>Preview Video
+              </h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="text-center">
+                    <video controls class="img-fluid rounded shadow-lg" style="max-height: 500px; width: 100%;">
+                      <source src="${result.url}" type="video/mp4">
+                      Browser Anda tidak mendukung video.
+                    </video>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="preview-info">
+                    <h6 class="text-primary mb-3">
+                      <i class="bi bi-info-circle me-2"></i>Informasi
+                    </h6>
+                    <div class="mb-3">
+                      <label class="form-label text-light" style="opacity: 0.9;">Prompt:</label>
+                      <div class="bg-secondary bg-opacity-25 p-3 rounded" style="max-height: 150px; overflow-y: auto; position: relative;">
+                        <small class="text-white" id="video-prompt-text-${Date.now()}">${result.prompt || 'Video hasil generate'}</small>
+                        <button class="btn btn-sm btn-outline-primary position-absolute" style="top: 5px; right: 5px;" onclick="copyPrompt('video-prompt-text-${Date.now()}')" title="Copy Prompt">
+                          <i class="bi bi-copy"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label text-light" style="opacity: 0.9;">Tipe:</label>
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-play-circle text-danger me-2"></i>
+                        <span class="text-white">Video</span>
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label text-light" style="opacity: 0.9;">Format:</label>
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-file-earmark-play text-info me-2"></i>
+                        <span class="text-white">MP4</span>
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label text-light" style="opacity: 0.9;">Durasi:</label>
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-clock text-warning me-2"></i>
+                        <span class="text-white">${result.duration || '5'} detik</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 d-flex gap-2 justify-content-center">
+                <button class="btn btn-primary" onclick="downloadResult('${result.url}', '${result.filename}')">
+                  <i class="bi bi-download me-2"></i>Download
+                </button>
+                <button class="btn btn-outline-info" onclick="window.open('${result.url}', '_blank')">
+                  <i class="bi bi-box-arrow-up-right me-2"></i>Buka di Tab Baru
+                </button>
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                  <i class="bi bi-x me-2"></i>Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      const bsModal = new bootstrap.Modal(modal);
+      bsModal.show();
+      
+      // Remove modal after hidden
+      modal.addEventListener('hidden.bs.modal', () => {
+        modal.remove();
+      });
+    },
+    
+    showImagePreview(result) {
+      // Create image preview modal
+      const modal = document.createElement('div');
+      modal.className = 'modal fade';
+      modal.setAttribute('tabindex', '-1');
+      modal.setAttribute('aria-hidden', 'true');
+      
+      const imageUrl = typeof result === 'string' ? result : result.url;
+      const prompt = typeof result === 'object' ? result.prompt : 'Hasil Generate Miniatur';
+      const filename = typeof result === 'object' ? result.filename : 'hasil-miniatur.jpg';
+      
+      modal.innerHTML = `
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+          <div class="modal-content bg-dark text-white">
+            <div class="modal-header border-secondary">
+              <h5 class="modal-title">
+                <i class="bi bi-image me-2"></i>Preview Gambar
+              </h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-8">
+                  <div class="text-center">
+                    <img src="${imageUrl}" class="img-fluid rounded shadow-lg" style="max-height: 600px; cursor: pointer;" alt="Preview" onclick="window.open('${imageUrl}', '_blank')">
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <div class="preview-info">
+                    <h6 class="text-primary mb-3">
+                      <i class="bi bi-info-circle me-2"></i>Informasi
+                    </h6>
+                    <div class="mb-3">
+                      <label class="form-label text-light" style="opacity: 0.9;">Prompt:</label>
+                      <div class="bg-secondary bg-opacity-25 p-3 rounded" style="max-height: 150px; overflow-y: auto; position: relative;">
+                        <small class="text-white" id="prompt-text-${Date.now()}">${prompt}</small>
+                        <button class="btn btn-sm btn-outline-primary position-absolute" style="top: 5px; right: 5px;" onclick="copyPrompt('prompt-text-${Date.now()}')" title="Copy Prompt">
+                          <i class="bi bi-copy"></i>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label text-light" style="opacity: 0.9;">Tipe:</label>
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-image text-success me-2"></i>
+                        <span class="text-white">Gambar</span>
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label text-light" style="opacity: 0.9;">Ukuran:</label>
+                      <div class="d-flex align-items-center">
+                        <i class="bi bi-arrows-fullscreen text-info me-2"></i>
+                        <span class="text-white">Original</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-4 d-flex gap-2 justify-content-center">
+                <button class="btn btn-primary" onclick="downloadResult('${imageUrl}', '${filename}')">
+                  <i class="bi bi-download me-2"></i>Download
+                </button>
+                <button class="btn btn-outline-info" onclick="window.open('${imageUrl}', '_blank')">
+                  <i class="bi bi-box-arrow-up-right me-2"></i>Buka di Tab Baru
+                </button>
+                <button class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                  <i class="bi bi-x me-2"></i>Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      const bsModal = new bootstrap.Modal(modal);
+      bsModal.show();
+      
+      // Remove modal after hidden
+      modal.addEventListener('hidden.bs.modal', () => {
+        modal.remove();
+      });
+    },
+    
+    async deleteResult(resultId) {
+      if (!confirm('Apakah Anda yakin ingin menghapus hasil ini?')) {
+        return;
+      }
+      
+      try {
+        const res = await fetch(`/api/delete-result/${resultId}`, {
+          method: 'DELETE',
+          credentials: 'same-origin'
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          this.showNotification('Hasil berhasil dihapus', 'success');
+          // Reload results
+          if (this.activeGalleryTab === 'miniatur') {
+            this.loadMiniaturResults();
+          } else {
+            this.loadVideoResults();
+          }
+        } else {
+          this.showNotification(data.error || 'Gagal menghapus hasil', 'danger');
+        }
+      } catch (e) {
+        console.error('Delete result error:', e);
+        this.showNotification('Gagal menghapus hasil', 'danger');
+      }
+    },
+    
+    formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    },
+    
+    async loadAllResults() {
+      if (this.activeGalleryTab === 'miniatur') {
+        await this.loadMiniaturResults();
+      } else {
+        await this.loadVideoResults();
+      }
+    },
+    
+    async migrateImageToVideo() {
+      try {
+        this.showNotification('Memulai migrasi data...', 'info');
+        
+        const res = await fetch('/api/migrate-image-to-video', {
+          method: 'POST',
+          credentials: 'same-origin'
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+          this.showNotification(`Berhasil memigrasi ${data.migrated_count} data video!`, 'success');
+          // Reload results setelah migrasi
+          await this.loadAllResults();
+        } else {
+          this.showNotification(`Error migrasi: ${data.error}`, 'error');
+        }
+      } catch (e) {
+        console.error('Migration error:', e);
+        this.showNotification('Error saat migrasi data', 'error');
+      }
+    },
+    
+    toggleGridView() {
+      this.gridView = !this.gridView;
+      this.showNotification(this.gridView ? 'Tampilan grid aktif' : 'Tampilan list aktif', 'info');
+    },
+    
+    handleImageError(event) {
+      // Hide the broken image and show placeholder
+      const img = event.target;
+      const placeholder = img.parentElement.querySelector('.image-placeholder');
+      
+      img.style.display = 'none';
+      if (placeholder) {
+        placeholder.style.display = 'flex';
+        placeholder.style.flexDirection = 'column';
+        placeholder.style.alignItems = 'center';
+        placeholder.style.justifyContent = 'center';
+        placeholder.style.height = '120px';
+        placeholder.style.background = 'rgba(255, 255, 255, 0.05)';
+        placeholder.style.borderRadius = '8px';
+        placeholder.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+      }
+    },
+    
+    handleImageLoad(event) {
+      // Image loaded successfully, ensure placeholder is hidden
+      const img = event.target;
+      const placeholder = img.parentElement.querySelector('.image-placeholder');
+      
+      img.style.display = 'block';
+      if (placeholder) {
+        placeholder.style.display = 'none';
+      }
+    },
+    
+    handleVideoError(event) {
+      // Keep video visible but show error state
+      const video = event.target;
+      const playOverlay = video.parentElement.querySelector('.video-play-overlay');
+      
+      // Change play button to error state
+      if (playOverlay) {
+        const icon = playOverlay.querySelector('i');
+        if (icon) {
+          icon.className = 'bi bi-exclamation-triangle-fill';
+        }
+        playOverlay.style.background = 'rgba(220, 53, 69, 0.8)';
+      }
+    },
+    
+    handleVideoLoad(event) {
+      // Video loaded successfully, ensure play button is visible
+      const video = event.target;
+      const playOverlay = video.parentElement.querySelector('.video-play-overlay');
+      
+      video.style.display = 'block';
+      if (playOverlay) {
+        const icon = playOverlay.querySelector('i');
+        if (icon) {
+          icon.className = 'bi bi-play-circle-fill';
+        }
+        playOverlay.style.background = 'rgba(0, 0, 0, 0.7)';
+      }
+    },
+    
+    // Gallery functions
+    async loadGalleryImages() {
+      try {
+        // Load uploaded images
+        const res1 = await fetch('/api/gallery_images');
+        const data1 = await res1.json();
+        if (data1.success) this.galleryImages = data1.images;
+      } catch (e) {
+        console.error('Error loading gallery images:', e);
+      }
+      
+      try {
+        // Load generated images
+        const res2 = await fetch('/api/gallery_generated_images');
+        const data2 = await res2.json();
+        if (data2.success) this.galleryGenerated = data2.images;
+      } catch (e) {
+        console.error('Error loading gallery generated images:', e);
+      }
+    },
+    
+    openMiniaturGallery() {
+      this.showGallery = 'miniatur';
+      this.galleryTab = 'uploaded';
+    },
+    
+    openImage2VideoGallery() {
+      this.showGallery = 'image2video';
+      this.galleryTab = 'uploaded';
+    },
+    
+    selectImageFromGallery(imageUrl) {
+      if (this.showGallery === 'miniatur') {
+        this.miniatur.imageUrl = imageUrl;
+        this.miniatur.imagePreview = imageUrl;
+        this.showNotification('Gambar berhasil dipilih dari galeri', 'success');
+      } else if (this.showGallery === 'image2video') {
+        this.image2video.imageUrl = imageUrl;
+        this.image2video.imagePreview = imageUrl;
+        this.showNotification('Gambar berhasil dipilih dari galeri', 'success');
+      }
+      this.showGallery = false;
+    }
+  }
+}
+
+// Global function for copy prompt
+function copyPrompt(elementId) {
+  const element = document.getElementById(elementId);
+  if (element) {
+    const text = element.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      // Show cool notification
+      showCoolNotification('Prompt berhasil disalin!', 'success');
+    }).catch(err => {
+      console.error('Failed to copy text: ', err);
+      showCoolNotification('Gagal menyalin prompt', 'error');
+    });
+  }
+}
+
+// Cool notification function
+function showCoolNotification(message, type = 'success') {
+  // Create notification container if not exists
+  let container = document.getElementById('cool-notification-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'cool-notification-container';
+    container.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      pointer-events: none;
+    `;
+    document.body.appendChild(container);
+  }
+
+  // Create notification element
+  const notification = document.createElement('div');
+  notification.className = 'cool-notification';
+  
+  const icon = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+  const bgColor = type === 'success' ? 'linear-gradient(135deg, #28a745, #20c997)' : 'linear-gradient(135deg, #dc3545, #fd7e14)';
+  
+  notification.innerHTML = `
+    <div class="cool-notification-content">
+      <div class="cool-notification-icon">
+        <i class="bi ${icon}"></i>
+      </div>
+      <div class="cool-notification-text">
+        <div class="cool-notification-title">${type === 'success' ? 'Berhasil!' : 'Error!'}</div>
+        <div class="cool-notification-message">${message}</div>
+      </div>
+      <div class="cool-notification-close">
+        <i class="bi bi-x"></i>
+      </div>
+    </div>
+  `;
+  
+  // Add styles
+  notification.style.cssText = `
+    background: ${bgColor};
+    color: white;
+    padding: 0;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transform: translateX(400px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    pointer-events: auto;
+    min-width: 320px;
+    max-width: 400px;
+    overflow: hidden;
+    position: relative;
+  `;
+  
+  // Add content styles
+  const style = document.createElement('style');
+  style.textContent = `
+    .cool-notification-content {
+      display: flex;
+      align-items: center;
+      padding: 16px 20px;
+      position: relative;
+    }
+    
+    .cool-notification-icon {
+      font-size: 24px;
+      margin-right: 12px;
+      animation: bounce 0.6s ease-in-out;
+    }
+    
+    .cool-notification-text {
+      flex: 1;
+    }
+    
+    .cool-notification-title {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 2px;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+    
+    .cool-notification-message {
+      font-size: 13px;
+      opacity: 0.9;
+      line-height: 1.4;
+    }
+    
+    .cool-notification-close {
+      font-size: 18px;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+      margin-left: 8px;
+      padding: 4px;
+      border-radius: 4px;
+    }
+    
+    .cool-notification-close:hover {
+      opacity: 1;
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+      }
+      40% {
+        transform: translateY(-8px);
+      }
+      60% {
+        transform: translateY(-4px);
+      }
+    }
+    
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    /* === MODEL SELECTION STYLING === */
+    .model-selection-container {
+      position: relative;
+    }
+    
+    .model-info .alert {
+      border: none;
+      border-radius: 8px;
+      font-size: 0.875rem;
+    }
+    
+    .model-info .alert-info {
+      background: rgba(13, 202, 240, 0.1);
+      color: #0dcaf0;
+    }
+    
+    .model-info .alert-warning {
+      background: rgba(255, 193, 7, 0.1);
+      color: #ffc107;
+    }
+    
+    
+    /* === FULLSCREEN PREVIEW STYLING === */
+    .preview-img {
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+    
+    .preview-img:hover {
+      transform: scale(1.02);
+    }
+    
+    #fullscreenPreviewModal .modal-content {
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(10px);
+    }
+    
+    #fullscreenPreviewModal .modal-header {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    #fullscreenPreviewImage {
+      border-radius: 8px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    
+    /* Responsive modal sizing */
+    @media (max-width: 768px) {
+      #fullscreenPreviewModal .modal-dialog {
+        margin: 1rem;
+      }
+      
+      #fullscreenPreviewImage {
+        max-height: 60vh !important;
+      }
+    }
+    
+    @media (max-width: 576px) {
+      #fullscreenPreviewModal .modal-dialog {
+        margin: 0.5rem;
+      }
+      
+      #fullscreenPreviewImage {
+        max-height: 50vh !important;
+      }
+    }
+    
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+    
+    .cool-notification::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.8), rgba(255,255,255,0.4), rgba(255,255,255,0.8));
+      animation: shimmer 2s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+  `;
+  
+  if (!document.getElementById('cool-notification-styles')) {
+    style.id = 'cool-notification-styles';
+    document.head.appendChild(style);
+  }
+  
+  // Add to container
+  container.appendChild(notification);
+  
+  // Animate in
+  setTimeout(() => {
+    notification.style.transform = 'translateX(0)';
+    notification.style.opacity = '1';
+  }, 10);
+  
+  // Auto remove after 4 seconds
+  const autoRemove = setTimeout(() => {
+    removeNotification(notification);
+  }, 4000);
+  
+  // Close button functionality
+  const closeBtn = notification.querySelector('.cool-notification-close');
+  closeBtn.addEventListener('click', () => {
+    clearTimeout(autoRemove);
+    removeNotification(notification);
+  });
+  
+  // Click to close
+  notification.addEventListener('click', () => {
+    clearTimeout(autoRemove);
+    removeNotification(notification);
+  });
+}
+
+function removeNotification(notification) {
+  notification.style.transform = 'translateX(400px)';
+  notification.style.opacity = '0';
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.parentNode.removeChild(notification);
+    }
+  }, 400);
+}
+
+// Fullscreen Preview Modal
+function openFullscreenPreview(imageSrc) {
+  const modal = new bootstrap.Modal(document.getElementById('fullscreenPreviewModal'));
+  document.getElementById('fullscreenPreviewImage').src = imageSrc;
+  modal.show();
+}
+</script>
+
+<!-- Fullscreen Preview Modal -->
+<div class="modal fade" id="fullscreenPreviewModal" tabindex="-1" aria-labelledby="fullscreenPreviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content bg-dark">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title text-white" id="fullscreenPreviewModalLabel">
+          <i class="bi bi-zoom-in me-2"></i>Preview Gambar
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body d-flex align-items-center justify-content-center p-3">
+        <img id="fullscreenPreviewImage" src="" alt="Fullscreen Preview" class="img-fluid" style="max-height: 70vh; max-width: 100%; object-fit: contain; border-radius: 8px;">
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,3008 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script>
+// Declare toggleMobileNotifications function early to prevent ReferenceError
+window.toggleMobileNotifications = function() {
+    console.log('🔔 toggleMobileNotifications called from inline script');
+    console.log('🔔 Window notification system exists:', !!window.notificationSystem);
+    
+    if (window.notificationSystem) {
+        console.log('🔔 Calling toggleNotifications()');
+        window.notificationSystem.toggleNotifications();
+    } else {
+        console.log('🔔 Notification system not ready, will be handled by notifications.js');
+        // The notifications.js will override this function with proper implementation
+    }
+};
+</script>
+<!-- Animated Background -->
+<div class="animated-background">
+  <div class="floating-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+  <div class="particles">
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+    <div class="particle"></div>
+  </div>
+</div>
+<style>
+  /* Animated Background */
+  .animated-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+  }
+
+  .animated-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(120deg, #18182f 0%, #23233a 100%);
+    animation: backgroundShift 20s ease-in-out infinite;
+  }
+
+  .floating-shapes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .shape {
+    position: absolute;
+    border-radius: 50%;
+    background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(236, 72, 153, 0.1));
+    animation: float 15s ease-in-out infinite;
+  }
+
+  .shape:nth-child(1) {
+    width: 80px;
+    height: 80px;
+    top: 10%;
+    left: 10%;
+    animation-delay: 0s;
+    animation-duration: 20s;
+  }
+
+  .shape:nth-child(2) {
+    width: 120px;
+    height: 120px;
+    top: 20%;
+    right: 15%;
+    animation-delay: 2s;
+    animation-duration: 25s;
+  }
+
+  .shape:nth-child(3) {
+    width: 60px;
+    height: 60px;
+    bottom: 20%;
+    left: 20%;
+    animation-delay: 4s;
+    animation-duration: 18s;
+  }
+
+  .shape:nth-child(4) {
+    width: 100px;
+    height: 100px;
+    bottom: 30%;
+    right: 10%;
+    animation-delay: 6s;
+    animation-duration: 22s;
+  }
+
+  .shape:nth-child(5) {
+    width: 70px;
+    height: 70px;
+    top: 50%;
+    left: 5%;
+    animation-delay: 8s;
+    animation-duration: 16s;
+  }
+
+  .shape:nth-child(6) {
+    width: 90px;
+    height: 90px;
+    top: 60%;
+    right: 5%;
+    animation-delay: 10s;
+    animation-duration: 24s;
+  }
+
+  @keyframes backgroundShift {
+    0%, 100% {
+      background: linear-gradient(120deg, #18182f 0%, #23233a 100%);
+    }
+    25% {
+      background: linear-gradient(120deg, #1a1a35 0%, #252542 100%);
+    }
+    50% {
+      background: linear-gradient(120deg, #1c1c3a 0%, #272745 100%);
+    }
+    75% {
+      background: linear-gradient(120deg, #1e1e3f 0%, #292948 100%);
+    }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg);
+      opacity: 0.3;
+    }
+    25% {
+      transform: translateY(-20px) rotate(90deg);
+      opacity: 0.5;
+    }
+    50% {
+      transform: translateY(-40px) rotate(180deg);
+      opacity: 0.7;
+    }
+    75% {
+      transform: translateY(-20px) rotate(270deg);
+      opacity: 0.5;
+    }
+  }
+
+  /* Particle effect */
+  .particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: rgba(102, 126, 234, 0.6);
+    border-radius: 50%;
+    animation: particleFloat 12s linear infinite;
+  }
+
+  .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+  .particle:nth-child(2) { left: 20%; animation-delay: 2s; }
+  .particle:nth-child(3) { left: 30%; animation-delay: 4s; }
+  .particle:nth-child(4) { left: 40%; animation-delay: 6s; }
+  .particle:nth-child(5) { left: 50%; animation-delay: 8s; }
+  .particle:nth-child(6) { left: 60%; animation-delay: 10s; }
+  .particle:nth-child(7) { left: 70%; animation-delay: 12s; }
+  .particle:nth-child(8) { left: 80%; animation-delay: 14s; }
+  .particle:nth-child(9) { left: 90%; animation-delay: 16s; }
+
+  @keyframes particleFloat {
+    0% {
+      transform: translateY(100vh) scale(0);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-100px) scale(1);
+      opacity: 0;
+    }
+  }
+
+  /* Mobile optimization - reduce animations for better performance */
+  @media (max-width: 768px) {
+    .shape {
+      animation-duration: 25s !important;
+    }
+    
+    .particle {
+      animation-duration: 18s !important;
+    }
+    
+    .animated-background::before {
+      animation-duration: 30s !important;
+    }
+  }
+
+  /* Disable animations for users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .animated-background::before,
+    .shape,
+    .particle {
+      animation: none !important;
+    }
+  }
+
+  /* HERO SECTION - Modern Futuristic Design */
+  .leonardo-hero {
+    width: 100%;
+    background: transparent;
+    padding: 3rem 0 2.5rem 0;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .leonardo-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(240, 147, 251, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 40% 60%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
+    animation: heroBackgroundShift 8s ease-in-out infinite;
+    z-index: -1;
+  }
+
+  .leonardo-hero-title {
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.8px;
+    margin-bottom: 1.5rem;
+    line-height: 1.1;
+    text-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
+    position: relative;
+    animation: titleGlow 4s ease-in-out infinite;
+  }
+
+  .leonardo-hero-title .highlight {
+    background: linear-gradient(135deg, #667eea, #f093fb, #4ecdc4, #45b7d1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 300% 300%;
+    animation: gradientShift 4s ease-in-out infinite;
+    position: relative;
+  }
+
+  .leonardo-hero-title .highlight::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #667eea, #f093fb, #4ecdc4, #45b7d1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: blur(10px);
+    opacity: 0.5;
+    z-index: -1;
+  }
+
+  .leonardo-hero-desc {
+    color: #e2e8f0;
+    font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+    margin-bottom: 2rem;
+    opacity: 1;
+    font-weight: 500;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  }
+
+  .leonardo-hero-btn {
+    background: linear-gradient(135deg, #667eea, #f093fb, #4ecdc4);
+    color: #fff;
+    font-weight: 700;
+    border-radius: 50px;
+    padding: 1rem 3rem;
+    border: none;
+    font-size: 1.1rem;
+    box-shadow: 
+      0 10px 40px rgba(102, 126, 234, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 2rem;
+    display: inline-block;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+
+  .leonardo-hero-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s ease;
+  }
+
+  .leonardo-hero-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #f093fb, #4ecdc4, #667eea);
+    border-radius: 50px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .leonardo-hero-btn:hover::before {
+    left: 100%;
+  }
+
+  .leonardo-hero-btn:hover::after {
+    opacity: 0.1;
+  }
+
+  .leonardo-hero-btn:hover {
+    background: linear-gradient(135deg, #f093fb, #4ecdc4, #667eea);
+    color: #fff;
+    box-shadow: 
+      0 20px 60px rgba(240, 147, 251, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(-3px) scale(1.05);
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  }
+
+  @keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  @keyframes heroBackgroundShift {
+    0%, 100% {
+      background: 
+        radial-gradient(circle at 20% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(240, 147, 251, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 60%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
+    }
+    33% {
+      background: 
+        radial-gradient(circle at 60% 30%, rgba(240, 147, 251, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 30% 70%, rgba(78, 205, 196, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 70% 40%, rgba(102, 126, 234, 0.1) 0%, transparent 50%);
+    }
+    66% {
+      background: 
+        radial-gradient(circle at 40% 80%, rgba(78, 205, 196, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 20% 50%, rgba(240, 147, 251, 0.1) 0%, transparent 50%);
+    }
+  }
+
+  @keyframes titleGlow {
+    0%, 100% {
+      text-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
+    }
+    50% {
+      text-shadow: 0 0 50px rgba(240, 147, 251, 0.5);
+    }
+  }
+  /* MENU FITUR HORIZONTAL - Modern Futuristic Design */
+  .leonardo-feature-menu {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, 
+      rgba(15, 15, 25, 0.95), 
+      rgba(20, 20, 35, 0.9),
+      rgba(25, 25, 45, 0.85));
+    border-radius: 30px;
+    padding: 2rem 3rem;
+    margin: 0 auto 3rem auto;
+    max-width: 1000px;
+    position: relative;
+    z-index: 1;
+    backdrop-filter: blur(30px);
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    box-shadow: 
+      0 20px 60px rgba(0, 0, 0, 0.5), 
+      0 0 0 1px rgba(102, 126, 234, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .leonardo-feature-menu::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+      transparent, 
+      rgba(102, 126, 234, 0.15), 
+      rgba(240, 147, 251, 0.15),
+      rgba(78, 205, 196, 0.15),
+      transparent);
+    transition: left 0.8s ease;
+  }
+
+  .leonardo-feature-menu::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(240, 147, 251, 0.1) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  
+  .leonardo-feature-menu:hover::before {
+    left: 100%;
+  }
+
+  .leonardo-feature-menu:hover::after {
+    opacity: 1;
+  }
+
+  .leonardo-feature-menu:hover {
+    transform: translateY(-5px);
+    box-shadow: 
+      0 30px 80px rgba(102, 126, 234, 0.3), 
+      0 0 0 1px rgba(102, 126, 234, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border-color: rgba(102, 126, 234, 0.5);
+  }
+  .leonardo-feature-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem 2rem;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    min-width: 100px;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+  
+  .leonardo-feature-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+      rgba(102, 126, 234, 0.15), 
+      rgba(240, 147, 251, 0.15),
+      rgba(78, 205, 196, 0.15));
+    border-radius: 25px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .leonardo-feature-item::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 50% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+    border-radius: 25px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .leonardo-feature-item:hover::before {
+    opacity: 1;
+  }
+
+  .leonardo-feature-item:hover::after {
+    opacity: 1;
+  }
+  
+  .leonardo-feature-item:hover {
+    transform: translateY(-8px) scale(1.08);
+    box-shadow: 
+      0 20px 40px rgba(102, 126, 234, 0.4),
+      0 0 0 1px rgba(102, 126, 234, 0.3);
+  }
+  
+  .leonardo-feature-item.active {
+    background: linear-gradient(135deg, 
+      rgba(102, 126, 234, 0.25), 
+      rgba(240, 147, 251, 0.25));
+    border: 2px solid rgba(102, 126, 234, 0.5);
+    box-shadow: 
+      0 15px 35px rgba(102, 126, 234, 0.5),
+      0 0 0 1px rgba(102, 126, 234, 0.4);
+    transform: translateY(-2px);
+  }
+  .leonardo-feature-icon {
+    background: linear-gradient(135deg, #667eea, #f093fb, #4ecdc4);
+    color: #fff;
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    box-shadow: 
+      0 10px 30px rgba(102, 126, 234, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+  }
+  
+  .leonardo-feature-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.6s ease;
+  }
+
+  .leonardo-feature-icon::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #f093fb, #4ecdc4, #667eea);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .leonardo-feature-icon:hover::before {
+    left: 100%;
+  }
+
+  .leonardo-feature-icon:hover::after {
+    opacity: 0.1;
+  }
+
+  .leonardo-feature-icon:hover {
+    transform: scale(1.2) rotate(10deg);
+    box-shadow: 
+      0 20px 50px rgba(102, 126, 234, 0.6),
+      0 0 0 1px rgba(255, 255, 255, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, #f093fb, #4ecdc4, #667eea);
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  .leonardo-feature-label {
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 800;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+    position: relative;
+    z-index: 1;
+  }
+  
+  .leonardo-feature-item:hover .leonardo-feature-label {
+    color: #fff;
+    transform: scale(1.1);
+    text-shadow: 
+      0 0 20px rgba(102, 126, 234, 0.6),
+      0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+  
+  .leonardo-feature-item.active .leonardo-feature-label {
+    color: #fff;
+    font-weight: 800;
+    text-shadow: 
+      0 0 25px rgba(102, 126, 234, 0.7),
+      0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+  /* FEATURED GUIDES - Modern Futuristic Design */
+  .leonardo-featured-guides-section {
+    max-width: 1300px;
+    margin: 0 auto 3rem auto;
+    padding: 0 2vw;
+    position: relative;
+    z-index: 1;
+  }
+
+  .leonardo-featured-guides-section::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(180deg, 
+      transparent 0%, 
+      rgba(102, 126, 234, 0.05) 50%, 
+      transparent 100%);
+    z-index: -1;
+  }
+
+  .leonardo-featured-guides-title {
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 2rem;
+    letter-spacing: -0.8px;
+    text-align: center;
+    text-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
+    position: relative;
+  }
+
+  .leonardo-featured-guides-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(102, 126, 234, 0.8) 25%, 
+      rgba(240, 147, 251, 0.8) 50%, 
+      rgba(78, 205, 196, 0.8) 75%, 
+      transparent 100%);
+    border-radius: 2px;
+  }
+
+  .leonardo-featured-guides-title span {
+    background: linear-gradient(135deg, #667eea, #f093fb, #4ecdc4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease-in-out infinite;
+    position: relative;
+  }
+
+  .leonardo-featured-guides-title span::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #667eea, #f093fb, #4ecdc4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: blur(8px);
+    opacity: 0.5;
+    z-index: -1;
+  }
+  .scroll-indicator {
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  .scroll-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(167, 139, 250, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 2rem;
+    border: 1px solid rgba(167, 139, 250, 0.2);
+    color: #a78bfa;
+    font-size: 0.85rem;
+    font-weight: 500;
+    animation: pulse 2s infinite;
+  }
+  .scroll-hint i {
+    font-size: 1rem;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+  }
+  @media (max-width: 600px) {
+    .scroll-hint {
+      font-size: 0.75rem;
+      padding: 0.4rem 0.8rem;
+    }
+    .scroll-hint span {
+      display: none;
+    }
+  }
+  .leonardo-featured-guides-row {
+    display: flex;
+    gap: 1.5rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 1rem 0 2rem 0;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+  }
+  .leonardo-featured-guides-row::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+  .leonardo-featured-guides-row:hover {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(167, 139, 250, 0.3) transparent;
+  }
+  .leonardo-featured-guides-row:hover::-webkit-scrollbar {
+    display: block;
+    height: 6px;
+  }
+  .leonardo-featured-guides-row:hover::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+  }
+  .leonardo-featured-guides-row:hover::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #a78bfa, #f472b6);
+    border-radius: 3px;
+  }
+  .leonardo-featured-guide-card {
+    background: linear-gradient(145deg, 
+      rgba(20, 20, 35, 0.95), 
+      rgba(25, 25, 45, 0.9),
+      rgba(30, 30, 55, 0.85));
+    border-radius: 2rem;
+    box-shadow: 
+      0 15px 40px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(102, 126, 234, 0.2);
+    min-width: 300px;
+    max-width: 350px;
+    width: 300px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    cursor: pointer;
+    backdrop-filter: blur(20px);
+  }
+
+  .leonardo-featured-guide-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #667eea, #f093fb, #4ecdc4);
+    z-index: 2;
+  }
+
+  .leonardo-featured-guide-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(240, 147, 251, 0.1) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .leonardo-featured-guide-card:hover::after {
+    opacity: 1;
+  }
+
+  .leonardo-featured-guide-card:hover {
+    transform: translateY(-15px) scale(1.03);
+    box-shadow: 
+      0 30px 80px rgba(102, 126, 234, 0.4),
+      0 0 0 1px rgba(102, 126, 234, 0.5);
+    border-color: rgba(102, 126, 234, 0.6);
+    background: linear-gradient(145deg, 
+      rgba(30, 30, 50, 0.95), 
+      rgba(35, 35, 60, 0.9),
+      rgba(40, 40, 70, 0.85));
+  }
+  .leonardo-featured-guide-img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    border-top-left-radius: 2rem;
+    border-top-right-radius: 2rem;
+    transition: transform 0.4s ease;
+    position: relative;
+    z-index: 1;
+    filter: brightness(0.9) contrast(1.1);
+  }
+
+  .leonardo-featured-guide-card:hover .leonardo-featured-guide-img {
+    transform: scale(1.1);
+    filter: brightness(1) contrast(1.2);
+  }
+
+  .leonardo-featured-guide-label {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #667eea, #f093fb, #4ecdc4);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 800;
+    border-radius: 1.5rem;
+    padding: 0.6rem 1.2rem;
+    z-index: 3;
+    box-shadow: 
+      0 8px 25px rgba(102, 126, 234, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+  }
+
+  .leonardo-featured-guide-card:hover .leonardo-featured-guide-label {
+    transform: scale(1.05);
+    box-shadow: 
+      0 12px 35px rgba(102, 126, 234, 0.6),
+      0 0 0 1px rgba(255, 255, 255, 0.2);
+  }
+  .leonardo-featured-guide-content {
+    padding: 1.8rem 1.8rem 1.8rem 1.8rem;
+    color: #fff;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.4));
+    position: relative;
+    z-index: 2;
+  }
+
+  .leonardo-featured-guide-title {
+    font-size: 1.2rem;
+    font-weight: 900;
+    margin-bottom: 0.8rem;
+    line-height: 1.2;
+    letter-spacing: -0.5px;
+    color: #ffffff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+  }
+
+  .leonardo-featured-guide-desc {
+    color: #e2e8f0;
+    font-size: 1rem;
+    opacity: 1;
+    line-height: 1.6;
+    font-weight: 500;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+  }
+  @media (max-width: 900px) {
+    .leonardo-hero-title { font-size: 2.5rem; }
+    .leonardo-feature-menu { padding: 1rem 1.5rem; }
+    .leonardo-feature-item { padding: 0.6rem 1rem; min-width: 70px; }
+    .leonardo-feature-icon { width: 45px; height: 45px; font-size: 1.3rem; }
+    .leonardo-feature-label { font-size: 0.8rem; }
+  }
+  @media (max-width: 600px) {
+    .leonardo-hero { padding: 2.5rem 0 1.5rem 0; }
+    .leonardo-feature-menu { 
+      padding: 1rem; 
+      flex-wrap: wrap; 
+      gap: 0.5rem;
+      max-width: 95%;
+    }
+    .leonardo-feature-item { 
+      padding: 0.5rem 0.8rem; 
+      min-width: 60px;
+      flex: 1 1 auto;
+    }
+    .leonardo-featured-guides-section { padding: 0 1vw; }
+    .leonardo-featured-guides-row { 
+      gap: 1rem; 
+      padding: 0.5rem 0 1.5rem 0;
+    }
+    .leonardo-featured-guide-card { 
+      min-width: 240px; 
+      width: 240px; 
+      max-width: 240px; 
+    }
+    .leonardo-featured-guide-img { height: 100px; }
+    .leonardo-feature-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+    .leonardo-feature-label { font-size: 0.75rem; }
+    .leonardo-hero-title { font-size: 2rem; }
+    .leonardo-hero-desc { font-size: 1.1rem; }
+  }
+
+  /* --- NAVBAR - Modern Futuristic Design --- */
+  .leonardo-navbar {
+    width: 100%;
+    background: rgba(15, 15, 15, 0.85);
+    backdrop-filter: blur(25px);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(102, 126, 234, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 2.5vw 1.2rem 2.5vw;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .leonardo-navbar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+      rgba(102, 126, 234, 0.05) 0%, 
+      rgba(240, 147, 251, 0.05) 50%, 
+      rgba(78, 205, 196, 0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .leonardo-navbar:hover::before {
+    opacity: 1;
+  }
+
+  .leonardo-navbar::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(102, 126, 234, 0.8) 25%, 
+      rgba(240, 147, 251, 0.8) 50%, 
+      rgba(78, 205, 196, 0.8) 75%, 
+      transparent 100%);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+
+  .leonardo-navbar:hover::after {
+    transform: scaleX(1);
+  }
+
+  .leonardo-navbar-logo {
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 2;
+  }
+
+  .leonardo-navbar-logo:hover {
+    transform: scale(1.05);
+    text-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
+  }
+
+  .leonardo-navbar-logo img {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.3));
+  }
+
+  .leonardo-navbar-logo:hover img {
+    filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.6));
+    transform: scale(1.1);
+  }
+
+  .leonardo-navbar-menu {
+    display: flex;
+    align-items: center;
+    gap: 1.7rem;
+    position: relative;
+    z-index: 2;
+  }
+
+  .leonardo-navbar-menu a {
+    color: #e2e8f0;
+    font-weight: 700;
+    font-size: 1.08rem;
+    text-decoration: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 25px;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  .leonardo-navbar-menu a::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #667eea, #f093fb);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 25px;
+  }
+
+  .leonardo-navbar-menu a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #f093fb);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px rgba(102, 126, 234, 0.6);
+  }
+
+  .leonardo-navbar-menu a:hover::before {
+    opacity: 0.1;
+  }
+
+  .leonardo-navbar-menu a:hover::after {
+    width: 80%;
+  }
+
+  .leonardo-navbar-menu a.active, .leonardo-navbar-menu a:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(240, 147, 251, 0.2));
+    color: #fff;
+    transform: translateY(-2px);
+    text-shadow: 0 0 10px rgba(102, 126, 234, 0.4);
+  }
+
+  .leonardo-navbar-cta {
+    background: linear-gradient(135deg, #667eea, #f093fb, #4ecdc4);
+    color: #fff;
+    font-weight: 700;
+    border-radius: 50px;
+    padding: 0.8rem 2.5rem;
+    border: none;
+    font-size: 1.08rem;
+    box-shadow: 
+      0 8px 25px rgba(102, 126, 234, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+    margin-left: 1.5rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+  }
+
+  .leonardo-navbar-cta::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s ease;
+  }
+
+  .leonardo-navbar-cta:hover::before {
+    left: 100%;
+  }
+
+  .leonardo-navbar-cta:hover {
+    background: linear-gradient(135deg, #f093fb, #4ecdc4, #667eea);
+    color: #fff;
+    box-shadow: 
+      0 15px 40px rgba(240, 147, 251, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(-3px) scale(1.05);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+  }
+
+  /* Notification Bell in Mobile Navbar */
+  .notification-bell-mobile {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .notification-icon-mobile {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 45px;
+    height: 45px;
+    background: linear-gradient(90deg, #6366f1, #ec4899);
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  }
+
+  .notification-icon-mobile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+  }
+
+  .notification-icon-mobile i {
+    font-size: 1.2rem;
+  }
+
+  .notification-badge-mobile {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ff4757;
+    color: white;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border: 2px solid #1a1a2e;
+    animation: pulse 2s infinite;
+  }
+
+  /* Ensure notification bell is clickable */
+  .notification-bell-mobile {
+    cursor: pointer !important;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    pointer-events: auto !important;
+    z-index: 10 !important;
+    position: relative;
+  }
+
+  .notification-bell-mobile:active {
+    transform: scale(0.95);
+  }
+
+  .notification-bell-mobile:hover {
+    transform: translateY(-2px);
+  }
+
+  .notification-icon-mobile {
+    pointer-events: auto !important;
+    z-index: 10 !important;
+    cursor: pointer !important;
+  }
+
+  .notification-icon-mobile i {
+    pointer-events: none;
+  }
+
+  .notification-badge-mobile {
+    pointer-events: none;
+  }
+
+  /* Force clickability on mobile */
+  @media (max-width: 768px) {
+    .notification-bell-mobile {
+      cursor: pointer !important;
+      pointer-events: auto !important;
+      z-index: 1000 !important;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      position: relative !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      min-width: 44px !important;
+      min-height: 44px !important;
+    }
+    
+    .notification-icon-mobile {
+      cursor: pointer !important;
+      pointer-events: auto !important;
+      z-index: 1000 !important;
+      -webkit-tap-highlight-color: transparent;
+      position: relative !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+    
+    .notification-bell-mobile:active {
+      transform: scale(0.95) !important;
+      background-color: rgba(99, 102, 241, 0.1) !important;
+    }
+    
+    .notification-bell-mobile:hover {
+      background-color: rgba(99, 102, 241, 0.05) !important;
+    }
+  }
+  @media (max-width: 900px) {
+    .leonardo-navbar-menu { gap: 0.7rem; }
+    .leonardo-navbar-cta { padding: 0.5rem 1.2rem; font-size: 1rem; }
+  }
+  @media (max-width: 600px) {
+    .leonardo-navbar { align-items: flex-start; padding: 1rem 1vw; }
+    .leonardo-navbar-menu {flex-direction:raw; gap: 0.5rem; }
+    .leonardo-navbar-cta { margin-left: 0; margin-top: 0.7rem; }
+  }
+
+  /* --- MENU GENERATE ala Leonardo AI --- */
+  .leonardo-generate-row {
+    display: flex;
+    gap: 2.2rem;
+    margin: 2.5rem auto 2rem auto;
+    max-width: 1200px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .leonardo-generate-card {
+    background: #23233a;
+    border-radius: 1.5rem;
+    box-shadow: 0 8px 32px 0 #0006;
+    padding: 2rem 2rem 1.5rem 2rem;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 260px;
+    max-width: 340px;
+    position: relative;
+    overflow: hidden;
+    border: 1.5px solid rgba(236,72,153,0.18);
+    transition: transform 0.18s cubic-bezier(.4,2,.6,1);
+  }
+  .leonardo-generate-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 16px 48px 0 #ec489966;
+  }
+  .leonardo-generate-icon {
+    background: linear-gradient(90deg,#6366f1,#ec4899);
+    color: #fff;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 1.1rem;
+    box-shadow: 0 2px 12px #6366f133;
+  }
+  .leonardo-generate-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+  .leonardo-generate-desc {
+    font-size: 1.05rem;
+    color: #e0e7ef;
+    margin-bottom: 1.2rem;
+    opacity: 0.85;
+    text-align: center;
+  }
+  .leonardo-generate-btn {
+    background: linear-gradient(90deg,#6366f1,#ec4899);
+    color: #fff;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.5rem 1.7rem;
+    border: none;
+    font-size: 1.08rem;
+    box-shadow: 0 0 12px #6366f199;
+    text-decoration: none;
+    margin-top: auto;
+    transition: background 0.3s;
+    display: inline-block;
+  }
+  .leonardo-generate-btn:hover {
+    background: linear-gradient(90deg,#ec4899,#6366f1);
+    color: #fff;
+    box-shadow: 0 0 18px #ec4899cc;
+  }
+  @media (max-width: 900px) { .leonardo-generate-row { flex-direction: column; gap: 1.2rem; max-width: 98vw; } }
+  @media (max-width: 600px) {
+    .leonardo-generate-row { flex-direction: column; gap: 1.2rem; align-items: center; margin-top: 1.2rem; }
+    .leonardo-generate-card { width: 95vw; min-width: unset; max-width: 99vw; border-radius: 2rem; padding: 1.2rem; }
+    .leonardo-generate-title { font-size: 1.1rem; }
+    .leonardo-generate-desc, .leonardo-generate-btn { font-size: 0.97rem; }
+    .leonardo-navbar-logo span {
+      font-size: 14px;
+    }
+    .leonardo-navbar-logo img {
+      height: 20px;
+      width: 20px;
+    }
+  }
+  .masonry {
+    column-count: 4;
+    column-gap: 2rem;
+    max-width: 1400px;
+    margin: 2.5rem auto 0 auto;
+    padding: 0 1vw;
+    position: relative;
+    z-index: 1;
+  }
+  @media (max-width: 1200px) { .masonry { column-count: 3; } }
+  @media (max-width: 900px) { .masonry { column-count: 2; } }
+  @media (max-width: 600px) { .masonry { column-count: 2; } }
+  .masonry-card {
+    background: linear-gradient(145deg, 
+      rgba(20, 20, 35, 0.95), 
+      rgba(25, 25, 45, 0.9));
+    border-radius: 1.8rem;
+    box-shadow: 
+      0 8px 30px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(102, 126, 234, 0.1);
+    margin-bottom: 2rem;
+    display: inline-block;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    break-inside: avoid;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(15px);
+  }
+
+  .masonry-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 20%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(240, 147, 251, 0.1) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .masonry-card:hover::before {
+    opacity: 1;
+  }
+
+  .masonry-card:hover {
+    box-shadow: 
+      0 20px 60px rgba(102, 126, 234, 0.4),
+      0 0 0 1px rgba(102, 126, 234, 0.3);
+    transform: translateY(-8px) scale(1.03);
+    border-color: rgba(102, 126, 234, 0.4);
+  }
+  .masonry-img {
+    width: 100%;
+    display: block;
+    border-top-left-radius: 1.8rem;
+    border-top-right-radius: 1.8rem;
+    object-fit: cover;
+    background: #23233a;
+    transition: transform 0.4s ease;
+    filter: brightness(0.9) contrast(1.1);
+  }
+
+  .masonry-card:hover .masonry-img {
+    transform: scale(1.05);
+    filter: brightness(1) contrast(1.2);
+  }
+
+  .masonry-video {
+    width: 100%;
+    display: block;
+    border-top-left-radius: 1.8rem;
+    border-top-right-radius: 1.8rem;
+    background: #23233a;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+    filter: brightness(0.9) contrast(1.1);
+  }
+
+  .masonry-card:hover .masonry-video {
+    transform: scale(1.05);
+    filter: brightness(1) contrast(1.2);
+  }
+  .masonry-overlay {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    background: linear-gradient(0deg,
+      rgba(15, 15, 25, 0.95) 0%,
+      rgba(20, 20, 35, 0.8) 50%,
+      rgba(25, 25, 45, 0.3) 100%);
+    padding: 1.5rem 1.5rem 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    backdrop-filter: blur(10px);
+    border-bottom-left-radius: 1.8rem;
+    border-bottom-right-radius: 1.8rem;
+  }
+
+  .masonry-title {
+    color: #ffffff;
+    font-weight: 900;
+    font-size: 1.1rem;
+    margin-bottom: 0.2rem;
+    letter-spacing: 0.3px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  }
+
+  .masonry-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    color: #e2e8f0;
+    font-size: 1rem;
+    font-weight: 600;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  }
+
+  .masonry-creator {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transition: all 0.3s ease;
+  }
+
+  .masonry-creator:hover {
+    color: #fff;
+    transform: scale(1.05);
+  }
+
+  .masonry-creator-avatar {
+    width: 30px; 
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(102, 126, 234, 0.6);
+    transition: all 0.3s ease;
+  }
+
+  .masonry-creator:hover .masonry-creator-avatar {
+    border-color: rgba(102, 126, 234, 1);
+    box-shadow: 0 0 15px rgba(102, 126, 234, 0.4);
+  }
+
+  .masonry-likes, .masonry-views {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: all 0.3s ease;
+  }
+
+  .masonry-likes:hover, .masonry-views:hover {
+    transform: scale(1.1);
+  }
+
+  .masonry-likes i, .masonry-views i {
+    color: #f093fb;
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+  }
+
+  .masonry-likes:hover i, .masonry-views:hover i {
+    color: #fff;
+    text-shadow: 0 0 10px rgba(240, 147, 251, 0.6);
+  }
+  .tags-bar {
+    display: flex;
+    gap: 1rem;
+    margin: 3rem auto 2rem auto;
+    max-width: 1200px;
+    padding: 0 2vw;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .tag-btn {
+    background: linear-gradient(135deg, 
+      rgba(20, 20, 35, 0.9), 
+      rgba(25, 25, 45, 0.8));
+    color: #ffffff;
+    font-weight: 800;
+    border-radius: 50px;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    cursor: pointer;
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(20px);
+    box-shadow: 
+      0 8px 25px rgba(0, 0, 0, 0.3),
+      0 0 0 1px rgba(102, 126, 234, 0.1);
+    letter-spacing: 0.3px;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.8);
+  }
+
+  .tag-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, 
+      transparent, 
+      rgba(102, 126, 234, 0.2), 
+      rgba(240, 147, 251, 0.2),
+      transparent);
+    transition: left 0.6s ease;
+  }
+
+  .tag-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 50% 50%, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .tag-btn:hover::before {
+    left: 100%;
+  }
+
+  .tag-btn:hover::after {
+    opacity: 1;
+  }
+
+  .tag-btn:hover {
+    background: linear-gradient(135deg, 
+      rgba(102, 126, 234, 0.2), 
+      rgba(240, 147, 251, 0.2));
+    color: #fff;
+    border-color: rgba(102, 126, 234, 0.5);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 
+      0 15px 40px rgba(102, 126, 234, 0.4),
+      0 0 0 1px rgba(102, 126, 234, 0.3);
+  }
+
+  .tag-btn.active {
+    background: linear-gradient(135deg, #667eea, #f093fb, #4ecdc4);
+    color: #fff;
+    border-color: rgba(102, 126, 234, 0.6);
+    box-shadow: 
+      0 15px 40px rgba(102, 126, 234, 0.5),
+      0 0 0 1px rgba(102, 126, 234, 0.4);
+    transform: translateY(-3px) scale(1.05);
+  }
+
+  .tag-btn.active::before {
+    display: none;
+  }
+  
+  /* Responsive design for tags-bar */
+  @media (max-width: 768px) {
+    .tags-bar {
+      gap: 0.6rem;
+      padding: 0 1vw;
+      margin: 2rem auto 1.5rem auto;
+    }
+    .tag-btn {
+      padding: 0.6rem 1.4rem;
+      font-size: 0.9rem;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .tags-bar {
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .tag-btn {
+      padding: 0.5rem 1.2rem;
+      font-size: 0.85rem;
+      min-width: 80px;
+      text-align: center;
+    }
+  }
+  .creative-top-cards {
+    display: flex;
+    gap: 2rem;
+    margin: 2.5rem auto 2rem auto;
+    max-width: 1200px;
+    justify-content: center;
+  }
+  .creative-card {
+    flex: 1 1 0;
+    min-width: 260px;
+    background: linear-gradient(120deg, rgba(99,102,241,0.7), rgba(236,72,153,0.6));
+    border-radius: 1.5rem;
+    box-shadow: 0 8px 32px 0 #0006;
+    padding: 2rem 2rem 1.5rem 2rem;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(8px) saturate(1.2);
+    border: 1.5px solid rgba(236,72,153,0.18);
+    transition: transform 0.18s cubic-bezier(.4,2,.6,1);
+  }
+  .creative-card:hover {
+    transform: translateY(-6px) scale(1.03);
+    box-shadow: 0 16px 48px 0 #ec489966;
+  }
+  .creative-card-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.5px;
+  }
+  .creative-card-desc {
+    font-size: 1.05rem;
+    color: #e0e7ef;
+    margin-bottom: 1.2rem;
+    opacity: 0.85;
+  }
+  .creative-card-btn {
+    background: linear-gradient(90deg,#6366f1,#ec4899);
+    color: #fff;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.6rem 2.2rem;
+    border: none;
+    font-size: 1.08rem;
+    box-shadow: 0 0 12px #6366f199;
+    transition: background 0.3s;
+    text-decoration: none;
+    margin-top: auto;
+  }
+  .creative-card-btn:hover {
+    background: linear-gradient(90deg,#ec4899,#6366f1);
+    color: #fff;
+    box-shadow: 0 0 18px #ec4899cc;
+  }
+  @media (max-width: 900px) { .creative-top-cards { flex-direction: column; gap: 1.2rem; max-width: 98vw; } }
+  @media (max-width: 600px) {
+    .music-list-item{
+      display: block !important;
+    }
+    .creative-top-cards {
+      flex-direction: column;
+      gap: 1.2rem;
+      align-items: center;
+      margin-top: 1.2rem;
+    }
+    .creative-card {
+      width: 95vw;
+      min-width: unset;
+      max-width: 99vw;
+      border-radius: 2rem;
+      padding: 1.2rem 1.2rem 1.2rem 1.2rem;
+      box-shadow: 0 4px 24px 0 #ec489955;
+      margin: 0 auto;
+      background: linear-gradient(90deg, #6366f1 0%, #60a5fa 50%, #ec4899 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .creative-card-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #fff;
+      text-shadow: 0 2px 8px #23233a99;
+      letter-spacing: 0.5px;
+      text-align: center;
+      width: 100%;
+    }
+    .creative-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 32px 0 #ec4899aa;
+      background: linear-gradient(90deg, #ec4899 0%, #6366f1 100%);
+    }
+    .creative-card-desc, .creative-card-btn {
+      display: none !important;
+    }
+  }
+  .no-content {
+    text-align: center;
+    color: #a5b4fc;
+    font-size: 1.2rem;
+    margin: 3rem 0;
+    padding: 2rem;
+  }
+  @media (min-width: 900px) {
+    .masonry {
+      column-count: 5;
+      column-gap: 0;
+      padding: 0;
+      max-width: 100vw;
+      margin: 0 auto;
+    }
+    .masonry-card {
+      display: inline-block;
+      width: 100%;
+      margin: 0;
+      background: none;
+      border-radius: 0;
+      box-shadow: none;
+      overflow: hidden;
+      break-inside: avoid;
+      transition: none;
+    }
+    .masonry-card:hover {
+      box-shadow: none;
+      transform: none;
+    }
+    .masonry-img, .masonry-video {
+      width: 100%;
+      display: block;
+      border-radius: 0;
+      object-fit: cover;
+      aspect-ratio: 1/1;
+      min-height: 180px;
+      max-height: 340px;
+    }
+    .masonry-overlay {
+      padding: 0.5rem 0.7rem 0.5rem 0.7rem;
+      background: linear-gradient(0deg,rgba(24,24,47,0.92) 70%,rgba(24,24,47,0.1) 100%);
+      position: relative;
+      min-height: 40px;
+    }
+  }
+  
+
+</style>
+
+<!-- NAVBAR ala Leonardo AI -->
+<div class="leonardo-navbar">
+  <div class="leonardo-navbar-logo">
+    <img src="/static/assets/image/logo.png" alt="Logo" style="height:2.2rem;width:auto;vertical-align:middle;">
+    <span style="font-weight:900;letter-spacing:1px;">INEMI AI</span>
+  </div>
+  <div class="leonardo-navbar-menu">
+    <!-- Notification Bell before Upgrade button -->
+    <div class="notification-bell-mobile" id="notification-bell-mobile" onclick="toggleMobileNotifications()" ontouchstart="toggleMobileNotifications()">
+      <div class="notification-icon-mobile" id="notification-icon-mobile">
+        <i class="bi bi-bell"></i>
+        <span class="notification-badge-mobile" id="notification-badge-mobile">0</span>
+      </div>
+    </div>
+    <a href="/upgrade_akun" class="leonardo-navbar-cta">Upgrade</a>
+  </div>
+</div>
+
+<!-- HERO SECTION ala Leonardo AI -->
+<div class="leonardo-hero">
+  <div class="leonardo-hero-title">
+    Wujudkan Kreatifitas Digitalmu Dengan <span class="highlight">INEMI</span>
+  </div>
+  <div class="leonardo-hero-desc">
+    Mulai Buat Konten mu.
+  </div>
+  <a href="#" class="leonardo-hero-btn">Coba Inemi</a>
+  <div class="leonardo-feature-menu">
+    <!-- 1. Miniatur AI (Pertama) -->
+    <div class="leonardo-feature-item" onclick="window.location.href='/generate_miniatur'">
+      <div class="leonardo-feature-icon"><i class="bi bi-magic"></i></div>
+      <div class="leonardo-feature-label">Miniatur</div>
+    </div>
+    <!-- 2. Gambar -->
+    <div class="leonardo-feature-item" onclick="window.location.href='/generate_image'">
+      <div class="leonardo-feature-icon"><i class="bi bi-image"></i></div>
+      <div class="leonardo-feature-label">Image</div>
+    </div>
+    <!-- 3. Image to Video -->
+    <div class="leonardo-feature-item" onclick="window.location.href='/generate_video'">
+      <div class="leonardo-feature-icon"><i class="bi bi-image"></i></div>
+      <div class="leonardo-feature-label">Image to Video</div>
+    </div>
+    <!-- 4. Musik -->
+    <div class="leonardo-feature-item" onclick="window.location.href='/generate_music'">
+      <div class="leonardo-feature-icon"><i class="bi bi-music-note-beamed"></i></div>
+      <div class="leonardo-feature-label">Musik</div>
+    </div>
+    <!-- 5. Face Swap -->
+    <div class="leonardo-feature-item" onclick="window.location.href='/generate_image'">
+      <div class="leonardo-feature-icon"><i class="bi bi-person-raised-hand"></i></div>
+      <div class="leonardo-feature-label">Face Swap</div>
+    </div>
+    <!-- 6. Video (Terakhir) -->
+    <div class="leonardo-feature-item" onclick="window.location.href='/generate_video'">
+      <div class="leonardo-feature-icon"><i class="bi bi-film"></i></div>
+      <div class="leonardo-feature-label">Video</div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURED GUIDES ala Leonardo AI -->
+<div class="leonardo-featured-guides-section">
+  <div class="leonardo-featured-guides-title">Panduan <span>Unggulan</span></div>
+  <div class="scroll-indicator">
+    <div class="scroll-hint">
+      <i class="bi bi-arrow-left-circle"></i>
+      <span>Geser untuk melihat lebih banyak</span>
+      <i class="bi bi-arrow-right-circle"></i>
+    </div>
+  </div>
+  <div class="leonardo-featured-guides-row">
+    <!-- 1. Miniatur AI (Pertama) -->
+    <div class="leonardo-featured-guide-card" onclick="window.location.href='/generate_miniatur'">
+      <img src="/static/logo/1.jpeg" class="leonardo-featured-guide-img" alt="Miniatur">
+      <div class="leonardo-featured-guide-label" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);">
+        <i class="bi bi-magic"></i> Miniatur
+      </div>
+      <div class="leonardo-featured-guide-content">
+        <div class="leonardo-featured-guide-title">BUAT MINIATUR AI</div>
+        <div class="leonardo-featured-guide-desc">Ciptakan miniatur berkualitas tinggi dengan teknologi AI canggih.</div>
+      </div>
+    </div>
+    
+    <!-- 2. Gambar -->
+    <div class="leonardo-featured-guide-card" onclick="window.location.href='/generate_image'">
+      <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" class="leonardo-featured-guide-img" alt="Pembuatan Gambar">
+      <div class="leonardo-featured-guide-label" style="background:linear-gradient(135deg,#6366f1,#ec4899);">
+        <i class="bi bi-image"></i> Gambar
+      </div>
+      <div class="leonardo-featured-guide-content">
+        <div class="leonardo-featured-guide-title">BUAT GAMBAR MENAKJUBKAN</div>
+        <div class="leonardo-featured-guide-desc">Ciptakan visual yang menakjubkan dengan teknologi AI pembuatan gambar.</div>
+      </div>
+    </div>
+    
+    <!-- 3. Image to Video -->
+    <div class="leonardo-featured-guide-card" onclick="window.location.href='/generate_video'">
+      <img src="https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=400&q=80" class="leonardo-featured-guide-img" alt="Image to Video">
+      <div class="leonardo-featured-guide-label" style="background:linear-gradient(135deg,#10b981,#3b82f6);">
+        <i class="bi bi-image"></i> Image to Video
+      </div>
+      <div class="leonardo-featured-guide-content">
+        <div class="leonardo-featured-guide-title">UBAH GAMBAR MENJADI VIDEO</div>
+        <div class="leonardo-featured-guide-desc">Transformasikan gambar statis menjadi video animasi yang hidup.</div>
+      </div>
+    </div>
+    
+    <!-- 4. Musik -->
+    <div class="leonardo-featured-guide-card" onclick="window.location.href='/generate_music'">
+      <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80" class="leonardo-featured-guide-img" alt="Pembuatan Musik">
+      <div class="leonardo-featured-guide-label" style="background:linear-gradient(135deg,#a78bfa,#f472b6);">
+        <i class="bi bi-music-note-beamed"></i> Musik
+      </div>
+      <div class="leonardo-featured-guide-content">
+        <div class="leonardo-featured-guide-title">KOMPOSISI MUSIK ASLI</div>
+        <div class="leonardo-featured-guide-desc">Ciptakan komposisi musik unik dengan bantuan AI.</div>
+      </div>
+    </div>
+    
+    <!-- 5. Face Swap -->
+    <div class="leonardo-featured-guide-card" onclick="window.location.href='/generate_image'">
+      <img src="https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80" class="leonardo-featured-guide-img" alt="Face Swap">
+      <div class="leonardo-featured-guide-label" style="background:linear-gradient(135deg,#a78bfa,#6366f1);">
+        <i class="bi bi-person-raised-hand"></i> Face Swap
+      </div>
+      <div class="leonardo-featured-guide-content">
+        <div class="leonardo-featured-guide-title">TEKNOLOGI FACE SWAP</div>
+        <div class="leonardo-featured-guide-desc">Ubah wajah dengan teknologi AI face swapping yang canggih.</div>
+      </div>
+    </div>
+    
+    <!-- 6. Video (Terakhir) -->
+    <div class="leonardo-featured-guide-card" onclick="window.location.href='/generate_video'">
+      <img src="https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80" class="leonardo-featured-guide-img" alt="Pembuatan Video">
+      <div class="leonardo-featured-guide-label" style="background:linear-gradient(135deg,#f472b6,#6366f1);">
+        <i class="bi bi-film"></i> Video
+      </div>
+      <div class="leonardo-featured-guide-content">
+        <div class="leonardo-featured-guide-title">BUAT VIDEO DINAMIS</div>
+        <div class="leonardo-featured-guide-desc">Ciptakan konten video yang menarik dengan teknologi AI.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HAPUS seluruh elemen/kode menu generate lama (kartu 'Pembuat Gambar', 'Pembuat Video', 'Pembuat Musik') di bawah featured guides agar tidak numpuk -->
+
+<div class="tags-bar">
+  <a href="/home" class="tag-btn {% if not active_filter %}active{% endif %}">
+    <i class="bi bi-grid-3x3-gap"></i>
+    Semua
+  </a>
+  <a href="/home/musik" class="tag-btn {% if active_filter == 'music' %}active{% endif %}">
+    <i class="bi bi-music-note-beamed"></i>
+    Musik
+  </a>
+  <a href="/home/foto" class="tag-btn {% if active_filter == 'photo' %}active{% endif %}">
+    <i class="bi bi-image"></i>
+    Foto
+  </a>
+  <a href="/home/videos" class="tag-btn {% if active_filter == 'video' %}active{% endif %}">
+    <i class="bi bi-camera-video"></i>
+    Video
+  </a>
+  <a href="/home/videos_iklan" class="tag-btn {% if active_filter == 'video_iklan' %}active{% endif %}">
+    <i class="bi bi-play-circle"></i>
+    Video Iklan
+  </a>
+  <a href="/home/favorite" class="tag-btn favorite-btn {% if active_filter == 'favorite' %}active{% endif %}">
+    <i class="bi bi-star-fill"></i>
+    Favorite
+  </a>
+</div>
+
+
+
+{% if active_filter == 'music' %}
+{% set music_items = media_items | selectattr('type', 'equalto', 'music') | list %}
+<style>
+.music-3col-grid {
+  display: flex;
+  gap: 2.5rem;
+  margin: 2.5rem 0 2rem 0;
+  justify-content: center;
+}
+.music-col {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2.2rem;
+}
+.music-list-item {
+  display: flex;
+  align-items: center;
+  background: rgba(36, 36, 46, 0.65);
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 32px 0 rgba(108, 99, 255, 0.18);
+  backdrop-filter: blur(18px);
+  border: 1.5px solid rgba(108, 99, 255, 0.25);
+  padding: 1.2rem 1.5rem;
+  transition: box-shadow 0.3s, transform 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.music-list-item:hover {
+  box-shadow: 0 0 32px #6c63ff99, 0 8px 32px 0 rgba(108, 99, 255, 0.28);
+  transform: translateY(-4px) scale(1.025);
+  border-color: #6c63ff;
+}
+.music-cover {
+  width: 70px;
+  height: 70px;
+  border-radius: 1.2rem;
+  object-fit: cover;
+  box-shadow: 0 2px 12px #6c63ff33;
+  margin-right: 1.3rem;
+  border: 2px solid #6c63ff44;
+  background: #222;
+}
+.music-list-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.music-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.1rem;
+}
+.music-meta {
+  font-size: 0.93rem;
+  color: #aab;
+  margin-bottom: 0.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+.music-meta .music-desc {
+  color: #ccc;
+  font-size: 0.89rem;
+  opacity: 0.8;
+  margin-left: 0.5rem;
+}
+.music-stats {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  margin-top: 0.2rem;
+}
+.music-stats i {
+  font-size: 1.2rem;
+  color: #6c63ff;
+  cursor: pointer;
+  transition: color 0.2s, transform 0.2s;
+}
+.music-stats i:hover {
+  color: #ff4ecd;
+  transform: scale(1.18);
+}
+.music-download-btn {
+  position: absolute;
+  right: 1.2rem;
+  top: 1.2rem;
+  background: linear-gradient(135deg, #6c63ff, #ff4ecd);
+  color: #fff;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 10px #6c63ff44;
+  font-size: 1.2rem;
+  transition: background 0.2s, color 0.2s;
+  z-index: 2;
+}
+.music-download-btn:hover {
+  background: linear-gradient(135deg, #ff4ecd, #6c63ff);
+  color: #fff;
+}
+/* 2 kolom untuk layar < 900px */
+@media (max-width: 900px) {
+  .music-3col-grid {
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+  .music-col {
+    width: 50%;
+    min-width: 250px;
+  }
+  .music-3col-grid > .music-col:nth-child(3) {
+    display: none;
+  }
+}
+/* 1 kolom untuk layar < 600px */
+@media (max-width: 600px) {
+  .music-3col-grid {
+    flex-direction: column;
+    gap: 0.7rem;
+  }
+  .music-col {
+    width: 100%;
+  }
+}
+</style>
+<div class="row mb-5 mx-auto">
+  {% for item in music_items %}
+  <div class="col-6 col-lg-4">
+      <div class="music-list-item" data-content-type="song" data-content-id="{{ item.id }}" onclick="window.location.href='/post_musik/{{ item.id }}'">
+        <img src="{{ item.image_url or '/static/assets/image/default.jpg' }}" class="music-cover">
+        <div class="music-list-main" style="width: 70%;">
+          <div class="music-title">{{ item.title or 'Untitled' }}</div>
+          <div class="music-meta">
+            {{ item.user.username if item.user else '' }}
+          </div>
+          <div class="music-stats">
+            <span><i class="bi bi-heart" data-content-type="{{ item.type }}" data-content-id="{{ item.id }}"></i> {{ item.likes_count }}</span>
+            <span><i class="bi bi-chat"></i> {{ item.comments_count }}</span>
+          </div>
+        </div>
+        <a href="/post_musik/{{ item.id }}"" class="music-download-btn mt-5" title="Play">
+          <i class="bi bi-play"></i>
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+</div>
+<style>
+.music-tab-switcher .tab-btn {
+  background: linear-gradient(90deg,#6366f1,#ec4899);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.4rem 1.5rem;
+  border: none;
+  font-size: 1.01rem;
+  box-shadow: 0 0 12px #6366f199;
+  transition: all 0.3s;
+  margin-bottom: 0.2rem;
+  opacity: 0.7;
+}
+.music-tab-switcher .tab-btn.active {
+  opacity: 1;
+  background: linear-gradient(90deg,#ec4899,#6366f1);
+  color: #fff;
+}
+.music-list-item {
+  display: flex;
+  align-items: center;
+  background: #181825;
+  border-radius: 1.1rem;
+  padding: 8px 0.7rem;
+  margin-bottom: 12px;
+  box-shadow: none;
+  min-height: 72px;
+}
+.music-col .music-list-item:last-child {
+  margin-bottom: 0;
+}
+.music-cover {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 0.7rem;
+  flex-shrink: 0;
+}
+.music-list-main {
+  flex: 1;
+  min-width: 0;
+}
+.music-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.music-meta {
+  color: #a5b4fc;
+  font-size: 0.97rem;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  min-width: 0;
+}
+.music-desc {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 320px;
+  display: inline-block;
+}
+.music-stats {
+  color: #f472b6;
+  font-size: 0.95rem;
+  margin-top: 0.2rem;
+  display: flex;
+  gap: 1.2rem;
+}
+.music-list-item audio {
+  height: 32px;
+  width: 120px;
+  flex-shrink: 0;
+}
+.music-download-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  color: #fff;
+  font-size: 1.3rem;
+  transition: color 0.2s;
+  text-decoration: none;
+}
+.music-download-btn:hover {
+  color: #ec4899;
+}
+</style>
+{% endif %}
+
+{% if active_filter == 'video_iklan' %}
+<div class="masonry" id="masonry-container">
+  <div id="masonry-items">
+    {% if media_items %}
+      {% for item in media_items %}
+        <div class="masonry-card" data-tag="{{ item.type }}" data-content-type="{{ item.type }}" data-content-id="{{ item.id }}">
+          {% if item.type == 'video_iklan' %}
+          <div style="position: relative;" onclick="window.location.href='/post_video_iklan/{{ item.id }}'">
+            <video class="masonry-video" muted loop style="height:{{ [220, 400] | random }}px;">
+              <source src="/static/results/{{ item.video_url.decode('utf-8') }}" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+            <button class="music-play-btn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:2;">
+              <span id="icon-{{ item.id }}" style="color:white;font-size:2rem;" class="bi bi-play-fill"></span>
+            </button>
+          </div>
+          {% endif %}
+          <div class="masonry-overlay">
+            <div class="masonry-meta">
+              <div class="masonry-creator" onclick="window.location.href='/user/{{ item.user.username }}'">
+                <img src="{{ item.user.avatar_url or '/static/assets/image/default.jpg' }}" class="masonry-creator-avatar" alt="{{ item.user.username }}">
+                {{ item.user.username }}
+              </div>
+              <div class="masonry-likes" data-content-type="{{ item.type }}" data-content-id="{{ item.id }}" style="cursor:pointer;">
+                <i class="bi bi-heart-fill"></i>
+                <span class="like-count">{{ item.likes_count }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="no-content">
+        <p>Tidak ada konten yang tersedia saat ini.</p>
+        <p>Mulai membuat konten baru dengan mengklik tombol di atas!</p>
+      </div>
+    {% endif %}
+  </div>
+  <div id="loading-spinner" style="display: none; text-align: center; padding: 20px;">
+    <div class="spinner-border" style="color: #6366f1;" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p style="color: #a5b4fc; margin-top: 10px;">Memuat konten...</p>
+  </div>
+</div>
+{% else %}
+<div class="masonry" id="masonry-container">
+  <div id="masonry-items">
+    {% if media_items %}
+      {% for item in media_items %}
+        <div class="masonry-card" data-tag="{{ item.type }}" data-content-type="{{ item.type }}" data-content-id="{{ item.id }}">
+          {% if item.type == 'video' %}
+          <div style="position: relative;" onclick="window.location.href='/post_video/{{ item.id }}'">
+            <video class="masonry-video" muted loop style="height:{{ [220, 400] | random }}px;">
+              <source src="{{ item.url }}" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+            <button class="music-play-btn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:2;">
+              <span id="icon-{{ item.id }}" style="color:white;font-size:2rem;" class="bi bi-play-fill"></span>
+            </button>
+          </div>
+          {% elif item.type == 'music' %}
+            <div class="music-masonry-wrapper" style="position:relative;" onclick="window.location.href='/post_musik/{{item.id}}'">
+              <img src="{{ item.image_url or '/static/assets/image/default.jpg' }}" class="masonry-img" style="height:{{ [220, 400] | random }}px;" alt="Music Cover">
+              <button class="music-play-btn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:2;">
+                <span id="icon-{{ item.id }}" style="color:white;font-size:2rem;" class="bi bi-play-fill"></span>
+              </button>
+            </div>
+          {% else %}
+            <img src="{{ item.url }}" class="masonry-img" style="height:{{ [220, 400] | random }}px;" alt="Image" onclick="window.location.href='/post_image/{{item.id}}'">
+          {% endif %}
+          
+          <div class="masonry-overlay">
+            <div class="masonry-meta">
+              <div class="masonry-creator" onclick="window.location.href='/user/{{ item.user.username }}'">
+                <img src="{{ item.user.avatar_url or '/static/assets/image/default.jpg' }}" class="masonry-creator-avatar" alt="{{ item.user.username }}">
+                {{ item.user.username }}
+              </div>
+              <div class="masonry-likes" data-content-type="{{ item.type }}" data-content-id="{{ item.id }}" style="cursor:pointer;">
+                <i class="bi bi-heart-fill"></i>
+                <span class="like-count">{{ item.likes_count }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="no-content">
+        <p>Tidak ada konten yang tersedia saat ini.</p>
+        <p>Mulai membuat konten baru dengan mengklik tombol di atas!</p>
+      </div>
+    {% endif %}
+  </div>
+  <div id="loading-spinner" style="display: none; text-align: center; padding: 20px;">
+    <div class="spinner-border" style="color: #6366f1;" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p style="color: #a5b4fc; margin-top: 10px;">Memuat konten...</p>
+  </div>
+</div>
+{% endif %}
+
+
+<script>
+  // Global variables for infinite scroll
+  let currentPage = 1;
+  let isLoading = false;
+  let hasMore = true;
+  let refreshInterval;
+  let lastRefreshTime = Date.now();
+  
+  // Update active filter based on current URL
+  document.addEventListener('DOMContentLoaded', function() {
+    const currentPath = window.location.pathname;
+    const tagButtons = document.querySelectorAll('.tag-btn');
+    
+    tagButtons.forEach(btn => {
+      if (btn.getAttribute('href') === currentPath) {
+        btn.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+      }
+    });
+
+    // Initialize infinite scroll
+    initInfiniteScroll();
+    
+    // Start auto refresh for new content
+    startAutoRefresh();
+    
+    // Add like functionality to gallery
+    addLikeFunctionality();
+    
+    // Initialize notification system
+    if (typeof NotificationSystem !== 'undefined') {
+      if (!window.notificationSystem) {
+        window.notificationSystem = new NotificationSystem();
+        console.log('Notification system initialized in home.html');
+        
+        // Debug: Check if mobile bell exists and add event listener manually if needed
+        setTimeout(() => {
+          const mobileBell = document.getElementById('notification-bell-mobile');
+          console.log('Mobile bell element:', mobileBell);
+          console.log('Mobile bell has event listener:', mobileBell?.getAttribute('data-event-attached'));
+          
+          // If mobile bell exists but no event listener, add it manually
+          if (mobileBell && mobileBell.getAttribute('data-event-attached') !== 'true') {
+            console.log('Adding manual event listener to mobile bell');
+            window.notificationSystem.addToMobileNav();
+          }
+        }, 2000);
+      } else {
+        console.log('Notification system already exists, skipping initialization');
+      }
+    } else {
+      console.error('NotificationSystem not found!');
+    }
+
+  });
+  
+  // Initialize infinite scroll
+  function initInfiniteScroll() {
+    const container = document.getElementById('masonry-container');
+    if (!container) return;
+    
+    // Add scroll event listener with throttling
+    let scrollTimeout;
+    window.addEventListener('scroll', function() {
+      if (scrollTimeout) {
+        clearTimeout(scrollTimeout);
+      }
+      
+      scrollTimeout = setTimeout(function() {
+        if (isLoading || !hasMore) return;
+        
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        
+        // Load more when user is near bottom (200px threshold)
+        if (scrollTop + windowHeight >= documentHeight - 200) {
+          loadMoreItems();
+        }
+      }, 100); // Throttle to 100ms
+    });
+  }
+  
+  // Load more items for infinite scroll
+  async function loadMoreItems() {
+    if (isLoading || !hasMore) {
+      return;
+    }
+    
+    isLoading = true;
+    currentPage++;
+    
+
+    
+    const loadingSpinner = document.getElementById('loading-spinner');
+    if (loadingSpinner) {
+      loadingSpinner.style.display = 'none';
+    }
+    
+    try {
+      const contentType = getCurrentContentType();
+      
+      const response = await fetch(`/api/gallery/infinite?page=${currentPage}&per_page=20&type=${contentType}`);
+      const data = await response.json();
+      
+      if (data.success && data.items.length > 0) {
+        appendItemsToMasonry(data.items);
+        hasMore = data.has_more;
+      } else {
+        hasMore = false;
+      }
+    } catch (error) {
+      console.error('Error loading more items:', error);
+      hasMore = false;
+    } finally {
+      isLoading = false;
+      
+
+      
+      if (loadingSpinner) {
+        loadingSpinner.style.display = 'none';
+      }
+    }
+  }
+  
+  // Get current content type based on active filter
+  function getCurrentContentType() {
+    const currentPath = window.location.pathname;
+    
+    if (currentPath.includes('/home/foto')) return 'image';
+    if (currentPath.includes('/home/videos')) return 'video';
+    if (currentPath.includes('/home/musik')) return 'music';
+    if (currentPath.includes('/home/videos_iklan')) return 'video_iklan';
+    return 'all';
+  }
+  
+  // Add skeleton cards to masonry
+
+  
+  // Append new items to masonry
+  function appendItemsToMasonry(items) {
+    const masonryItems = document.getElementById('masonry-items');
+    if (!masonryItems) return;
+    
+    items.forEach(item => {
+      const card = createMasonryCard(item);
+      masonryItems.appendChild(card);
+    });
+    
+    // Re-add like functionality to new items
+    addLikeFunctionality();
+  }
+  
+  // Create masonry card element
+  function createMasonryCard(item) {
+    const card = document.createElement('div');
+    card.className = 'masonry-card';
+    card.setAttribute('data-tag', item.type);
+    
+    const randomHeight = Math.random() > 0.5 ? 220 : 400;
+    
+    let content = '';
+    if (item.type === 'video') {
+      content = `
+        <div style="position: relative;" onclick="window.location.href='/post_video/${item.id}'">
+          <video class="masonry-video" muted loop style="height:${randomHeight}px;">
+            <source src="${item.url}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <button class="music-play-btn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:2;">
+            <span id="icon-${item.id}" style="color:white;font-size:2rem;" class="bi bi-play-fill"></span>
+          </button>
+        </div>
+      `;
+    } else if (item.type === 'video_iklan') {
+      content = `
+        <div style="position: relative;" onclick="window.location.href='/post_video_iklan/${item.id}'">
+          <video class="masonry-video" muted loop style="height:${randomHeight}px;">
+            <source src="/static/results/${item.url}" type="video/mp4">
+            Your browser does not support the video tag.
+          </video>
+          <button class="music-play-btn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:2;">
+            <span id="icon-${item.id}" style="color:white;font-size:2rem;" class="bi bi-play-fill"></span>
+          </button>
+        </div>
+      `;
+    } else if (item.type === 'music') {
+      content = `
+        <div class="music-masonry-wrapper" style="position:relative;" onclick="window.location.href='/post_musik/${item.id}'">
+          <img src="${item.image_url || '/static/assets/image/default.jpg'}" class="masonry-img" style="height:${randomHeight}px;" alt="Music Cover">
+          <button class="music-play-btn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:2;">
+            <span id="icon-${item.id}" style="color:white;font-size:2rem;" class="bi bi-play-fill"></span>
+          </button>
+        </div>
+      `;
+    } else {
+      content = `<img src="${item.url}" class="masonry-img" style="height:${randomHeight}px;" alt="Image" onclick="window.location.href='/post_image/${item.id}'">`;
+    }
+    
+    card.innerHTML = `
+      ${content}
+      <div class="masonry-overlay">
+        <div class="masonry-meta">
+          <div class="masonry-creator" onclick="window.location.href='/user/${item.user ? item.user.username : 'unknown'}'">
+            <img src="${item.user ? (item.user.avatar_url || '/static/assets/image/default.jpg') : '/static/assets/image/default.jpg'}" class="masonry-creator-avatar" alt="${item.user ? item.user.username : 'Unknown'}">
+            ${item.user ? item.user.username : 'Unknown'}
+          </div>
+          <div class="masonry-likes" data-content-type="${item.type}" data-content-id="${item.id}" style="cursor:pointer;">
+            <i class="bi bi-heart-fill"></i>
+            <span class="like-count">${item.likes_count}</span>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    return card;
+  }
+  
+  // Start auto refresh for new content
+  function startAutoRefresh() {
+    // Refresh every 30 seconds to check for new content
+    refreshInterval = setInterval(async function() {
+      // Only refresh if user is on the page and not actively scrolling
+      if (document.visibilityState === 'visible' && !isLoading) {
+        await checkForNewContent();
+      }
+    }, 30000); // 30 seconds
+  }
+  
+  // Check for new content and add to top if found
+  async function checkForNewContent() {
+    try {
+      const contentType = getCurrentContentType();
+      const response = await fetch(`/api/gallery/infinite?page=1&per_page=10&type=${contentType}`);
+      const data = await response.json();
+      
+      if (data.success && data.items.length > 0) {
+        const masonryItems = document.getElementById('masonry-items');
+        if (!masonryItems) return;
+        
+        // Get all existing item IDs
+        const existingItems = masonryItems.querySelectorAll('.masonry-card');
+        const existingIds = new Set();
+        existingItems.forEach(item => {
+          const likeBtn = item.querySelector('.masonry-likes');
+          if (likeBtn) {
+            const contentId = likeBtn.getAttribute('data-content-id');
+            if (contentId) {
+              existingIds.add(contentId);
+            }
+          }
+        });
+        
+        // Find new items
+        const newItems = [];
+        for (let i = 0; i < data.items.length; i++) {
+          const item = data.items[i];
+          if (!existingIds.has(item.id.toString())) {
+            newItems.push(item);
+          } else {
+            // Stop when we find an existing item (items are sorted by date desc)
+            break;
+          }
+        }
+        
+        // Add new items to the top
+        if (newItems.length > 0) {
+          newItems.forEach(item => {
+            const card = createMasonryCard(item);
+            masonryItems.insertBefore(card, masonryItems.firstChild);
+          });
+          
+          // Show notification
+          showNotification(`${newItems.length} konten baru ditambahkan!`, 'info');
+          
+          // Re-add like functionality to new items
+          addLikeFunctionality();
+        }
+      }
+    } catch (error) {
+      console.error('Error checking for new content:', error);
+    }
+  }
+  
+  // Add like functionality to gallery
+  function addLikeFunctionality() {
+    document.querySelectorAll('.masonry-likes').forEach(likeBtn => {
+      // Remove existing event listeners
+      likeBtn.removeEventListener('click', handleLikeClick);
+      // Add new event listener
+      likeBtn.addEventListener('click', handleLikeClick);
+    });
+  }
+  
+  // Handle like button click
+  function handleLikeClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const contentType = this.getAttribute('data-content-type');
+    const contentId = this.getAttribute('data-content-id');
+    const likeIcon = this.querySelector('i');
+    const likeCount = this.querySelector('.like-count');
+    
+    fetch('/like', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: `content_type=${contentType}&content_id=${contentId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Update like count
+        likeCount.textContent = data.like_count;
+        
+        // Toggle heart icon
+        if (data.liked) {
+          likeIcon.className = 'bi bi-heart-fill';
+          likeIcon.style.color = '#ff4757';
+        } else {
+          likeIcon.className = 'bi bi-heart';
+          likeIcon.style.color = '#ffffff';
+        }
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+    });
+  }
+  
+  // Show notification function
+  function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show`;
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      max-width: 300px;
+      animation: slideInRight 0.3s ease-out;
+    `;
+    
+    notification.innerHTML = `
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.remove();
+      }
+    }, 5000);
+  }
+  
+
+  
+
+  
+  // Clean up on page unload
+  window.addEventListener('beforeunload', function() {
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+    }
+  });
+</script>
+
+<!-- Load notification system -->
+<script src="/static/js/notifications.js"></script>
+
+
+
+<style>
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#refresh-btn:hover {
+  background: rgba(34, 197, 94, 0.2) !important;
+  transform: scale(1.05);
+}
+
+#refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+</style>
+{% endblock %}
+
+<style>
+@media (max-width: 600px) {
+  .music-3col-grid, .music-col {
+    display: block !important;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+  .music-list-item {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 8px 4px;
+    background: #181825;
+    border-radius: 1.1rem;
+    min-height: unset;
+  }
+  .music-cover {
+    width: 48px;
+    height: 48px;
+    margin-right: 10px;
+    border-radius: 0.7rem;
+    flex-shrink: 0;
+  }
+  .music-list-main {
+    flex: 1 1 0;
+    min-width: 0;
+    margin-right: 8px;
+  }
+  .music-list-item .music-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 6px;
+    min-width: 50px;
+  }
+  .music-list-item audio {
+    width: 90px;
+    min-width: 70px;
+    margin: 0;
+    flex-shrink: 0;
+  }
+  .music-download-btn {
+    font-size: 1.3rem;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #60a5fa;
+    background: none;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    height: 32px;
+    width: 32px;
+  }
+  .music-download-btn i {
+    margin: 0;
+  }
+
+  .masonry-likes {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: white;
+    font-size: 14px;
+    padding: 5px 10px;
+    background: rgba(0,0,0,0.7);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+  }
+
+  .masonry-likes:hover {
+    background: rgba(255,71,87,0.8);
+    transform: scale(1.05);
+  }
+
+  .masonry-likes i {
+    font-size: 16px;
+    transition: all 0.3s ease;
+  }
+
+  .masonry-likes.liked i {
+    color: #ff4757;
+  }
+
+  .masonry-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    padding: 20px 15px 15px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .masonry-card:hover .masonry-overlay {
+    opacity: 1;
+  }
+
+  .masonry-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .masonry-creator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .masonry-creator-avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  }
+  #music-global-player {
+    max-width: 900px;
+    width: 90vw;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 24px;
+    border-radius: 20px;
+    /* style lain tetap */
+  }
+  @media (max-width: 900px) {
+    #music-global-player {
+      max-width: 98vw;
+      width: 98vw;
+    }
+  }
+  @media (max-width: 600px) {
+    #music-global-player {
+      max-width: 100vw;
+      width: 100vw;
+      left: 0;
+      right: 0;
+      transform: none;
+      border-radius: 0;
+      padding: 10px 4vw 10px 4vw;
+      box-sizing: border-box;
+      bottom: 56px; /* Jika ada menu bar bawah setinggi 56px */
+      gap: 10px;
+    }
+    #music-global-player .player-info {
+      width: 100%;
+    }
+    #music-global-player #player-title {
+      font-size: 1.1rem;
+    }
+    #music-global-player #player-artist {
+      font-size: 0.95rem;
+    }
+    #music-global-player .player-controls {
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    #music-global-player #player-cover {
+      width: 44px;
+      height: 44px;
+      border-radius: 8px;
+    }
+  }
+}
+@media (min-width: 601px) {
+  .music-list-item {
+    display: flex;
+    align-items: center;
+  }
+  .music-cover {
+    margin-right: 24px !important;
+    min-width: 56px;
+    width: 56px;
+    height: 56px;
+  }
+}
+</style>
+
+
+
+<style>
+.masonry-likes.liked i {
+  color: #ff7cae;
+}
+</style>
+
+<style>
+/* Tambahan: Audio player responsif */
+.music-list-item, .audio-player-container {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.music-list-item audio, .audio-player audio {
+  flex: 1 1 120px;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+.music-list-main {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+@media (max-width: 600px) {
+  .music-list-item, .audio-player-container {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .music-list-item audio, .audio-player audio {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+</style>
+
+
+
+
+

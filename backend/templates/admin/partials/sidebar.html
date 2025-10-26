@@ -1,0 +1,126 @@
+<!-- Admin Sidebar - Consistent Menu for All Pages -->
+<aside class="admin-sidebar" :class="{ 'show': sidebarOpen, 'collapsed': sidebarCollapsed && !isMobile }">
+    <div class="sidebar-header">
+        <div class="logo-container">
+            <div class="logo-icon">
+                <img src="/static/assets/image/logo.png" alt="INEMI Logo" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+            <div class="logo-text">Admin Panel</div>
+        </div>
+        <!-- Desktop Toggle Button -->
+        <button class="btn-toggle" @click="toggleSidebar()" x-show="!isMobile" title="Toggle Sidebar">
+            <i class="bi bi-chevron-left" :class="{ 'bi-chevron-right': sidebarCollapsed }"></i>
+        </button>
+        <!-- Mobile Close Button -->
+        <button class="mobile-close" @click="toggleSidebar()" x-show="isMobile" title="Close Menu">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+    
+    <div class="nav-section">
+        <!-- Dashboard -->
+        <div class="nav-item">
+            <a class="nav-link {{ 'active' if active_page == 'dashboard' else '' }}" href="{{ url_for('admin.dashboard') }}" title="Dashboard">
+                <div class="nav-icon">
+                    <i class="bi bi-speedometer2"></i>
+                </div>
+                <span>Dashboard</span>
+                <div class="nav-indicator"></div>
+            </a>
+        </div>
+        
+        <!-- Manajemen User -->
+        <div class="nav-item">
+            <a class="nav-link {{ 'active' if active_page == 'users' else '' }}" href="{{ url_for('admin.users') }}" title="User Management">
+                <div class="nav-icon">
+                    <i class="bi bi-people"></i>
+                </div>
+                <span>Manajemen User</span>
+                <div class="nav-indicator"></div>
+            </a>
+        </div>
+        
+        <!-- Payment -->
+        <div class="nav-item">
+            <a class="nav-link {{ 'active' if active_page == 'payment' else '' }}" href="{{ url_for('admin.payment') }}" title="Payment">
+                <div class="nav-icon">
+                    <i class="bi bi-credit-card"></i>
+                </div>
+                <span>Payment</span>
+                <div class="nav-indicator"></div>
+            </a>
+        </div>
+        
+        <!-- Monitoring Post -->
+        <div class="nav-item">
+            <a class="nav-link {{ 'active' if active_page == 'monitoring' else '' }}" href="{{ url_for('admin.monitoring_post') }}" title="Monitoring Post">
+                <div class="nav-icon">
+                    <i class="bi bi-eye"></i>
+                </div>
+                <span>Monitoring Post</span>
+                <div class="nav-indicator"></div>
+            </a>
+        </div>
+        
+        <!-- Favorite Management -->
+        <div class="nav-item">
+            <a class="nav-link {{ 'active' if active_page == 'favorite' else '' }}" href="{{ url_for('admin.favorite_management') }}" title="Favorite Management">
+                <div class="nav-icon">
+                    <i class="bi bi-star-fill"></i>
+                </div>
+                <span>Favorite Management</span>
+                <div class="nav-indicator"></div>
+            </a>
+        </div>
+        
+        <!-- Analytics -->
+        <div class="nav-item">
+            <a class="nav-link {{ 'active' if active_page == 'analytics' else '' }}" href="{{ url_for('admin.analytics') }}" title="Analytics">
+                <div class="nav-icon">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+                <span>Analytics</span>
+                <div class="nav-indicator"></div>
+            </a>
+        </div>
+        
+        <!-- Pengaturan -->
+        <div class="nav-item">
+            <a class="nav-link {{ 'active' if active_page == 'settings' else '' }}" href="{{ url_for('admin.settings') }}" title="Settings">
+                <div class="nav-icon">
+                    <i class="bi bi-gear"></i>
+                </div>
+                <span>Pengaturan</span>
+                <div class="nav-indicator"></div>
+            </a>
+        </div>
+        
+        <!-- Divider -->
+        <div class="nav-divider"></div>
+        
+        <!-- Kembali ke Website -->
+        <div class="nav-item">
+            <a class="nav-link nav-link-secondary" href="{{ url_for('web_pages.home') }}" title="Back to Website">
+                <div class="nav-icon">
+                    <i class="bi bi-house"></i>
+                </div>
+                <span>Kembali ke Website</span>
+                <div class="nav-indicator"></div>
+            </a>
+        </div>
+    </div>
+    
+    <!-- Mobile Footer -->
+    <div class="sidebar-footer" x-show="isMobile">
+        <div class="footer-info">
+            <div class="footer-version">v2.0.1</div>
+            <div class="footer-status">Online</div>
+        </div>
+    </div>
+</aside>
+
+
+
+
+
+

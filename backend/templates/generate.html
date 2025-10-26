@@ -1,0 +1,661 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="landing-container" 
+     x-data="fadeIn()" 
+     x-init="init()">
+  
+  <!-- Background with gradient blur effect -->
+  <div class="background-blur fade-enter" :class="{ 'fade-show': showBackground }"></div>
+  
+  <!-- Main content -->
+  <div class="content-wrapper">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-12 col-lg-8 text-center">
+          
+          <!-- Main heading -->
+          <h1 class="main-heading fade-enter" :class="{ 'fade-show': showHeading }">
+            Buat iklan tentang produk yang kamu jual
+          </h1>
+          
+          <!-- Descriptive text -->
+          <p class="description-text fade-enter" :class="{ 'fade-show': showDescription }">
+            mulai dengan memasukkan nama produk yang kamu jual, dan klik tombol create.
+          </p>
+          
+          <!-- Input and Create button container -->
+          <div class="input-container fade-enter" :class="{ 'fade-show': showInput }">
+            
+            <div class="input-group">
+              <input type="text" 
+                     class="form-control input-futuristic"
+                     placeholder="Masukkan nama produk kamu"
+                     x-model="inputValue"
+                     @keyup.enter="if(inputValue.trim()) { openModal() }">
+              
+              {% if session['user_id'] %}
+              <a href="/ai_data" class="btn btn-create-futuristic" :class="{'disabled': !inputValue.trim()}" :disabled="!inputValue.trim()">
+                Generate
+              </a>
+              {% else %}
+              <button class="btn btn-create-futuristic" 
+                      @click="if(inputValue.trim()) { openModal() }"
+                      :disabled="!inputValue.trim()">
+                Generate
+              </button>
+              {% endif %}
+            </div>
+          </div>
+          
+          <!-- Musician button -->
+          <button class="btn-musician fade-enter" 
+                  :class="{ 'fade-show': showButton }"
+                  @click="isMusician = !isMusician"
+                  :class="{ 'active': isMusician }" onclick="window.location.href='/ai_photo'">
+            Saya adalah pengusaha
+          </button>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Popup -->
+  <div class="modal-overlay" 
+       x-show="showModal" 
+       x-transition:enter="transition ease-out duration-300"
+       x-transition:enter-start="opacity-0"
+       x-transition:enter-end="opacity-100"
+       x-transition:leave="transition ease-in duration-200"
+       x-transition:leave-start="opacity-100"
+       x-transition:leave-end="opacity-0"
+       @click="closeModal()"
+       style="display: none;">
+    
+    <div class="modal-content" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         @click.stop>
+      
+      <!-- Loading State -->
+      <div x-show="modalState === 'loading'" 
+           x-transition:enter="transition ease-out duration-500"
+           x-transition:enter-start="opacity-0 translateY-10"
+           x-transition:enter-end="opacity-100 translateY-0"
+           x-transition:leave="transition ease-in duration-300"
+           x-transition:leave-start="opacity-100 translateY-0"
+           x-transition:leave-end="opacity-0 translateY-10"
+           class="modal-loading">
+        
+        <div class="loading-spinner"></div>
+        <h2 class="loading-text">Membuat video iklan...</h2>
+      </div>
+      
+      <!-- Results State -->
+      <div x-show="modalState === 'results'"
+           x-transition:enter="transition ease-out duration-500"
+           x-transition:enter-start="opacity-0 translateY-10 scale-95"
+           x-transition:enter-end="opacity-100 translateY-0 scale-100"
+           x-transition:leave="transition ease-in duration-300"
+           x-transition:leave-start="opacity-100 translateY-0 scale-100"
+           x-transition:leave-end="opacity-0 translateY-10 scale-95"
+           class="modal-results">
+        
+        <h2 class="results-title">Video iklan kamu sudah siap</h2>
+        
+        <div class="play-buttons-container" onclick="window.location.href='/ai_data'">
+          <button class="play-button play-button-green">
+            <i class="bi bi-play-fill"></i>
+            <span>Play 1</span>
+          </button>
+          
+          <button class="play-button play-button-blue" onclick="window.location.href='/ai_data'">
+            <i class="bi bi-play-fill"></i>
+            <span>Play 2</span>
+          </button>
+        </div>
+        
+        <button class="cta-button" onclick="window.location.href='/login'">
+          <i class="bi bi-person-plus"></i>
+          Sign up to download
+        </button>
+        
+        <button class="close-button" @click="closeModal()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<script>
+  function fadeIn() {
+    return {
+      inputValue: '',
+      isMusician: false,
+      showBackground: false,
+      showHeading: false,
+      showDescription: false,
+      showInput: false,
+      showButton: false,
+      showModal: false,
+      modalState: 'loading',
+      
+      init() {
+        // Staggered animation sequence
+        setTimeout(() => this.showBackground = true, 100);
+        setTimeout(() => this.showHeading = true, 300);
+        setTimeout(() => this.showDescription = true, 600);
+        setTimeout(() => this.showInput = true, 900);
+        setTimeout(() => this.showButton = true, 1200);
+      },
+      
+      openModal() {
+        this.showModal = true;
+        this.modalState = 'loading';
+        
+        // Change to results after 2 seconds
+        setTimeout(() => {
+          this.modalState = 'results';
+        }, 2000);
+      },
+      
+      closeModal() {
+        this.showModal = false;
+        // Reset to loading state for next time
+        setTimeout(() => {
+          this.modalState = 'loading';
+        }, 300);
+      }
+    }
+  }
+</script>
+
+<style>
+  .landing-container {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* Background with gradient blur effect */
+  .background-blur {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(circle at 20% 80%, rgba(168, 85, 247, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 40% 40%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+    backdrop-filter: blur(100px);
+    z-index: -1;
+  }
+
+  .content-wrapper {
+    width: 100%;
+    padding: 2rem 1rem;
+  }
+
+  /* Fade-in animation classes */
+  .fade-enter {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s ease-out;
+  }
+
+  .fade-show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Main heading with serif font */
+  .main-heading {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(to right, #ec4899, #a855f7, #3b82f6);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
+    letter-spacing: -0.02em;
+  }
+
+  /* Description text */
+  .description-text {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: white;
+    margin-bottom: 3rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+    opacity: 0.9;
+  }
+
+  /* Input container */
+  .input-container {
+    margin-bottom: 2rem;
+  }
+
+  .input-group {
+    display: flex;
+    max-width: 500px;
+    margin: 0 auto;
+    gap: 0.5rem;
+    background: rgba(55, 65, 81, 0.3);
+    border-radius: 16px;
+    padding: 0.5rem;
+    border: 1px solid var(--border-dark);
+    backdrop-filter: blur(10px);
+  }
+
+  .input-futuristic {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-gray);
+    font-size: 1rem;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+  }
+
+  .input-futuristic::placeholder {
+    color: var(--text-gray);
+    opacity: 0.6;
+  }
+
+  .input-futuristic:focus {
+    outline: none;
+    background: rgba(168, 85, 247, 0.1);
+    color: white;
+  }
+
+  /* Create button with orange-purple gradient */
+  .btn-create-futuristic {
+    background: linear-gradient(135deg, #ff6b35 0%, #a855f7 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 120px;
+    justify-content: center;
+  }
+
+  .btn-create-futuristic::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-create-futuristic:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+    background: linear-gradient(135deg, #a855f7 0%, #ff6b35 100%);
+  }
+
+  .btn-create-futuristic:hover::before {
+    left: 100%;
+  }
+
+  .btn-create-futuristic:active {
+    transform: translateY(0);
+  }
+
+  .btn-create-futuristic:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn-text {
+    font-weight: 600;
+  }
+
+  .btn-icon {
+    font-size: 1.2rem;
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.5));
+  }
+
+  /* Musician button */
+  .btn-musician {
+    background: linear-gradient(to right, #ec4899, #a855f7, #3b82f6);
+    border: 1px solid var(--border-dark);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+  }
+
+  .btn-musician:hover {
+    background: linear-gradient(to right, #ec4899, #a855f7, #3b82f6);
+    border-color: var(--purple-bright);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(168, 85, 247, 0.2);
+  }
+
+  .btn-musician.active {
+    background: var(--gradient-purple-pink);
+    border-color: transparent;
+    color: white;
+    box-shadow: var(--shadow-glow);
+  }
+
+  /* Modal Styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(11, 14, 26, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .modal-content {
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+    border: 1px solid var(--border-dark);
+    border-radius: 20px;
+    padding: 3rem 2rem;
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 60px rgba(168, 85, 247, 0.3);
+  }
+
+  /* Loading State */
+  .modal-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 3px solid rgba(168, 85, 247, 0.3);
+    border-top: 3px solid var(--purple-bright);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .loading-text {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-gray);
+    margin: 0;
+  }
+
+  /* Results State */
+  .modal-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+  }
+
+  .results-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    margin: 0;
+    background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .play-buttons-container {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .play-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    border: none;
+    border-radius: 16px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .play-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+  }
+
+  .play-button:hover::before {
+    transform: translateX(100%);
+  }
+
+  .play-button-green {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+  }
+
+  .play-button-green:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(16, 185, 129, 0.6);
+  }
+
+  .play-button-blue {
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+  }
+
+  .play-button-blue:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(59, 130, 246, 0.6);
+  }
+
+  .play-button i {
+    font-size: 2rem;
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.5));
+  }
+
+  .play-button span {
+    font-size: 0.9rem;
+  }
+
+  .cta-button {
+    background: linear-gradient(135deg, #ff6b35 0%, #ec4899 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 1rem 2rem;
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+  }
+
+  .cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(255, 107, 53, 0.6);
+    background: linear-gradient(135deg, #ec4899 0%, #ff6b35 100%);
+  }
+
+  .close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: transparent;
+    border: none;
+    color: var(--text-gray);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+  }
+
+  .close-button:hover {
+    background: rgba(168, 85, 247, 0.1);
+    color: var(--purple-bright);
+    transform: scale(1.1);
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .content-wrapper {
+      padding: 1rem 0.5rem;
+    }
+    
+    .input-group {
+      flex-direction: column;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+    
+    .input-futuristic {
+      width: 100% !important;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+    
+    .btn-create-futuristic {
+      width: 100%;
+      padding: 1rem;
+    }
+    
+    .main-heading {
+      font-size: clamp(2rem, 6vw, 3rem);
+      margin-bottom: 1rem;
+    }
+    
+    .description-text {
+      font-size: clamp(0.9rem, 3vw, 1.1rem);
+      margin-bottom: 2rem;
+    }
+    
+    /* Optimize animations for mobile */
+    .fade-enter {
+      transition: all 0.4s ease-out;
+    }
+
+    /* Modal responsive */
+    .modal-content {
+      padding: 2rem 1.5rem;
+      margin: 1rem;
+    }
+
+    .play-buttons-container {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .play-button {
+      width: 100%;
+      min-width: auto;
+    }
+
+    .results-title {
+      font-size: 1.5rem;
+    }
+
+    .loading-text {
+      font-size: 1.25rem;
+    }
+  }
+
+  /* Background animation */
+  @keyframes float {
+    0%, 100% { 
+      transform: translateY(0px); 
+    }
+    50% { 
+      transform: translateY(-10px); 
+    }
+  }
+
+  .background-blur {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* Focus states for accessibility */
+  .btn-create-futuristic:focus,
+  .btn-musician:focus,
+  .input-futuristic:focus,
+  .play-button:focus,
+  .cta-button:focus {
+    outline: 2px solid var(--purple-bright);
+    outline-offset: 2px;
+  }
+
+  /* Performance optimizations */
+  .fade-enter {
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+  }
+</style>
+{% endblock %}
