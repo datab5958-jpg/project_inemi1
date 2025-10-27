@@ -221,7 +221,15 @@
           return;
         }
         
-        const data = await res.json();
+        let data;
+        try {
+          data = await res.json();
+        } catch (e) {
+          console.error('JSON parsing error:', e);
+          this.errorMsg = 'Server mengembalikan response yang tidak valid. Silakan coba lagi.';
+          this.loading = false;
+          return;
+        }
         
         if (res.ok && data && data.video_url) {
           console.log('=== VIDEO GENERATION SUCCESS ===');

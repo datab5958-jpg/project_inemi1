@@ -23,6 +23,13 @@ def create_app(config_name='default'):
     app.config['SUNO_API_KEY'] = os.environ.get('SUNO_API_KEY')
     app.config['ELEVENLABS_API_KEY'] = os.environ.get('ELEVENLABS_API_KEY')
     
+    # File Upload Configuration
+    app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+    app.config['DOMAIN_PUBLIC'] = os.environ.get('DOMAIN_PUBLIC', 'http://127.0.0.1:5000')
+    
+    # Create upload directory if it doesn't exist
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    
     # Enable CORS untuk API
     CORS(app)
     

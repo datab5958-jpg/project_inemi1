@@ -385,64 +385,9 @@ def upload_image_to_video():
     
     return jsonify({'error': 'Upload gagal'}), 500
 
-@animasi_bp.route('/api/generate_image_video', methods=['POST'])
-@login_required
-def generate_image_video():
-    try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'No data provided'}), 400
-        
-        image_url = data.get('image')
-        prompt = data.get('prompt', '')
-        duration = data.get('duration', 5)
-        seed = data.get('seed', -1)
-        
-        if not image_url:
-            return jsonify({'error': 'Image URL is required'}), 400
-        
-        # Cek dan kurangi kredit user
-        user_id = session.get('user_id')
-        user = User.query.get(user_id)
-        if not user:
-            return jsonify({'error': 'User tidak ditemukan'}), 404
-        
-        required_credits = 25  # Sesuai dengan info biaya di frontend
-        if user.kredit < required_credits:
-            return jsonify({'error': f'Kredit Anda tidak cukup untuk generate video (minimal {required_credits} kredit)'}), 403
-        
-        # Kurangi kredit user
-        user.kredit -= required_credits
-        db.session.commit()
-        
-        # TODO: Implement actual video generation API call
-        # For now, return a placeholder video URL that can be displayed
-        video_url = "https://www.w3schools.com/html/mov_bbb.mp4"
-        
-        # Simpan hasil ke database
-        try:
-            caption = f"Image to Video: {prompt}" if prompt else "Image to Video Generation"
-            video = Video(
-                user_id=user_id, 
-                video_url=video_url, 
-                caption=caption
-            )
-            db.session.add(video)
-            db.session.commit()
-            print(f'DEBUG: Video result saved to database with ID: {video.id}, URL: {video_url}, Caption: {caption}')
-        except Exception as e:
-            print(f'DEBUG: Error saving video to database: {e}')
-            db.session.rollback()
-        
-        return jsonify({
-            'success': True,
-            'video_url': video_url,
-            'message': 'Video berhasil digenerate!'
-        })
-        
-    except Exception as e:
-        print(f"Error generating video: {str(e)}")
-        return jsonify({'error': f'Internal server error: {str(e)}'}), 500
+# Route /api/generate_image_video moved to image_video.py blueprint
+# This route was causing conflict and returning placeholder URL
+# The correct implementation is now in backend/web/image_video.py
 
 @animasi_bp.route('/api/get-miniatur-results', methods=['GET'])
 @login_required
