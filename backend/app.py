@@ -5,7 +5,7 @@ Mengintegrasikan semua blueprint dan route yang sudah ada
 
 import os
 import sys
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for, flash, send_from_directory
 from flask_cors import CORS
 from dotenv import load_dotenv
 
@@ -32,6 +32,7 @@ from web.image_video import image_video_bp # Image to video conversion
 from web.musik import musik_bp            # Music generation and management
 from web.profil import profil_bp          # User profile management
 from web.video import video_bp            # Video generation and management
+from generate_banner import generate_banner_bp  # Banner generation functionality
 
 # API Blueprints (Backend Routes)
 from api.landing_content import landing_content_bp  # Landing page content API
@@ -55,6 +56,13 @@ def create_app():
     app.config['OPENAI_API_KEY'] = os.environ.get('OPENAI_API_KEY')
     app.config['SUNO_API_KEY'] = os.environ.get('SUNO_API_KEY')
     app.config['ELEVENLABS_API_KEY'] = os.environ.get('ELEVENLABS_API_KEY')
+    
+    # File Upload Configuration
+    app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static', 'uploads')
+    app.config['DOMAIN_PUBLIC'] = os.environ.get('DOMAIN_PUBLIC', 'http://127.0.0.1:5000')
+    
+    # Create upload directory if it doesn't exist
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
     # Enable CORS
     CORS(app)
@@ -142,6 +150,12 @@ def create_app():
     except Exception as e:
         print(f"ERROR: Failed to register video_bp: {e}")
     
+    try:
+        app.register_blueprint(generate_banner_bp)
+        print("SUCCESS: generate_banner_bp blueprint registered")
+    except Exception as e:
+        print(f"ERROR: Failed to register generate_banner_bp: {e}")
+    
     # API blueprints
     try:
         app.register_blueprint(landing_content_bp)
@@ -190,6 +204,11 @@ def create_app():
                 'status': 'unhealthy',
                 'error': str(e)
             }), 500
+    
+    @app.route('/static/uploads/<filename>')
+    def uploaded_file(filename):
+        """Serve uploaded files"""
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
     
     @app.route('/api/database-info')
     def database_info():
