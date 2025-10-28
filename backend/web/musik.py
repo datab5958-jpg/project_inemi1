@@ -64,9 +64,9 @@ def clean_lyrics_for_suno(lyrics):
     
     return cleaned_lyrics
 
-@musik_bp.route('/musik')
+@musik_bp.route('/')
 def musik_page():
-    return render_template('musik.html')
+    return render_template('generate_music.html')
 
 @musik_bp.route('/api/music/test')
 def test_music_endpoint():

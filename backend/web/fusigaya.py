@@ -112,10 +112,44 @@ def fusigaya():
     
     # Prepare payload based on model
     if model == 'nano-banana':
+        # Validate image URLs or base64 data before sending
+        validated_images = []
+        for img_data in valid_images:
+            if img_data and img_data.strip():
+                # Check if it's a URL (http/https)
+                if img_data.startswith(('http://', 'https://')):
+                    try:
+                        # Test if image URL is accessible
+                        test_response = requests.head(img_data, timeout=5, allow_redirects=True)
+                        if test_response.status_code in [200, 301, 302]:
+                            validated_images.append(img_data)
+                            print(f'DEBUG: Valid URL image: {img_data[:50]}...')
+                        else:
+                            print(f'DEBUG: Invalid image URL {img_data}: {test_response.status_code}')
+                    except Exception as e:
+                        print(f'DEBUG: Image URL validation failed {img_data}: {e}')
+                # Check if it's base64 data
+                elif img_data.startswith('data:image/'):
+                    # Basic base64 validation
+                    try:
+                        # Check if it has proper base64 format
+                        if 'base64,' in img_data and len(img_data.split('base64,')[1]) > 0:
+                            validated_images.append(img_data)
+                            print(f'DEBUG: Valid base64 image: {img_data[:50]}...')
+                        else:
+                            print(f'DEBUG: Invalid base64 format: {img_data[:50]}...')
+                    except Exception as e:
+                        print(f'DEBUG: Base64 validation failed: {e}')
+                else:
+                    print(f'DEBUG: Invalid image format (not URL or base64): {img_data[:50]}...')
+        
+        if not validated_images:
+            return jsonify({'success': False, 'error': 'Tidak ada gambar valid yang dapat diproses. Gunakan URL (http/https) atau base64 data (data:image/...).'}), 400
+        
         payload = {
             "enable_base64_output": enable_base64_output,
             "enable_sync_mode": False,
-            "images": valid_images,
+            "images": validated_images,
             "output_format": "jpeg",
             "prompt": prompt
         }
@@ -136,10 +170,11 @@ def fusigaya():
     print(f'DEBUG MODEL SELECTED: {model}')
     print(f'DEBUG API URL: {url}')
     print(f'DEBUG CREDIT COST: {required_credits}')
+    print(f'DEBUG VALIDATED IMAGES COUNT: {len(validated_images) if model == "nano-banana" else len(valid_images)}')
     begin = time.time()
     
     try:
-        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        response = requests.post(url, headers=headers, json=payload, timeout=60)
         print('DEBUG FUSIGAYA RESPONSE:', response.status_code, response.text)
         
         if response.status_code == 200:
@@ -165,9 +200,21 @@ def fusigaya():
                     error_msg = error_data['error']
                 elif 'message' in error_data:
                     error_msg = error_data['message']
+                elif 'detail' in error_data:
+                    error_msg = error_data['detail']
             except:
                 error_msg = response.text or error_msg
             
+            # Specific error handling for nano-banana
+            if model == 'nano-banana':
+                if response.status_code == 400:
+                    error_msg = f'Nano-banana edit gagal: {error_msg}. Pastikan gambar valid dan prompt sesuai.'
+                elif response.status_code == 422:
+                    error_msg = f'Format data tidak valid untuk nano-banana: {error_msg}. Periksa URL gambar dan prompt.'
+                elif response.status_code == 500:
+                    error_msg = f'Server nano-banana error: {error_msg}. Coba lagi nanti.'
+            
+            print(f'DEBUG API ERROR: {error_msg}')
             return jsonify({'success': False, 'error': error_msg}), 500
     except requests.exceptions.Timeout:
         return jsonify({'success': False, 'error': 'Request timeout - API took too long to respond'}), 500
@@ -181,12 +228,12 @@ def fusigaya():
     poll_url = f"https://api.wavespeed.ai/api/v3/predictions/{request_id}/result"
     poll_headers = {"Authorization": f"Bearer {api_key}"}
 
-    max_attempts = 300  # 30 detik dengan interval 0.1 detik
+    max_attempts = 600  # 60 detik dengan interval 0.1 detik (Fusigaya butuh waktu lebih lama)
     attempt = 0
     
     while attempt < max_attempts:
         try:
-            poll_response = requests.get(poll_url, headers=poll_headers, timeout=10)
+            poll_response = requests.get(poll_url, headers=poll_headers, timeout=30)
             print(f'DEBUG POLL ATTEMPT {attempt + 1}: {poll_response.status_code}')
             
             if poll_response.status_code == 200:
@@ -237,6 +284,12 @@ def fusigaya():
                 print(f'DEBUG POLL ERROR: {poll_response.status_code} - {poll_response.text}')
                 return jsonify({'success': False, 'error': f'Poll failed: {poll_response.text}'}), 500
                 
+        except requests.exceptions.Timeout:
+            print(f'DEBUG POLLING TIMEOUT: Attempt {attempt + 1}')
+            # Don't return error immediately, continue polling
+            attempt += 1
+            time.sleep(0.1)
+            continue
         except requests.exceptions.RequestException as e:
             print(f'DEBUG REQUEST ERROR: {e}')
             return jsonify({'success': False, 'error': f'Request error: {str(e)}'}), 500

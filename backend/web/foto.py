@@ -64,7 +64,7 @@ def generate_photo():
                 "enable_sync_mode": False,
                 "prompt": prompt,
                 "quality": "medium",
-                "size": "1536x1024" if aspect_ratio == "16:9" else "1024x1024" if aspect_ratio == "1:1" else "1024x1536"
+                "size": f"{width}x{height}"
             },
             'credits': 12
         },

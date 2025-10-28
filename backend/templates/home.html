@@ -2286,6 +2286,17 @@ window.toggleMobileNotifications = function() {
       </div>
     {% endif %}
   </div>
+  <!-- Modern Skeleton Loading -->
+  <div id="skeleton-loading" style="display: none; padding: 20px;">
+    <div class="skeleton-grid">
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+      <div class="skeleton-card"></div>
+    </div>
+  </div>
+  
+  <!-- Fallback Loading Spinner -->
   <div id="loading-spinner" style="display: none; text-align: center; padding: 20px;">
     <div class="spinner-border" style="color: #6366f1;" role="status">
       <span class="visually-hidden">Loading...</span>
@@ -2352,12 +2363,15 @@ window.toggleMobileNotifications = function() {
 
 
 <script>
-  // Global variables for infinite scroll
+  // Global variables for infinite scroll - Optimized
   let currentPage = 1;
   let isLoading = false;
   let hasMore = true;
   let refreshInterval;
   let lastRefreshTime = Date.now();
+  let intersectionObserver;
+  let loadedItems = new Set(); // Track loaded items to prevent duplicates
+  let loadingQueue = []; // Queue for smooth loading
   
   // Update active filter based on current URL
   document.addEventListener('DOMContentLoaded', function() {
@@ -2408,35 +2422,44 @@ window.toggleMobileNotifications = function() {
 
   });
   
-  // Initialize infinite scroll
+  // Initialize modern infinite scroll with Intersection Observer
   function initInfiniteScroll() {
     const container = document.getElementById('masonry-container');
-    if (!container) return;
+    if (!container) {
+      console.log('Masonry container not found, infinite scroll not initialized');
+      return;
+    }
     
-    // Add scroll event listener with throttling
-    let scrollTimeout;
-    window.addEventListener('scroll', function() {
-      if (scrollTimeout) {
-        clearTimeout(scrollTimeout);
-      }
-      
-      scrollTimeout = setTimeout(function() {
-        if (isLoading || !hasMore) return;
-        
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight;
-        
-        // Load more when user is near bottom (200px threshold)
-        if (scrollTop + windowHeight >= documentHeight - 200) {
-          loadMoreItems();
+    console.log('🚀 Modern infinite scroll initialized');
+    
+    // Create intersection observer for better performance
+    const loadTrigger = document.createElement('div');
+    loadTrigger.id = 'load-trigger';
+    loadTrigger.style.height = '20px';
+    loadTrigger.style.width = '100%';
+    loadTrigger.style.position = 'relative';
+    loadTrigger.style.zIndex = '1';
+    container.appendChild(loadTrigger);
+    
+    // Intersection Observer API - Much more efficient than scroll events
+    intersectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !isLoading && hasMore) {
+          console.log('🎯 Load trigger detected, loading more items...');
+          loadMoreItemsSmooth();
         }
-      }, 100); // Throttle to 100ms
+      });
+    }, {
+      root: null,
+      rootMargin: '100px', // Start loading 100px before trigger
+      threshold: 0.1
     });
+    
+    intersectionObserver.observe(loadTrigger);
   }
   
-  // Load more items for infinite scroll
-  async function loadMoreItems() {
+  // Smooth loading with skeleton animation
+  async function loadMoreItemsSmooth() {
     if (isLoading || !hasMore) {
       return;
     }
@@ -2444,21 +2467,24 @@ window.toggleMobileNotifications = function() {
     isLoading = true;
     currentPage++;
     
-
-    
-    const loadingSpinner = document.getElementById('loading-spinner');
-    if (loadingSpinner) {
-      loadingSpinner.style.display = 'none';
-    }
+    // Show skeleton loading instead of spinner
+    showSkeletonLoading();
     
     try {
       const contentType = getCurrentContentType();
-      
-      const response = await fetch(`/api/gallery/infinite?page=${currentPage}&per_page=20&type=${contentType}`);
+      const response = await fetch(`/gallery/infinite?page=${currentPage}&per_page=20&type=${contentType}`);
       const data = await response.json();
       
       if (data.success && data.items.length > 0) {
-        appendItemsToMasonry(data.items);
+        // Filter out already loaded items
+        const newItems = data.items.filter(item => !loadedItems.has(item.id));
+        
+        if (newItems.length > 0) {
+          // Add to loading queue for smooth animation
+          loadingQueue.push(...newItems);
+          await processLoadingQueue();
+        }
+        
         hasMore = data.has_more;
       } else {
         hasMore = false;
@@ -2468,13 +2494,43 @@ window.toggleMobileNotifications = function() {
       hasMore = false;
     } finally {
       isLoading = false;
-      
-
-      
-      if (loadingSpinner) {
-        loadingSpinner.style.display = 'none';
+      hideSkeletonLoading();
+    }
+  }
+  
+  // Process loading queue with smooth animations
+  async function processLoadingQueue() {
+    while (loadingQueue.length > 0) {
+      const item = loadingQueue.shift();
+      if (!loadedItems.has(item.id)) {
+        loadedItems.add(item.id);
+        await appendItemWithAnimation(item);
+        // Small delay for smooth animation
+        await new Promise(resolve => setTimeout(resolve, 50));
       }
     }
+  }
+  
+  // Append item with smooth fade-in animation
+  async function appendItemWithAnimation(item) {
+    const masonryItems = document.getElementById('masonry-items');
+    if (!masonryItems) return;
+    
+    const card = createMasonryCard(item);
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    card.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+    
+    masonryItems.appendChild(card);
+    
+    // Trigger animation
+    requestAnimationFrame(() => {
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    });
+    
+    // Re-add like functionality
+    addLikeFunctionality();
   }
   
   // Get current content type based on active filter
@@ -2488,24 +2544,40 @@ window.toggleMobileNotifications = function() {
     return 'all';
   }
   
-  // Add skeleton cards to masonry
-
+  // Show skeleton loading animation
+  function showSkeletonLoading() {
+    const skeleton = document.getElementById('skeleton-loading');
+    if (skeleton) {
+      skeleton.style.display = 'block';
+    }
+  }
   
-  // Append new items to masonry
+  // Hide skeleton loading animation
+  function hideSkeletonLoading() {
+    const skeleton = document.getElementById('skeleton-loading');
+    if (skeleton) {
+      skeleton.style.display = 'none';
+    }
+  }
+  
+  // Append new items to masonry (legacy function for compatibility)
   function appendItemsToMasonry(items) {
     const masonryItems = document.getElementById('masonry-items');
     if (!masonryItems) return;
     
     items.forEach(item => {
-      const card = createMasonryCard(item);
-      masonryItems.appendChild(card);
+      if (!loadedItems.has(item.id)) {
+        loadedItems.add(item.id);
+        const card = createMasonryCard(item);
+        masonryItems.appendChild(card);
+      }
     });
     
     // Re-add like functionality to new items
     addLikeFunctionality();
   }
   
-  // Create masonry card element
+  // Create masonry card element with lazy loading
   function createMasonryCard(item) {
     const card = document.createElement('div');
     card.className = 'masonry-card';
@@ -2517,10 +2589,14 @@ window.toggleMobileNotifications = function() {
     if (item.type === 'video') {
       content = `
         <div style="position: relative;" onclick="window.location.href='/post_video/${item.id}'">
-          <video class="masonry-video" muted loop style="height:${randomHeight}px;">
+          <video class="masonry-video" muted loop style="height:${randomHeight}px;" loading="lazy" preload="metadata" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <source src="${item.url}" type="video/mp4">
             Your browser does not support the video tag.
           </video>
+          <div class="video-error-placeholder" style="display:none; height:${randomHeight}px; background:#f0f0f0; align-items:center; justify-content:center; flex-direction:column;">
+            <i class="bi bi-exclamation-triangle" style="font-size:2rem; color:#666;"></i>
+            <span style="color:#666; margin-top:10px;">Video tidak dapat dimuat</span>
+          </div>
           <button class="music-play-btn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:2;">
             <span id="icon-${item.id}" style="color:white;font-size:2rem;" class="bi bi-play-fill"></span>
           </button>
@@ -2529,10 +2605,14 @@ window.toggleMobileNotifications = function() {
     } else if (item.type === 'video_iklan') {
       content = `
         <div style="position: relative;" onclick="window.location.href='/post_video_iklan/${item.id}'">
-          <video class="masonry-video" muted loop style="height:${randomHeight}px;">
+          <video class="masonry-video" muted loop style="height:${randomHeight}px;" loading="lazy" preload="metadata" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <source src="/static/results/${item.url}" type="video/mp4">
             Your browser does not support the video tag.
           </video>
+          <div class="video-error-placeholder" style="display:none; height:${randomHeight}px; background:#f0f0f0; align-items:center; justify-content:center; flex-direction:column;">
+            <i class="bi bi-exclamation-triangle" style="font-size:2rem; color:#666;"></i>
+            <span style="color:#666; margin-top:10px;">Video tidak dapat dimuat</span>
+          </div>
           <button class="music-play-btn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:2;">
             <span id="icon-${item.id}" style="color:white;font-size:2rem;" class="bi bi-play-fill"></span>
           </button>
@@ -2541,14 +2621,14 @@ window.toggleMobileNotifications = function() {
     } else if (item.type === 'music') {
       content = `
         <div class="music-masonry-wrapper" style="position:relative;" onclick="window.location.href='/post_musik/${item.id}'">
-          <img src="${item.image_url || '/static/assets/image/default.jpg'}" class="masonry-img" style="height:${randomHeight}px;" alt="Music Cover">
+          <img src="${item.image_url || '/static/assets/image/default.jpg'}" class="masonry-img" style="height:${randomHeight}px;" alt="Music Cover" loading="lazy" onerror="this.src='/static/assets/image/default.jpg'">
           <button class="music-play-btn" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.5);border:none;border-radius:50%;width:56px;height:56px;display:flex;align-items:center;justify-content:center;z-index:2;">
             <span id="icon-${item.id}" style="color:white;font-size:2rem;" class="bi bi-play-fill"></span>
           </button>
         </div>
       `;
     } else {
-      content = `<img src="${item.url}" class="masonry-img" style="height:${randomHeight}px;" alt="Image" onclick="window.location.href='/post_image/${item.id}'">`;
+      content = `<img src="${item.url}" class="masonry-img" style="height:${randomHeight}px;" alt="Image" loading="lazy" onerror="this.src='/static/assets/image/default.jpg'" onclick="window.location.href='/post_image/${item.id}'">`;
     }
     
     card.innerHTML = `
@@ -2585,7 +2665,7 @@ window.toggleMobileNotifications = function() {
   async function checkForNewContent() {
     try {
       const contentType = getCurrentContentType();
-      const response = await fetch(`/api/gallery/infinite?page=1&per_page=10&type=${contentType}`);
+      const response = await fetch(`/gallery/infinite?page=1&per_page=10&type=${contentType}`);
       const data = await response.json();
       
       if (data.success && data.items.length > 0) {
@@ -2752,6 +2832,118 @@ window.toggleMobileNotifications = function() {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* Modern Skeleton Loading Styles */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.skeleton-card {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 12px;
+  height: 300px;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: skeleton-shimmer 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Smooth item animations */
+.masonry-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, opacity;
+}
+
+.masonry-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+/* Performance optimizations */
+.masonry-container {
+  contain: layout style paint;
+}
+
+.masonry-card img,
+.masonry-card video {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Intersection Observer trigger */
+#load-trigger {
+  background: linear-gradient(45deg, transparent, rgba(99, 102, 241, 0.1), transparent);
+  border-radius: 8px;
+  margin: 20px 0;
+}
+
+/* Lazy loading styles */
+.lazy-load {
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+.lazy-load.loaded {
+  opacity: 1;
+  background: none;
+  animation: none;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Optimize for mobile */
+@media (max-width: 768px) {
+  .skeleton-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  
+  .skeleton-card {
+    height: 200px;
+  }
+  
+  .masonry-card:hover {
+    transform: none; /* Disable hover effects on mobile */
   }
 }
 

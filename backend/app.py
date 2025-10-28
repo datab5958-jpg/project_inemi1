@@ -134,7 +134,7 @@ def create_app():
         print(f"ERROR: Failed to register image_video_bp: {e}")
     
     try:
-        app.register_blueprint(musik_bp)
+        app.register_blueprint(musik_bp, url_prefix='/musik')
         print("SUCCESS: musik_bp blueprint registered")
     except Exception as e:
         print(f"ERROR: Failed to register musik_bp: {e}")

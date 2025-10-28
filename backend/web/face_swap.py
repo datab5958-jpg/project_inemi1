@@ -135,7 +135,7 @@ def face_swap():
     begin = time.time()
     
     try:
-        response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=30)
+        response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=60)
         print('DEBUG FACE SWAP RESPONSE:', response.status_code, response.text)
         
         if response.status_code == 200:
@@ -154,6 +154,8 @@ def face_swap():
                 return jsonify({'success': False, 'error': f'Failed to parse response: {str(e)}'}), 500
         else:
             return jsonify({'success': False, 'error': f'API request failed: {response.text}'}), 500
+    except requests.exceptions.Timeout:
+        return jsonify({'success': False, 'error': 'Request timeout - Face swap API took too long to respond. Please try again.'}), 500
     except requests.exceptions.RequestException as e:
         return jsonify({'success': False, 'error': f'Request failed: {str(e)}'}), 500
     except Exception as e:
@@ -162,12 +164,12 @@ def face_swap():
     poll_url = f"https://api.wavespeed.ai/api/v3/predictions/{request_id}/result"
     poll_headers = {"Authorization": f"Bearer {api_key}"}
 
-    max_attempts = 60  # 30 detik dengan interval 0.5 detik (sama dengan script test)
+    max_attempts = 120  # 60 detik dengan interval 0.5 detik (face swap butuh waktu lebih lama)
     attempt = 0
     
     while attempt < max_attempts:
         try:
-            poll_response = requests.get(poll_url, headers=poll_headers, timeout=10)
+            poll_response = requests.get(poll_url, headers=poll_headers, timeout=30)
             print(f'DEBUG POLL ATTEMPT {attempt + 1}: {poll_response.status_code}')
             
             if poll_response.status_code == 200:
@@ -220,6 +222,12 @@ def face_swap():
                 print(f'DEBUG POLL ERROR: {poll_response.status_code} - {poll_response.text}')
                 return jsonify({'success': False, 'error': f'Poll failed: {poll_response.text}'}), 500
                 
+        except requests.exceptions.Timeout:
+            print(f'DEBUG POLLING TIMEOUT: Attempt {attempt + 1}')
+            # Don't return error immediately, continue polling
+            attempt += 1
+            time.sleep(0.5)
+            continue
         except requests.exceptions.RequestException as e:
             print(f'DEBUG REQUEST ERROR: {e}')
             return jsonify({'success': False, 'error': f'Request error: {str(e)}'}), 500
