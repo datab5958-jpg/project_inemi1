@@ -143,9 +143,9 @@ def api_feed_videos():
             Video.video_url != ''
         )
         
-        # Exclude current user's videos if logged in
-        if current_user_id:
-            base_query = base_query.filter(Video.user_id != current_user_id)
+        # Show all videos including current user's videos in explore
+        # if current_user_id:
+        #     base_query = base_query.filter(Video.user_id != current_user_id)
         
         # Apply cursor-based pagination if cursor is provided
         if cursor:
@@ -304,9 +304,9 @@ def api_feed_videos_cursor():
             Video.video_url != ''
         )
         
-        # Exclude current user's videos if logged in
-        if current_user_id:
-            base_query = base_query.filter(Video.user_id != current_user_id)
+        # Show all videos including current user's videos in explore
+        # if current_user_id:
+        #     base_query = base_query.filter(Video.user_id != current_user_id)
         
         # Apply cursor-based pagination
         if cursor:

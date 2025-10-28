@@ -33,6 +33,7 @@ from web.musik import musik_bp            # Music generation and management
 from web.profil import profil_bp          # User profile management
 from web.video import video_bp            # Video generation and management
 from generate_banner import generate_banner_bp  # Banner generation functionality
+from Generate_video_avatar import generate_video_avatar_bp  # Video avatar generation functionality
 
 # API Blueprints (Backend Routes)
 from api.landing_content import landing_content_bp  # Landing page content API
@@ -156,6 +157,12 @@ def create_app():
     except Exception as e:
         print(f"ERROR: Failed to register generate_banner_bp: {e}")
     
+    try:
+        app.register_blueprint(generate_video_avatar_bp)
+        print("SUCCESS: generate_video_avatar_bp blueprint registered")
+    except Exception as e:
+        print(f"ERROR: Failed to register generate_video_avatar_bp: {e}")
+    
     # API blueprints
     try:
         app.register_blueprint(landing_content_bp)
@@ -196,7 +203,8 @@ def create_app():
                 'blueprints': [
                     'web_pages', 'admin', 'animasi', 'explore_api', 'face_swap',
                     'favorite', 'foto', 'fusigaya', 'image_video', 'musik',
-                    'profil', 'video', 'landing_content', 'api_routes'
+                    'profil', 'video', 'generate_banner', 'generate_video_avatar', 
+                    'landing_content', 'api_routes'
                 ]
             })
         except Exception as e:

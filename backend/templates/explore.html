@@ -1674,14 +1674,14 @@ document.addEventListener('DOMContentLoaded', function() {
   // Test API endpoints first
   testAPIEndpoints();
   
-  // Add a fallback timer to ensure videos load
+  // Add a fallback timer to ensure videos load (increased timeout)
   setTimeout(() => {
     const feedContainer = document.getElementById('videoFeed');
     if (feedContainer && feedContainer.children.length === 0) {
-      console.log('No videos loaded after 3 seconds, loading dummy videos...');
+      console.log('No videos loaded after 10 seconds, loading dummy videos...');
       loadDummyVideos();
     }
-  }, 3000);
+  }, 10000);
   
   initFeed();
   

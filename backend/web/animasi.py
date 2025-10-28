@@ -461,6 +461,43 @@ def test_endpoint():
     """Test endpoint untuk cek apakah server berjalan"""
     return jsonify({'success': True, 'message': 'Server is running'})
 
+@animasi_bp.route('/api/test-video-data', methods=['GET'])
+def test_video_data():
+    """Test endpoint untuk cek data video tanpa login"""
+    try:
+        # Get video results from database
+        results = Video.query.filter(
+            Video.video_url.isnot(None),
+            Video.video_url != '',
+            Video.video_url.like('http%')
+        ).order_by(Video.created_at.desc()).limit(12).all()
+        
+        results_data = []
+        for result in results:
+            if result.video_url and result.video_url.strip():
+                results_data.append({
+                    'id': result.id,
+                    'video_url': result.video_url,
+                    'title': result.caption or 'Untitled Video',
+                    'prompt': result.caption or 'Generate Video',
+                    'duration': 0,
+                    'created_at': result.created_at.isoformat() if result.created_at else None,
+                    'type': 'video'
+                })
+        
+        response = jsonify({
+            'success': True,
+            'results': results_data,
+            'count': len(results_data)
+        })
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response
+        
+    except Exception as e:
+        response = jsonify({'success': False, 'error': str(e)})
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response, 500
+
 @animasi_bp.route('/api/get-video-results', methods=['GET'])
 @login_required
 def get_video_results():
@@ -491,47 +528,66 @@ def get_video_results():
             # Debug: Check all video records for this user
             all_video_records = Video.query.filter(Video.user_id == user_id).all()
             print(f'DEBUG: Total video records for user {user_id}: {len(all_video_records)}')
-            for record in all_video_records:
-                print(f'DEBUG: Video Record ID: {record.id}, Caption: "{record.caption}", URL: {record.video_url}')
+            # Skip detailed debug prints to avoid encoding issues
             
             results_data = []
             for result in results:
-                print(f'DEBUG: Processing result - ID: {result.id}, URL: {result.video_url}, Caption: {result.caption}')
+                # Skip debug prints to avoid encoding issues
+                print(f'DEBUG: Processing result - ID: {result.id}, URL: {result.video_url[:50]}...')
                 # Validate URL before adding
                 if result.video_url and result.video_url.strip():
+                    # Sanitize caption to handle Unicode characters properly
+                    caption = result.caption or 'Untitled Video'
+                    try:
+                        # Remove or replace problematic Unicode characters
+                        import re
+                        # Remove emoji and other problematic Unicode characters
+                        caption = re.sub(r'[^\x00-\x7F]+', '', str(caption))
+                        if not caption.strip():
+                            caption = 'Untitled Video'
+                    except:
+                        caption = 'Untitled Video'
+                    
                     results_data.append({
                         'id': result.id,
-                        'url': result.video_url,
-                        'thumbnail': result.video_url,
-                        'prompt': result.caption or 'Generate Video',
-                        'filename': f'video_{result.id}.mp4',
-                        'created_at': result.created_at.isoformat(),
+                        'video_url': result.video_url,
+                        'title': caption,
+                        'prompt': caption,
+                        'duration': 0,  # Default duration since field doesn't exist
+                        'created_at': result.created_at.isoformat() if result.created_at else None,
                         'type': 'video'
                     })
-                    print(f'DEBUG: Added video result - ID: {result.id}, URL: {result.video_url}, Caption: {result.caption}')
+                    print(f'DEBUG: Added video result - ID: {result.id}, URL: {result.video_url}, Caption: {caption[:50]}...')
                 else:
                     print(f'DEBUG: Skipped result - ID: {result.id}, Invalid URL: {result.video_url}')
             
             print(f'DEBUG: Final results_data length: {len(results_data)}')
             
-            return jsonify({
+            # Use ensure_ascii=False to properly handle Unicode characters
+            response = jsonify({
                 'success': True,
                 'results': results_data
             })
+            response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return response
             
         except Exception as db_error:
             print(f"Database error in get_video_results: {str(db_error)}")
-            return jsonify({
+            response = jsonify({
                 'success': True,
                 'results': [],
                 'error': f'Database error: {str(db_error)}'
             })
+            response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return response
         
     except Exception as e:
         print(f"Error getting video results: {str(e)}")
         import traceback
         traceback.print_exc()
-        return jsonify({'success': False, 'error': f'Internal server error: {str(e)}'}), 500
+        response = jsonify({'success': False, 'error': f'Internal server error: {str(e)}'})
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response, 500
 
 @animasi_bp.route('/api/debug-video-data', methods=['GET'])
 @login_required

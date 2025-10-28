@@ -624,8 +624,11 @@
                              class="img-fluid rounded result-thumbnail video-thumbnail"
                              muted
                              preload="metadata"
+                             playsinline
+                             crossorigin="anonymous"
                              @error="handleVideoError($event)"
                              @loadedmetadata="handleVideoLoad($event)">
+                        <source :src="result.url" type="video/mp4">
                         Browser Anda tidak mendukung video.
                       </video>
                       <div class="video-play-overlay" @click="showResultPreview(result)">
@@ -2811,7 +2814,8 @@ function alpineData() {
           if (data.results && Array.isArray(data.results)) {
             this.results = data.results.map(result => ({
               ...result,
-              type: 'video'
+              type: 'video',
+              url: result.video_url || result.url  // Map video_url to url for template compatibility
             }));
             console.log(`Loaded ${this.results.length} video results`);
             console.log('Processed video results:', this.results);
@@ -3128,6 +3132,13 @@ function alpineData() {
       const video = event.target;
       const playOverlay = video.parentElement.querySelector('.video-play-overlay');
       
+      console.error('Video error occurred:', {
+        src: video.src,
+        error: event,
+        networkState: video.networkState,
+        readyState: video.readyState
+      });
+      
       // Change play button to error state
       if (playOverlay) {
         const icon = playOverlay.querySelector('i');
@@ -3142,6 +3153,13 @@ function alpineData() {
       // Video loaded successfully, ensure play button is visible
       const video = event.target;
       const playOverlay = video.parentElement.querySelector('.video-play-overlay');
+      
+      console.log('Video loaded successfully:', {
+        src: video.src,
+        duration: video.duration,
+        networkState: video.networkState,
+        readyState: video.readyState
+      });
       
       video.style.display = 'block';
       if (playOverlay) {

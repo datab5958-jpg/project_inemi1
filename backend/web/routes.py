@@ -81,6 +81,44 @@ def api_images_latest():
         # Return empty array if database error
         return jsonify({'success': True, 'items': []})
 
+@web_pages.route('/api/example_images')
+def api_example_images():
+    """API endpoint untuk mengambil contoh gambar dari database untuk halaman generate_image"""
+    try:
+        # Ambil 10 gambar terbaru dari database yang valid
+        images = Image.query.filter(
+            Image.image_url.isnot(None),
+            Image.image_url != '',
+            Image.image_url.like('http%')  # Hanya URL yang valid
+        ).order_by(Image.created_at.desc()).limit(10).all()
+        
+        images_data = []
+        for image in images:
+            # Validasi URL gambar
+            if image.image_url and image.image_url.startswith('http'):
+                images_data.append({
+                    'id': image.id,
+                    'url': image.image_url,
+                    'caption': image.caption or 'Generated Image',
+                    'created_at': image.created_at.isoformat() if image.created_at else None
+                })
+        
+        return jsonify({
+            'success': True,
+            'images': images_data,
+            'source': 'database',
+            'count': len(images_data)
+        })
+        
+    except Exception as e:
+        print(f"Error in api_example_images: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'images': [],
+            'source': 'error'
+        }), 500
+
 @web_pages.route('/api/search/infinite')
 def api_search_infinite():
     """API endpoint untuk infinite scroll di halaman search"""

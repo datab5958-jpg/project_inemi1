@@ -1488,6 +1488,94 @@
     </div>
   </div>
 
+  <!-- Video Results Gallery Section -->
+  <div class="container py-4" x-data="videoGallery()" x-init="loadVideoResults()">
+    <div class="row">
+      <div class="col-12">
+        <div class="card glass-panel">
+          <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <h4 class="card-title mb-1">
+                  <i class="bi bi-collection-play me-2"></i>Hasil Video Anda
+                </h4>
+                <p class="card-subtitle text-muted mb-0">Koleksi video yang telah Anda generate</p>
+              </div>
+              <button type="button" class="btn btn-outline-primary btn-sm" @click="loadVideoResults()">
+                <i class="bi bi-arrow-clockwise me-1"></i>Refresh
+              </button>
+            </div>
+          </div>
+          
+          <div class="card-body">
+            <!-- Loading State -->
+            <div x-show="loading" class="text-center py-4">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-2 text-muted">Memuat hasil video...</p>
+            </div>
+            
+            <!-- Empty State -->
+            <div x-show="!loading && videoResults.length === 0" class="text-center py-5">
+              <div class="empty-state-icon mb-3">
+                <i class="bi bi-film fs-1 text-muted"></i>
+              </div>
+              <h5 class="text-muted">Belum ada video hasil</h5>
+              <p class="text-muted">Generate video pertama Anda untuk melihat hasilnya di sini</p>
+            </div>
+            
+            <!-- Video Grid - Horizontal Layout 4 per row -->
+            <div x-show="!loading && videoResults.length > 0" class="video-gallery-horizontal">
+              <template x-for="(row, rowIndex) in Math.ceil(videoResults.slice(0, 12).length / 4)" :key="rowIndex">
+                <div class="video-row">
+                  <template x-for="video in videoResults.slice(rowIndex * 4, (rowIndex + 1) * 4)" :key="video.id">
+                    <div class="video-item-horizontal">
+                      <div class="video-thumbnail-container" @click="playVideo(video)">
+                        <video 
+                          :src="video.video_url" 
+                          class="video-thumbnail"
+                          muted
+                          preload="metadata"
+                          @error="handleVideoError($event)"
+                          @loadedmetadata="handleVideoLoad($event)">
+                        </video>
+                        <div class="video-play-overlay">
+                          <i class="bi bi-play-circle-fill"></i>
+                        </div>
+                        <div class="video-duration" x-text="formatDuration(video.duration)"></div>
+                      </div>
+                      
+                      <div class="video-info-horizontal">
+                        <h6 class="video-title" x-text="video.title || 'Untitled Video'"></h6>
+                        <p class="video-prompt" x-text="video.prompt || 'No description'"></p>
+                        <div class="video-meta">
+                          <small class="text-muted">
+                            <i class="bi bi-calendar me-1"></i>
+                            <span x-text="formatDate(video.created_at)"></span>
+                          </small>
+                        </div>
+                      </div>
+                      
+                      <div class="video-actions-horizontal">
+                        <button class="btn btn-sm btn-outline-primary" @click="playVideo(video)" title="Play Video">
+                          <i class="bi bi-play"></i>
+                        </button>
+                      <button class="btn btn-sm btn-outline-success" @click="downloadVideo(video, $event)" title="Download Video">
+                        <i class="bi bi-download"></i>
+                      </button>
+                      </div>
+                    </div>
+                  </template>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Video Preview Modal (Inside Alpine.js scope) -->
   <div x-show="isInitialized && videoPreviewModal.show && videoPreviewModal.url && resultUrl" 
        x-transition:enter="transition ease-out duration-300"
@@ -3100,6 +3188,277 @@
   [x-key] {
     transition: all 0.3s ease;
   }
+  
+  /* === VIDEO GALLERY STYLES === */
+  .video-gallery-horizontal {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .video-row {
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+  }
+  
+  .video-item-horizontal {
+    flex: 1;
+    min-width: 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+  }
+  
+  .video-item-horizontal:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    border-color: rgba(102, 126, 234, 0.5);
+  }
+  
+  .video-result-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .video-result-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    border-color: rgba(102, 126, 234, 0.5);
+  }
+  
+  .video-thumbnail-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    cursor: pointer;
+    background: #1a1a2e;
+  }
+  
+  .video-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+  
+  .video-thumbnail-container:hover .video-thumbnail {
+    transform: scale(1.05);
+  }
+  
+  .video-play-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+  }
+  
+  .video-play-overlay i {
+    font-size: 24px;
+    color: white;
+    margin-left: 3px; /* Slight offset for play icon */
+  }
+  
+  .video-thumbnail-container:hover .video-play-overlay {
+    background: rgba(102, 126, 234, 0.8);
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  
+  .video-duration {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  
+  .video-info {
+    padding: 1rem;
+  }
+  
+  .video-info-horizontal {
+    padding: 0.75rem;
+    flex: 1;
+  }
+  
+  .video-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 0.5rem;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .video-prompt {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .video-meta {
+    margin-bottom: 0.75rem;
+  }
+  
+  .video-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0 1rem 1rem;
+  }
+  
+  .video-actions .btn {
+    flex: 1;
+    font-size: 12px;
+    padding: 0.375rem 0.75rem;
+  }
+  
+  .video-actions-horizontal {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0 0.75rem 0.75rem;
+  }
+  
+  .video-actions-horizontal .btn {
+    flex: 1;
+    font-size: 11px;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .empty-state-icon {
+    opacity: 0.5;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 1200px) {
+    .video-item-horizontal {
+      flex: 1;
+    }
+  }
+  
+  @media (max-width: 992px) {
+    .video-row {
+      flex-wrap: wrap;
+    }
+    
+    .video-item-horizontal {
+      flex: 0 0 calc(50% - 0.5rem);
+      min-width: 250px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .video-item-horizontal {
+      flex: 0 0 calc(50% - 0.5rem);
+      min-width: 200px;
+    }
+    
+    .video-thumbnail-container {
+      height: 150px;
+    }
+    
+    .video-play-overlay {
+      width: 50px;
+      height: 50px;
+    }
+    
+    .video-play-overlay i {
+      font-size: 20px;
+    }
+    
+    .video-info {
+      padding: 0.75rem;
+    }
+    
+    .video-info-horizontal {
+      padding: 0.5rem;
+    }
+    
+    .video-title {
+      font-size: 13px;
+    }
+    
+    .video-prompt {
+      font-size: 11px;
+    }
+    
+    .video-actions-horizontal .btn {
+      font-size: 10px;
+      padding: 0.2rem 0.4rem;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .video-row {
+      flex-direction: column;
+    }
+    
+    .video-item-horizontal {
+      flex: 1;
+      min-width: 100%;
+    }
+    
+    .video-thumbnail-container {
+      height: 200px;
+    }
+    
+    .video-play-overlay {
+      width: 60px;
+      height: 60px;
+    }
+    
+    .video-play-overlay i {
+      font-size: 24px;
+    }
+    
+    .video-info-horizontal {
+      padding: 0.75rem;
+    }
+    
+    .video-title {
+      font-size: 14px;
+    }
+    
+    .video-prompt {
+      font-size: 12px;
+    }
+    
+    .video-actions-horizontal .btn {
+      font-size: 12px;
+      padding: 0.375rem 0.75rem;
+    }
+  }
 </style>
 
 <script>
@@ -3199,5 +3558,459 @@ window.addEventListener('load', function() {
     }
   }, 100);
 });
+
+// Video Gallery Functions
+function videoGallery() {
+  return {
+    loading: false,
+    videoResults: [],
+    
+    async loadVideoResults() {
+      this.loading = true;
+      try {
+        // Try the main endpoint first
+        let response = await fetch('/api/get-video-results');
+        let data = await response.json();
+        
+        // If main endpoint fails or returns empty, try test endpoint
+        if (!data.success || !data.results || data.results.length === 0) {
+          console.log('Main endpoint failed or empty, trying test endpoint...');
+          response = await fetch('/api/test-video-data');
+          data = await response.json();
+        }
+        
+        if (data.success && data.results) {
+          this.videoResults = data.results.slice(0, 12); // Limit to 12 videos
+          console.log('Video results loaded:', this.videoResults.length);
+          console.log('Sample video data:', this.videoResults[0]);
+        } else {
+          console.error('Error loading video results:', data.error);
+          this.videoResults = [];
+        }
+      } catch (error) {
+        console.error('Error loading video results:', error);
+        this.videoResults = [];
+      } finally {
+        this.loading = false;
+      }
+    },
+    
+    playVideo(video) {
+      if (!video || !video.video_url) {
+        console.error('No video URL provided');
+        return;
+      }
+      
+      console.log('Playing video:', video.video_url);
+      
+      // Create a simple video modal directly
+      this.showVideoModal(video);
+    },
+    
+    showVideoModal(video) {
+      // Remove existing modal if any
+      const existingModal = document.getElementById('videoModal');
+      if (existingModal) {
+        existingModal.remove();
+      }
+      
+      // Create modal HTML
+      const modalHTML = `
+        <div id="videoModal" class="video-modal-overlay" style="
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.9);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+          backdrop-filter: blur(10px);
+          padding: 1rem;
+        ">
+          <div class="video-modal-content" style="
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 1rem;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+          ">
+            <!-- Header -->
+            <div style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 1rem 1.5rem;
+              border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+              background: rgba(255, 255, 255, 0.02);
+            ">
+              <h4 style="
+                margin: 0;
+                color: white;
+                font-size: 16px;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+              ">
+                <i class="bi bi-play-circle"></i>
+                Video Preview
+              </h4>
+              <button id="closeVideoModal" style="
+                background: rgba(255, 255, 255, 0.1);
+                border: none;
+                color: white;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+              " onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'" onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'">
+                ×
+              </button>
+            </div>
+            
+            <!-- Video Container -->
+            <div style="
+              position: relative;
+              background: #000;
+              flex: 1;
+              min-height: 300px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            ">
+              <video 
+                id="modalVideo"
+                controls 
+                preload="metadata"
+                style="
+                  width: 100%;
+                  height: 100%;
+                  max-height: 400px;
+                  object-fit: contain;
+                "
+                onloadstart="console.log('Video loading started')"
+                oncanplay="console.log('Video can play')"
+                onerror="console.error('Video load error:', event)"
+              >
+                <source src="${video.video_url}" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            
+            <!-- Content Footer -->
+            <div style="
+              padding: 1rem 1.5rem;
+              background: rgba(255, 255, 255, 0.02);
+              border-top: 1px solid rgba(255, 255, 255, 0.1);
+            ">
+              <!-- Prompt Section -->
+              <div style="
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 0.5rem;
+                padding: 0.75rem;
+                margin-bottom: 0.75rem;
+              ">
+                <div style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                  margin-bottom: 0.5rem;
+                ">
+                  <label style="
+                    color: rgba(255, 255, 255, 0.7);
+                    font-size: 12px;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                  ">Prompt</label>
+                  <button id="copyPromptBtn" style="
+                    background: rgba(102, 126, 234, 0.8);
+                    border: none;
+                    color: white;
+                    padding: 0.25rem 0.5rem;
+                    border-radius: 0.25rem;
+                    font-size: 11px;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 0.25rem;
+                  " onmouseover="this.style.background='rgba(102, 126, 234, 1)'" onmouseout="this.style.background='rgba(102, 126, 234, 0.8)'">
+                    <i class="bi bi-copy"></i>
+                    Copy
+                  </button>
+                </div>
+                <div id="promptText" style="
+                  font-size: 13px;
+                  line-height: 1.4;
+                  color: rgba(255, 255, 255, 0.9);
+                  word-wrap: break-word;
+                  white-space: pre-wrap;
+                  cursor: pointer;
+                  padding: 0.5rem;
+                  border-radius: 0.25rem;
+                  transition: background-color 0.2s ease;
+                  max-height: 80px;
+                  overflow-y: auto;
+                " onmouseover="this.style.backgroundColor='rgba(255, 255, 255, 0.05)'" onmouseout="this.style.backgroundColor='transparent'">${video.prompt || 'No description available'}</div>
+              </div>
+              
+              <!-- Metadata -->
+              <div style="
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 11px;
+                color: rgba(255, 255, 255, 0.5);
+              ">
+                <span style="display: flex; align-items: center; gap: 0.25rem;">
+                  <i class="bi bi-calendar"></i>
+                  ${video.created_at ? new Date(video.created_at).toLocaleDateString('id-ID', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  }) : 'Unknown date'}
+                </span>
+                <span style="display: flex; align-items: center; gap: 0.25rem;">
+                  <i class="bi bi-clock"></i>
+                  ${video.duration ? this.formatDuration(video.duration) : '0:00'}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Add modal to page
+      document.body.insertAdjacentHTML('beforeend', modalHTML);
+      
+      // Get video element and set source
+      const videoElement = document.getElementById('modalVideo');
+      if (videoElement) {
+        videoElement.src = video.video_url;
+        videoElement.load(); // Force reload
+        
+        // Add event listeners for better debugging
+        videoElement.addEventListener('loadstart', () => {
+          console.log('Video loading started');
+        });
+        
+        videoElement.addEventListener('canplay', () => {
+          console.log('Video can play');
+          // Try to play after video is ready
+          videoElement.play().catch(e => {
+            console.log('Autoplay failed, user needs to click play:', e);
+          });
+        });
+        
+        videoElement.addEventListener('error', (e) => {
+          console.error('Video load error:', e);
+          console.error('Video URL:', video.video_url);
+        });
+        
+        videoElement.addEventListener('loadedmetadata', () => {
+          console.log('Video metadata loaded, duration:', videoElement.duration);
+        });
+      }
+      
+      // Add event listeners
+      const modal = document.getElementById('videoModal');
+      const closeBtn = document.getElementById('closeVideoModal');
+      const copyPromptBtn = document.getElementById('copyPromptBtn');
+      const promptText = document.getElementById('promptText');
+      
+      const closeModal = () => {
+        if (modal) {
+          // Pause video before closing
+          if (videoElement) {
+            videoElement.pause();
+          }
+          modal.remove();
+        }
+      };
+      
+      // Copy prompt functionality
+      const copyPrompt = async () => {
+        try {
+          const textToCopy = video.prompt || video.title || 'No content available';
+          await navigator.clipboard.writeText(textToCopy);
+          
+          // Show success feedback
+          const originalText = copyPromptBtn.innerHTML;
+          copyPromptBtn.innerHTML = '<i class="bi bi-check me-1"></i>Copied!';
+          copyPromptBtn.style.background = 'rgba(34, 197, 94, 0.8)';
+          
+          setTimeout(() => {
+            copyPromptBtn.innerHTML = originalText;
+            copyPromptBtn.style.background = 'rgba(102, 126, 234, 0.8)';
+          }, 2000);
+          
+        } catch (err) {
+          console.error('Failed to copy text: ', err);
+          
+          // Fallback: Select text for manual copy
+          if (promptText) {
+            const range = document.createRange();
+            range.selectNodeContents(promptText);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+          }
+        }
+      };
+      
+      // Add copy functionality to button and text
+      if (copyPromptBtn) {
+        copyPromptBtn.addEventListener('click', copyPrompt);
+      }
+      
+      if (promptText) {
+        promptText.addEventListener('click', copyPrompt);
+      }
+      
+      closeBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          closeModal();
+        }
+      });
+      
+      // Close on Escape key
+      const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+          closeModal();
+          document.removeEventListener('keydown', handleEscape);
+        }
+      };
+      document.addEventListener('keydown', handleEscape);
+    },
+    
+    downloadVideo(video, event = null) {
+      if (video.video_url) {
+        console.log('Downloading video:', video.video_url);
+        
+        // Method 1: Direct download using fetch and blob
+        this.downloadVideoDirect(video, event);
+      } else {
+        console.error('No video URL for download');
+      }
+    },
+    
+    async downloadVideoDirect(video, event = null) {
+      let buttonElement = null;
+      let originalText = '';
+      
+      try {
+        // Show loading indicator if event is available
+        if (event && event.target) {
+          buttonElement = event.target;
+          originalText = buttonElement.innerHTML;
+          buttonElement.innerHTML = '<i class="bi bi-hourglass-split"></i> Downloading...';
+          buttonElement.disabled = true;
+        }
+        
+        // Fetch the video file
+        const response = await fetch(video.video_url, {
+          method: 'GET',
+          headers: {
+            'Accept': 'video/mp4,video/*,*/*'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        // Get the blob data
+        const blob = await response.blob();
+        
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `video_${video.id || Date.now()}.mp4`;
+        link.style.display = 'none';
+        
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+        
+        // Cleanup
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        console.log('Video downloaded successfully');
+        
+      } catch (error) {
+        console.error('Download failed:', error);
+        
+        // Fallback: Use simple link download
+        this.downloadVideoFallback(video);
+      } finally {
+        // Restore button state
+        if (buttonElement) {
+          buttonElement.innerHTML = originalText;
+          buttonElement.disabled = false;
+        }
+      }
+    },
+    
+    downloadVideoFallback(video) {
+      // Fallback method for when fetch fails
+      const link = document.createElement('a');
+      link.href = video.video_url;
+      link.download = `video_${video.id || Date.now()}.mp4`;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    },
+    
+    formatDuration(seconds) {
+      if (!seconds) return '0:00';
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    },
+    
+    formatDate(dateString) {
+      if (!dateString) return 'Unknown';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('id-ID', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    },
+    
+    handleVideoError(event) {
+      console.error('Video load error:', event);
+      event.target.style.display = 'none';
+    },
+    
+    handleVideoLoad(event) {
+      console.log('Video loaded successfully');
+    }
+  };
+}
 </script>
 {% endblock %}

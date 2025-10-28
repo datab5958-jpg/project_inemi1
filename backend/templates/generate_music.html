@@ -3021,7 +3021,7 @@ function aiMusicApp() {
     
     async loadMusicHistory() {
       try {
-        const response = await fetch('/musik/api/music/history');
+        const response = await fetch('/api/music/history');
         const data = await response.json();
         if (data.success) {
           // Format duration for each music item
@@ -3524,7 +3524,7 @@ Lagu yang waktu tidak bisa hapus`;
       
       const poll = async () => {
         try {
-          const response = await fetch('/musik/api/music/history');
+          const response = await fetch('/api/music/history');
           const data = await response.json();
           
           if (data.success && data.music && data.music.length > 0) {
@@ -3673,7 +3673,7 @@ Lagu yang waktu tidak bisa hapus`;
     
     async refreshMusicList() {
       try {
-        const response = await fetch('/musik/api/music/history');
+        const response = await fetch('/api/music/history');
         const data = await response.json();
         
         if (data.success && data.music) {
