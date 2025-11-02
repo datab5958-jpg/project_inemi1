@@ -962,10 +962,18 @@
             const password = passwordInput.value;
             const confirmPassword = confirmPasswordInput.value;
             const termsChecked = document.getElementById('terms').checked;
-            const passwordStrength = checkPasswordStrength(password);
 
-            if (password && confirmPassword && password === confirmPassword && 
-                passwordStrength >= 3 && termsChecked) {
+            // Keep strength meter for UI feedback
+            checkPasswordStrength(password);
+
+            // Match server-side rules: length >= 8, has lower, has upper, has digit
+            const lengthOk = password.length >= 8;
+            const hasLower = /[a-z]/.test(password);
+            const hasUpper = /[A-Z]/.test(password);
+            const hasDigit = /\d/.test(password);
+            const validPassword = lengthOk && hasLower && hasUpper && hasDigit;
+
+            if (password && confirmPassword && password === confirmPassword && validPassword && termsChecked) {
                 submitBtn.disabled = false;
             } else {
                 submitBtn.disabled = true;

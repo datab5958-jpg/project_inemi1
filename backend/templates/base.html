@@ -135,6 +135,9 @@
         .sidebar-header {
             padding: 1.5rem 1rem 1rem;
             border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .logo-container {
@@ -142,6 +145,46 @@
             align-items: center;
             gap: 1rem;
         }
+
+        /* Mobile-only Close button in sidebar header */
+        .sidebar-close-btn {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 10px;
+            color: #ff6b6b;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.2);
+        }
+
+        .sidebar-close-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .sidebar-close-btn:hover::before { left: 100%; }
+        .sidebar-close-btn:hover {
+            background: rgba(255, 107, 107, 0.2);
+            border-color: #ff5252;
+            color: #ff5252;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+        }
+
+        .sidebar-close-btn i { font-size: 1rem; position: relative; z-index: 1; }
 
         .logo-image {
             width: 40px;
@@ -191,6 +234,57 @@
             justify-content: space-between;
             width: 100%;
             margin-bottom: 0.25rem;
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 107, 107, 0.1);
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            border-radius: 8px;
+            color: #ff6b6b;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logout-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .logout-btn:hover::before {
+            left: 100%;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 107, 107, 0.2);
+            border-color: #ff5252;
+            color: #ff5252;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+        }
+
+        .logout-btn i {
+            font-size: 1rem;
+            z-index: 1;
+            position: relative;
         }
 
         .user-info h4 {
@@ -1602,6 +1696,52 @@
             font-weight: 500 !important;
         }
 
+        .mobile-logout-btn {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 44px !important;
+            height: 44px !important;
+            background: rgba(255, 107, 107, 0.1) !important;
+            border: 1px solid rgba(255, 107, 107, 0.3) !important;
+            border-radius: 12px !important;
+            color: #ff6b6b !important;
+            text-decoration: none !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            position: relative !important;
+            overflow: hidden !important;
+            flex-shrink: 0 !important;
+        }
+
+        .mobile-logout-btn::before {
+            content: '' !important;
+            position: absolute !important;
+            top: 0 !important;
+            left: -100% !important;
+            width: 100% !important;
+            height: 100% !important;
+            background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.2), transparent) !important;
+            transition: left 0.5s !important;
+        }
+
+        .mobile-logout-btn:hover::before {
+            left: 100% !important;
+        }
+
+        .mobile-logout-btn:hover {
+            background: rgba(255, 107, 107, 0.2) !important;
+            border-color: #ff5252 !important;
+            color: #ff5252 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3) !important;
+        }
+
+        .mobile-logout-btn i {
+            font-size: 1.1rem !important;
+            z-index: 1 !important;
+            position: relative !important;
+        }
+
         /* Mobile Navigation Sections */
         .mobile-nav-section {
             padding: 1.5rem 2rem !important;
@@ -2312,6 +2452,16 @@
                 transform: translateX(0);
             }
 
+            /* Show close button on mobile */
+            .sidebar-header { position: relative; }
+            .sidebar-close-btn {
+                display: flex;
+                position: absolute;
+                right: 12px;
+                top: 14px;
+                z-index: 5;
+            }
+
             .ai-tools-section,
             .chat-section {
                 padding: 0.75rem;
@@ -2395,6 +2545,9 @@
             .notification-bell-mobile {
                 display: none !important;
             }
+
+            /* Hide close button on desktop */
+            .sidebar-close-btn { display: none !important; }
         }
 
         @media (max-width: 768px) {
@@ -2579,6 +2732,10 @@
                 <img src="/static/assets/image/logo.png" alt="INEMI Logo" class="logo-image">
                 <span class="logo-text">INEMI</span>
             </div>
+            <!-- Close Menu Button for Mobile -->
+            <button class="sidebar-close-btn" @click="sidebarOpen = false" title="Close Menu">
+                <i class="bi bi-x-lg"></i>
+            </button>
         </div>
         
         <div class="user-profile">
@@ -2592,12 +2749,18 @@
                             <span style="font-weight:700;">{{ current_user.kredit if current_user else 0 }}</span>
                         </span>
                     </h4>
-                    <!-- Notification Bell next to user name -->
-                    <div class="notification-bell-sidebar" id="notification-bell-sidebar">
-                        <div class="notification-icon-sidebar" id="notification-icon-sidebar">
-                            <i class="bi bi-bell"></i>
-                            <span class="notification-badge-sidebar" id="notification-badge-sidebar">0</span>
+                    <div class="user-actions">
+                        <!-- Notification Bell next to user name -->
+                        <div class="notification-bell-sidebar" id="notification-bell-sidebar">
+                            <div class="notification-icon-sidebar" id="notification-icon-sidebar">
+                                <i class="bi bi-bell"></i>
+                                <span class="notification-badge-sidebar" id="notification-badge-sidebar">0</span>
+                            </div>
                         </div>
+                        <!-- Logout Button -->
+                        <a href="/logout" class="logout-btn" title="Logout">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </a>
                     </div>
                 </div>
                 <div class="user-role">{{ session.get('role', 'free').title() }} User</div>
@@ -2884,6 +3047,10 @@
                             </h4>
                             <div class="mobile-user-role">{{ session.get('role', 'free').title() }} User</div>
                         </div>
+                        <!-- Mobile Logout Button -->
+                        <a href="/logout" class="mobile-logout-btn" title="Logout">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </a>
                     </div>
 
                     <!-- Main Navigation -->

@@ -1,0 +1,40 @@
+{
+  "code": 200,
+  "data": {
+    "callbackType": "complete",
+    "data": [
+      {
+        "audio_url": "https://musicfile.api.box/MTQxNDBmN2QtMzIyYy00ZDkyLWJkYTItOTFkMGUwNzc0ZmE0.mp3",
+        "createTime": 1761757482181,
+        "duration": 229.2,
+        "id": "14140f7d-322c-4d92-bda2-91d0e0774fa4",
+        "image_url": "https://musicfile.api.box/MTQxNDBmN2QtMzIyYy00ZDkyLWJkYTItOTFkMGUwNzc0ZmE0.jpeg",
+        "model_name": "chirp-bluejay",
+        "prompt": "[Intro]\nsuki to ka? Koi to ka? Ai to ka?\nHah... boku wa shiranai\n\n[verse 1]\nApa itu suka?\nDi saat semua terasa pura-pura.\nApa itu suka?\nDi saat tak lagi bisa dipercaya\n\nApa itu cinta?\nDi saat kau tak melihatnya dengan benar.\nApa itu cinta?\nDi saat kau tak lagi merasa.\n\nApa itu janji?\nJika tak lagi ditepati.\nApa itu kata?\nJika tak lagi bermakna.\n\n[Chorus]\nSungguh, aku tak lagi membencinya.\nTapi, aku takut masuk ke dalam jurang yang sama.\nTuhan, apa yang harus aku lakukan?\nAku hanya ingin tersenyum dengan setulus-tulusnya.\n\nTapi, aku tak yakin bisa tuk melakukannya.\n\nHah...\nAku tak mengerti.\nAku hanya bisa menatap tanpa emosi.\n\nSungguh, aku tak mengerti.\n\n[Reff]\nApa itu cinta?\nApa itu suka?\nApa itu senang?\nApa itu sedih?\nDan apa itu kecewa?\n\nApa itu sebenarnya rasa?\nSemua terlihat sama.\nHampa nan hambar.\n\nKelabu, tak berwarna.\n\n[verse 2]\nHei,\nApa kau tahu semua itu?\nApa kau bisa beri tahuku,\ntahuku?\n\nJika tidak, maka tak apa.\n\n[Outro]\nLupakan saja.\nAku hanya asal bicara.\nJanganlah kau ambil rasa.\nTerima kasih telah mendengarnya.\n\nmou shiranai",
+        "source_audio_url": "https://cdn1.suno.ai/14140f7d-322c-4d92-bda2-91d0e0774fa4.mp3",
+        "source_image_url": "https://cdn2.suno.ai/image_14140f7d-322c-4d92-bda2-91d0e0774fa4.jpeg",
+        "source_stream_audio_url": "https://cdn1.suno.ai/14140f7d-322c-4d92-bda2-91d0e0774fa4.mp3",
+        "stream_audio_url": "https://musicfile.api.box/MTQxNDBmN2QtMzIyYy00ZDkyLWJkYTItOTFkMGUwNzc0ZmE0",
+        "tags": "pop, calm, female",
+        "title": "suki to ka Koi to ka Ai to ka"
+      },
+      {
+        "audio_url": "https://musicfile.api.box/NWU3N2E5ODItMzIyYS00NDJjLTliMzAtNDMzM2JjNzAwY2M1.mp3",
+        "createTime": 1761757482181,
+        "duration": 283.84,
+        "id": "5e77a982-322a-442c-9b30-4333bc700cc5",
+        "image_url": "https://musicfile.api.box/NWU3N2E5ODItMzIyYS00NDJjLTliMzAtNDMzM2JjNzAwY2M1.jpeg",
+        "model_name": "chirp-bluejay",
+        "prompt": "[Intro]\nsuki to ka? Koi to ka? Ai to ka?\nHah... boku wa shiranai\n\n[verse 1]\nApa itu suka?\nDi saat semua terasa pura-pura.\nApa itu suka?\nDi saat tak lagi bisa dipercaya\n\nApa itu cinta?\nDi saat kau tak melihatnya dengan benar.\nApa itu cinta?\nDi saat kau tak lagi merasa.\n\nApa itu janji?\nJika tak lagi ditepati.\nApa itu kata?\nJika tak lagi bermakna.\n\n[Chorus]\nSungguh, aku tak lagi membencinya.\nTapi, aku takut masuk ke dalam jurang yang sama.\nTuhan, apa yang harus aku lakukan?\nAku hanya ingin tersenyum dengan setulus-tulusnya.\n\nTapi, aku tak yakin bisa tuk melakukannya.\n\nHah...\nAku tak mengerti.\nAku hanya bisa menatap tanpa emosi.\n\nSungguh, aku tak mengerti.\n\n[Reff]\nApa itu cinta?\nApa itu suka?\nApa itu senang?\nApa itu sedih?\nDan apa itu kecewa?\n\nApa itu sebenarnya rasa?\nSemua terlihat sama.\nHampa nan hambar.\n\nKelabu, tak berwarna.\n\n[verse 2]\nHei,\nApa kau tahu semua itu?\nApa kau bisa beri tahuku,\ntahuku?\n\nJika tidak, maka tak apa.\n\n[Outro]\nLupakan saja.\nAku hanya asal bicara.\nJanganlah kau ambil rasa.\nTerima kasih telah mendengarnya.\n\nmou shiranai",
+        "source_audio_url": "https://cdn1.suno.ai/5e77a982-322a-442c-9b30-4333bc700cc5.mp3",
+        "source_image_url": "https://cdn2.suno.ai/image_5e77a982-322a-442c-9b30-4333bc700cc5.jpeg",
+        "source_stream_audio_url": "https://cdn1.suno.ai/5e77a982-322a-442c-9b30-4333bc700cc5.mp3",
+        "stream_audio_url": "https://musicfile.api.box/NWU3N2E5ODItMzIyYS00NDJjLTliMzAtNDMzM2JjNzAwY2M1",
+        "tags": "pop, calm, female",
+        "title": "suki to ka Koi to ka Ai to ka"
+      }
+    ],
+    "task_id": "797e68905519386bce6ccf6ea2134b34"
+  },
+  "msg": "All generated successfully."
+}

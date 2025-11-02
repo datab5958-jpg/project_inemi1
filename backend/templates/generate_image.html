@@ -533,7 +533,7 @@
             </div>
             
             <!-- Nano Banana specific parameters -->
-            <div x-show="fusigaya.model === 'nano-banana'" class="nano-banana-params">
+           <div x-show="fusigaya.model === 'nano-banana'" x-cloak class="nano-banana-params d-none">
               <div class="mb-3">
                 <h6 class="text-gradient fw-bold">
                   <i class="bi bi-magic me-2"></i>Parameter Nano Banana
@@ -5791,7 +5791,7 @@ function alpineData() {
     fusigaya: {
       title: '',
       prompt: '',
-      model: 'flux-kontext-dev',
+      model: 'nano-banana',
       images: [{ url: '', preview: '', loading: false, fileInfo: null, uploadProgress: 0, dragover: false }],
       size: '',
       num_inference_steps: 28,
