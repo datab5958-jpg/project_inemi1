@@ -494,19 +494,34 @@ class NotificationSystem {
     async loadUnreadCount() {
         try {
             const response = await fetch('/api/notifications/unread-count');
+            
+            // Check if response is OK and is JSON
+            if (!response.ok) {
+                console.warn(`Failed to fetch unread count: ${response.status} ${response.statusText}`);
+                return;
+            }
+            
+            // Check content type before parsing
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                console.warn('Response is not JSON, skipping unread count update');
+                return;
+            }
+            
             const data = await response.json();
             
-            console.log('Unread count response:', data);
-            
-            if (data.success) {
-                this.notificationCount = data.unread_count;
-                console.log('Unread count:', this.notificationCount);
+            if (data && data.success) {
+                this.notificationCount = data.unread_count || 0;
                 this.updateNotificationBadge();
             } else {
-                console.error('Failed to load unread count:', data.error);
+                console.warn('Failed to load unread count:', data?.error || 'Unknown error');
             }
         } catch (error) {
-            console.error('Error fetching unread count:', error);
+            // Only log error if it's not a JSON parse error (which is expected if endpoint doesn't exist)
+            if (error.name !== 'SyntaxError') {
+                console.error('Error fetching unread count:', error);
+            }
+            // Silently fail - don't spam console with expected errors
         }
     }
 

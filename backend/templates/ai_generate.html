@@ -342,14 +342,30 @@
         width: 100%;
     }
 
+    /* Premium Custom Scrollbar */
     .ai-chat-stream::-webkit-scrollbar {
-        width: 6px;
+        width: 8px;
+    }
+
+    .ai-chat-stream::-webkit-scrollbar-track {
+        background: rgba(76, 126, 255, 0.05);
+        border-radius: 10px;
+        margin: 8px 0;
     }
 
     .ai-chat-stream::-webkit-scrollbar-thumb {
-        background: var(--accent-neon);
-        border-radius: 3px;
+        background: linear-gradient(180deg, var(--accent-neon) 0%, rgba(93, 95, 239, 0.8) 100%);
+        border-radius: 10px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+        transition: all 0.3s ease;
     }
+
+    .ai-chat-stream::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, rgba(76, 126, 255, 0.9) 0%, rgba(93, 95, 239, 1) 100%);
+        border: 1px solid rgba(76, 126, 255, 0.3);
+    }
+
 
     .ai-chat-stream.active {
         display: flex;
@@ -414,14 +430,23 @@
     }
 
     .ai-message.user .ai-message-bubble {
-        background: var(--bg-bubble-user);
-        border: 1px solid rgba(76, 126, 255, 0.22);
+        background: linear-gradient(135deg, rgba(37, 35, 79, 0.95) 0%, rgba(29, 27, 63, 0.95) 100%);
+        border: 1px solid rgba(76, 126, 255, 0.25);
+        backdrop-filter: blur(10px);
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05),
+            0 0 20px rgba(76, 126, 255, 0.1);
     }
 
     .ai-message.assistant .ai-message-bubble {
-        background: var(--bg-bubble-ai);
-        border: 1px solid var(--border-neon);
-        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+        background: linear-gradient(135deg, rgba(29, 27, 63, 0.95) 0%, rgba(21, 18, 58, 0.95) 100%);
+        border: 1px solid rgba(76, 126, 255, 0.3);
+        backdrop-filter: blur(10px);
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05),
+            0 0 25px rgba(76, 126, 255, 0.15);
     }
 
     .ai-message-meta {
@@ -491,10 +516,26 @@
         width: 100%;
         max-width: 100%;
         height: auto;
-        border-radius: 12px;
-        border: 1px solid var(--border-neon);
-        box-shadow: var(--shadow-glow);
+        border-radius: 14px;
+        border: 2px solid rgba(76, 126, 255, 0.2);
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.4),
+            0 0 20px rgba(76, 126, 255, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
         object-fit: contain;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .ai-media-grid img:hover,
+    .ai-media-grid video:hover {
+        transform: translateY(-4px) scale(1.02);
+        border-color: rgba(76, 126, 255, 0.5);
+        box-shadow: 
+            0 16px 48px rgba(0, 0, 0, 0.5),
+            0 0 30px rgba(76, 126, 255, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
 
     .ai-result-actions {
@@ -832,74 +873,597 @@
     }
 
     .ai-attachment-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+        padding: 8px;
+    }
+
+    @media (max-width: 768px) {
+        .ai-attachment-list {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
     }
 
     .ai-attachment-item {
         position: relative;
-        border-radius: 10px;
+        border-radius: 12px;
         overflow: hidden;
         background: var(--bg-input-extra);
-        border: 1px solid var(--border-neon);
-        transition: all 200ms;
+        border: 2px solid var(--border-neon);
+        transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
     }
 
     .ai-attachment-item:hover {
         border-color: var(--accent-neon);
-        box-shadow: 0 0 12px rgba(76, 126, 255, 0.2);
+        box-shadow: 0 8px 20px rgba(76, 126, 255, 0.3);
+        transform: translateY(-4px) scale(1.05);
+    }
+
+    .ai-attachment-item.uploading {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .ai-attachment-item.uploading::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent-neon), rgba(76, 126, 255, 0.5));
+        animation: upload-progress 2s linear infinite;
+    }
+
+    @keyframes upload-progress {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(100%);
+        }
     }
 
     .ai-attachment-item img,
     .ai-attachment-item video {
         display: block;
-        max-width: 120px;
-        max-height: 120px;
-        width: auto;
-        height: auto;
+        width: 100%;
+        height: 140px;
         object-fit: cover;
-        border-radius: 8px 8px 0 0;
+        border-radius: 10px 10px 0 0;
+        transition: transform 300ms ease;
+    }
+
+    .ai-attachment-item:hover img,
+    .ai-attachment-item:hover video {
+        transform: scale(1.1);
     }
 
     .ai-attachment-item video {
         background: #000;
-        width: 120px;
-        height: 120px;
+        width: 100%;
+        height: 140px;
     }
 
     .ai-attachment-remove {
         position: absolute;
-        top: 4px;
-        right: 4px;
-        width: 24px;
-        height: 24px;
+        top: 6px;
+        right: 6px;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
-        background: rgba(0, 0, 0, 0.7);
-        border: none;
+        background: rgba(0, 0, 0, 0.75);
+        border: 2px solid rgba(255, 255, 255, 0.2);
         color: #fff;
         cursor: pointer;
         display: grid;
         place-items: center;
-        font-size: 12px;
-        transition: all 150ms;
-        backdrop-filter: blur(4px);
+        font-size: 14px;
+        transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(8px);
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    .ai-attachment-item:hover .ai-attachment-remove {
+        opacity: 1;
+        transform: scale(1);
     }
 
     .ai-attachment-remove:hover {
-        background: rgba(255, 77, 77, 0.9);
-        transform: scale(1.1);
+        background: rgba(255, 77, 77, 0.95);
+        border-color: rgba(255, 255, 255, 0.4);
+        transform: scale(1.15) rotate(90deg);
+        box-shadow: 0 4px 12px rgba(255, 77, 77, 0.4);
     }
 
     .ai-attachment-info {
-        padding: 6px 8px;
+        padding: 8px;
         font-size: 11px;
         color: var(--text-muted);
         text-align: center;
-        max-width: 120px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        background: rgba(0, 0, 0, 0.2);
+        border-top: 1px solid rgba(76, 126, 255, 0.1);
+    }
+
+    /* Upload Progress Indicator */
+    .ai-upload-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: rgba(76, 126, 255, 0.2);
+        overflow: hidden;
+    }
+
+    .ai-upload-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent-neon), rgba(93, 95, 239, 0.8));
+        width: 0%;
+        transition: width 0.3s ease;
+        animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: -1000px 0;
+        }
+        100% {
+            background-position: 1000px 0;
+        }
+    }
+
+    /* File Count Badge */
+    .ai-drop-zone-file-count {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: var(--accent-neon);
+        color: #fff;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: all 300ms ease;
+        pointer-events: none;
+    }
+
+    .ai-drop-zone.dragover .ai-drop-zone-file-count {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    /* Drag & Drop Zone */
+    .ai-drop-zone {
+        margin-bottom: 12px;
+        padding: 32px 24px;
+        border: 2px dashed rgba(76, 126, 255, 0.3);
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(76, 126, 255, 0.05) 0%, rgba(93, 95, 239, 0.03) 100%);
+        cursor: pointer;
+        transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ai-drop-zone::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(76, 126, 255, 0.1), transparent);
+        transition: left 0.5s;
+    }
+
+    .ai-drop-zone:hover::before {
+        left: 100%;
+    }
+
+    .ai-drop-zone:hover {
+        border-color: rgba(76, 126, 255, 0.6);
+        background: linear-gradient(135deg, rgba(76, 126, 255, 0.1) 0%, rgba(93, 95, 239, 0.08) 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(76, 126, 255, 0.15);
+    }
+
+    .ai-drop-zone.dragover {
+        border-color: var(--accent-neon);
+        background: linear-gradient(135deg, rgba(76, 126, 255, 0.2) 0%, rgba(93, 95, 239, 0.15) 100%);
+        border-style: solid;
+        box-shadow: 0 0 40px rgba(76, 126, 255, 0.4), inset 0 0 60px rgba(76, 126, 255, 0.1);
+        transform: scale(1.03);
+        animation: glow-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes glow-pulse {
+        0%, 100% {
+            box-shadow: 0 0 40px rgba(76, 126, 255, 0.4), inset 0 0 60px rgba(76, 126, 255, 0.1);
+        }
+        50% {
+            box-shadow: 0 0 60px rgba(76, 126, 255, 0.6), inset 0 0 80px rgba(76, 126, 255, 0.15);
+        }
+    }
+
+    .ai-drop-zone.has-attachments {
+        display: none;
+    }
+
+    .ai-drop-zone.uploading {
+        pointer-events: none;
+        opacity: 0.7;
+    }
+
+    .ai-drop-zone-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-align: center;
+    }
+
+    .ai-drop-zone-icon {
+        font-size: 56px;
+        color: var(--accent-neon);
+        margin-bottom: 12px;
+        transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        filter: drop-shadow(0 4px 8px rgba(76, 126, 255, 0.3));
+    }
+
+    .ai-drop-zone:hover .ai-drop-zone-icon {
+        transform: translateY(-6px) scale(1.15) rotate(5deg);
+        filter: drop-shadow(0 8px 16px rgba(76, 126, 255, 0.4));
+    }
+
+    .ai-drop-zone.dragover .ai-drop-zone-icon {
+        transform: scale(1.3) rotate(-5deg);
+        animation: float-bounce 1.5s ease-in-out infinite;
+        filter: drop-shadow(0 8px 20px rgba(76, 126, 255, 0.6));
+    }
+
+    @keyframes float-bounce {
+        0%, 100% {
+            transform: translateY(0) scale(1.3) rotate(-5deg);
+        }
+        50% {
+            transform: translateY(-10px) scale(1.35) rotate(5deg);
+        }
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.7;
+        }
+    }
+
+    .ai-drop-zone-text {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        color: var(--text-primary);
+    }
+
+    .ai-drop-zone-text strong {
+        font-size: 16px;
+        color: var(--accent-neon);
+        font-weight: 600;
+    }
+
+    .ai-drop-zone-text span {
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .ai-drop-zone-hint {
+        margin-top: 4px;
+        font-size: 12px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        opacity: 0.8;
+    }
+
+    .ai-drop-zone-hint i {
+        font-size: 14px;
+        color: var(--accent-neon);
+    }
+
+    /* Premium Lightbox Modal */
+    .ai-lightbox {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        background: rgba(0, 0, 0, 0.92);
+        backdrop-filter: blur(20px);
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .ai-lightbox.active {
+        display: flex;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    .ai-lightbox-content {
+        position: relative;
+        max-width: 90vw;
+        max-height: 90vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ai-lightbox-content img,
+    .ai-lightbox-content video {
+        max-width: 100%;
+        max-height: 90vh;
+        border-radius: 16px;
+        box-shadow: 
+            0 25px 50px -12px rgba(0, 0, 0, 0.8),
+            0 0 60px rgba(76, 126, 255, 0.3);
+        border: 2px solid rgba(76, 126, 255, 0.3);
+        animation: zoomIn 0.3s ease;
+    }
+
+    @keyframes zoomIn {
+        from {
+            transform: scale(0.9);
+            opacity: 0;
+        }
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .ai-lightbox-close {
+        position: absolute;
+        top: -50px;
+        right: 0;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 2px solid rgba(255, 255, 255, 0.2);
+        color: white;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-size: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .ai-lightbox-close:hover {
+        background: rgba(255, 77, 77, 0.9);
+        border-color: rgba(255, 77, 77, 1);
+        transform: rotate(90deg) scale(1.1);
+    }
+
+    /* Premium Loading Skeleton */
+    .ai-skeleton {
+        background: linear-gradient(
+            90deg,
+            rgba(76, 126, 255, 0.1) 0%,
+            rgba(76, 126, 255, 0.2) 50%,
+            rgba(76, 126, 255, 0.1) 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 12px;
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    .ai-skeleton-image {
+        width: 100%;
+        height: 200px;
+        border-radius: 12px;
+        margin-bottom: 12px;
+    }
+
+    .ai-skeleton-text {
+        height: 16px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+    }
+
+    .ai-skeleton-text:last-child {
+        width: 60%;
+    }
+
+    /* Premium Toast Notification */
+    .ai-toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10001;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        pointer-events: none;
+    }
+
+    .ai-toast {
+        pointer-events: auto;
+        min-width: 320px;
+        max-width: 400px;
+        padding: 16px 20px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(29, 27, 63, 0.95) 0%, rgba(21, 18, 58, 0.95) 100%);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(76, 126, 255, 0.3);
+        box-shadow: 
+            0 8px 32px rgba(0, 0, 0, 0.5),
+            0 0 20px rgba(76, 126, 255, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ai-toast::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: var(--accent-neon);
+    }
+
+    .ai-toast.success::before {
+        background: linear-gradient(180deg, #4CFF7E 0%, #22C55E 100%);
+    }
+
+    .ai-toast.error::before {
+        background: linear-gradient(180deg, #FF4D4D 0%, #EF4444 100%);
+    }
+
+    .ai-toast.warning::before {
+        background: linear-gradient(180deg, #FBBF24 0%, #F59E0B 100%);
+    }
+
+    @keyframes slideInRight {
+        from {
+            transform: translateX(120%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(120%);
+            opacity: 0;
+        }
+    }
+
+    .ai-toast-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        font-size: 20px;
+        flex-shrink: 0;
+        background: rgba(76, 126, 255, 0.15);
+        border: 1px solid rgba(76, 126, 255, 0.3);
+    }
+
+    .ai-toast.success .ai-toast-icon {
+        background: rgba(76, 255, 126, 0.15);
+        border-color: rgba(76, 255, 126, 0.3);
+        color: #4CFF7E;
+    }
+
+    .ai-toast.error .ai-toast-icon {
+        background: rgba(255, 77, 77, 0.15);
+        border-color: rgba(255, 77, 77, 0.3);
+        color: #FF4D4D;
+    }
+
+    .ai-toast.warning .ai-toast-icon {
+        background: rgba(251, 191, 36, 0.15);
+        border-color: rgba(251, 191, 36, 0.3);
+        color: #FBBF24;
+    }
+
+    .ai-toast-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .ai-toast-title {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+    }
+
+    .ai-toast-message {
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+    }
+
+    .ai-toast-close {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        border: none;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-secondary);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-size: 14px;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+    }
+
+    .ai-toast-close:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-primary);
+        transform: rotate(90deg);
+    }
+
+    @media (max-width: 768px) {
+        .ai-toast {
+            min-width: 280px;
+            max-width: calc(100vw - 40px);
+        }
     }
 
     .ai-prompt-input {
@@ -959,6 +1523,61 @@
         cursor: not-allowed;
         transform: none;
     }
+
+    /* Small static hint under input */
+    .ai-drop-hint {
+        margin-top: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, rgba(76,126,255,0.15), rgba(93,95,239,0.12));
+        border: 1px solid rgba(76,126,255,0.35);
+        color: var(--text-primary);
+        font-size: 12px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        width: max-content;
+        transition: all .2s ease;
+        cursor: pointer;
+        user-select: none;
+    }
+    .ai-drop-hint i { color: var(--accent-neon); font-size: 14px; }
+    .ai-drop-hint:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(76,126,255,0.2);
+        border-color: var(--accent-neon);
+        background: linear-gradient(135deg, rgba(76,126,255,0.22), rgba(93,95,239,0.18));
+    }
+    .ai-drop-hint .kbd {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 6px;
+        padding: 2px 6px;
+        font-size: 11px;
+        color: var(--text-secondary);
+    }
+
+    /* Compact inline drop zone inside input bar */
+    #promptWrapper {
+        position: relative;
+    }
+    .ai-inline-drop-zone {
+        position: absolute;
+        inset: 0;
+        border: 2px dashed var(--accent-neon);
+        border-radius: 14px;
+        background: rgba(76, 126, 255, 0.08);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        pointer-events: none;
+    }
+    .ai-inline-drop-zone.active { display: flex; }
+    .ai-inline-drop-zone .ai-drag-overlay-text { padding: 10px; font-size: 14px; }
+
+    /* Hide the large drop zone to save space */
+    #dropZone { display: none; }
 
     /* Drag & Drop Overlay */
     .ai-drag-overlay {
@@ -1504,6 +2123,23 @@
                 <div class="ai-attachment-list" id="attachmentList"></div>
             </div>
 
+            <!-- Drag & Drop Zone -->
+            <div class="ai-drop-zone" id="dropZone">
+                <div class="ai-drop-zone-file-count" id="fileCountBadge"></div>
+                <div class="ai-drop-zone-content">
+                    <div class="ai-drop-zone-icon">
+                        <i class="bi bi-cloud-upload"></i>
+                    </div>
+                    <div class="ai-drop-zone-text">
+                        <strong>Seret gambar ke sini</strong>
+                        <span>atau klik untuk memilih</span>
+                    </div>
+                    <div class="ai-drop-zone-hint">
+                        <i class="bi bi-images"></i> Bisa upload banyak gambar sekaligus
+                    </div>
+                </div>
+            </div>
+
             <!-- Mode Chips -->
             <div class="ai-mode-chips">
                 <div class="ai-mode-chip active" data-mode="">Auto</div>
@@ -1523,6 +2159,11 @@
                 <button type="button" id="runBtn" class="ai-send-btn" title="Kirim">
                     <i class="bi bi-send"></i>
                 </button>
+            </div>
+            <div class="ai-drop-hint" id="dropHint" title="Seret gambar ke kotak input, atau klik untuk memilih">
+                <i class="bi bi-cloud-upload"></i>
+                <span>Drag & drop gambar</span>
+                <span class="kbd">atau klik</span>
             </div>
 
             <!-- Hidden File Input -->
@@ -1545,6 +2186,19 @@
         </div>
     </div>
 </div>
+
+<!-- Premium Lightbox Modal -->
+<div class="ai-lightbox" id="lightbox">
+    <div class="ai-lightbox-content">
+        <button class="ai-lightbox-close" id="lightboxClose">
+            <i class="bi bi-x-lg"></i>
+        </button>
+        <img id="lightboxImage" src="" alt="Preview">
+    </div>
+</div>
+
+<!-- Premium Toast Container -->
+<div class="ai-toast-container" id="toastContainer"></div>
 
 <script>
 // Error handling and Android compatibility
@@ -1594,9 +2248,24 @@
         const attachmentPreview = document.getElementById('attachmentPreview');
         const attachmentList = document.getElementById('attachmentList');
         const inputArea = document.getElementById('inputArea');
+        const dropZone = document.getElementById('dropZone');
+        const promptWrapperEl = document.getElementById('promptWrapper');
+        const dropHint = document.getElementById('dropHint');
+        
+        // Create compact inline drop zone inside input bar
+        let inlineDropZone = document.getElementById('inlineDropZone');
+        if (!inlineDropZone && promptWrapperEl) {
+            inlineDropZone = document.createElement('div');
+            inlineDropZone.id = 'inlineDropZone';
+            inlineDropZone.className = 'ai-inline-drop-zone';
+            inlineDropZone.innerHTML = '<div class="ai-drag-overlay-text">Lepaskan gambar di sini</div>';
+            promptWrapperEl.appendChild(inlineDropZone);
+        }
+        const fileCountBadge = document.getElementById('fileCountBadge');
         
         // Store attachments
         let attachments = [];
+        let uploadingFiles = new Set();
         
         if (!stream || !runBtn || !promptInput) {
             console.error('Required elements not found');
@@ -1869,10 +2538,20 @@
             
             if (attachments.length === 0) {
                 attachmentPreview.style.display = 'none';
+                // Show drop zone when no attachments
+                if (dropZone) {
+                    dropZone.classList.remove('has-attachments');
+                }
+                if (dropHint) dropHint.style.display = 'inline-flex';
                 return;
             }
             
             attachmentPreview.style.display = 'block';
+            // Hide drop zone when has attachments
+            if (dropZone) {
+                dropZone.classList.add('has-attachments');
+            }
+            if (dropHint) dropHint.style.display = 'none';
             
             attachments.forEach((att, index) => {
                 const item = document.createElement('div');
@@ -1898,12 +2577,281 @@
                 
                 attachmentList.appendChild(item);
             });
+            
+            // Animate items in
+            setTimeout(() => {
+                attachmentList.querySelectorAll('.ai-attachment-item').forEach((item, idx) => {
+                    item.style.animationDelay = `${idx * 0.05}s`;
+                });
+            }, 10);
         }
 
         // Expose removeAttachment globally
         window.removeAttachment = function(index) {
             removeAttachment(index);
         };
+
+        // Helper function to create preview item for uploading file
+        function createUploadPreview(file, previewUrl) {
+            const item = document.createElement('div');
+            item.className = 'ai-attachment-item uploading';
+            item.dataset.fileName = file.name;
+            
+            const isImage = file.type.startsWith('image/');
+            const isVideo = file.type.startsWith('video/');
+            
+            if (isImage && previewUrl) {
+                item.innerHTML = `
+                    <img src="${previewUrl}" alt="${file.name}" />
+                    <div class="ai-upload-progress">
+                        <div class="ai-upload-progress-bar" style="width: 0%"></div>
+                    </div>
+                    <div class="ai-attachment-info">${file.name}</div>
+                `;
+            } else if (isVideo) {
+                item.innerHTML = `
+                    <video src="${previewUrl || ''}" muted></video>
+                    <div class="ai-upload-progress">
+                        <div class="ai-upload-progress-bar" style="width: 0%"></div>
+                    </div>
+                    <div class="ai-attachment-info">${file.name}</div>
+                `;
+            }
+            
+            attachmentList.appendChild(item);
+            attachmentPreview.style.display = 'block';
+            if (dropZone) dropZone.classList.add('has-attachments');
+            
+            return item;
+        }
+
+        // Helper function to upload files
+        async function uploadFiles(files) {
+            if (!files || files.length === 0) return;
+            
+            const errors = [];
+            const validFiles = [];
+            
+            // Validate files first
+            for (const file of files) {
+                const isImage = file.type.startsWith('image/');
+                const isVideo = file.type.startsWith('video/');
+                
+                if (!isImage && !isVideo) {
+                    errors.push(`File ${file.name} tidak didukung. Gunakan gambar atau video.`);
+                    continue;
+                }
+
+                const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    const maxSizeMB = isVideo ? 50 : 10;
+                    errors.push(`File ${file.name} terlalu besar (maksimal ${maxSizeMB}MB)`);
+                    continue;
+                }
+                
+                validFiles.push(file);
+            }
+            
+            if (validFiles.length === 0) {
+                if (errors.length > 0) {
+                    alert(errors.join('\n'));
+                }
+                return;
+            }
+
+            // Show uploading state
+            if (dropZone) {
+                dropZone.classList.add('uploading');
+            }
+
+            // Create preview items and upload
+            const uploadPromises = validFiles.map(async (file) => {
+                let previewItem = null;
+                let previewUrl = null;
+                
+                // Create preview for images
+                if (file.type.startsWith('image/')) {
+                    try {
+                        previewUrl = URL.createObjectURL(file);
+                        previewItem = createUploadPreview(file, previewUrl);
+                        uploadingFiles.add(file.name);
+                    } catch (e) {
+                        console.error('Preview error:', e);
+                    }
+                } else {
+                    previewItem = createUploadPreview(file, null);
+                    uploadingFiles.add(file.name);
+                }
+
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const xhr = new XMLHttpRequest();
+                    
+                    // Track upload progress
+                    if (previewItem) {
+                        const progressBar = previewItem.querySelector('.ai-upload-progress-bar');
+                        xhr.upload.addEventListener('progress', (e) => {
+                            if (e.lengthComputable && progressBar) {
+                                const percent = (e.loaded / e.total) * 100;
+                                progressBar.style.width = percent + '%';
+                            }
+                        });
+                    }
+
+                    const uploadPromise = new Promise((resolve, reject) => {
+                        xhr.onload = () => {
+                            if (xhr.status === 200) {
+                                try {
+                                    const data = JSON.parse(xhr.responseText);
+                                    resolve(data);
+                                } catch (e) {
+                                    reject(new Error('Invalid response'));
+                                }
+                            } else {
+                                try {
+                                    const error = JSON.parse(xhr.responseText);
+                                    reject(new Error(error.error || 'Upload failed'));
+                                } catch (e) {
+                                    reject(new Error('Upload failed'));
+                                }
+                            }
+                        };
+                        
+                        xhr.onerror = () => reject(new Error('Network error'));
+                        xhr.open('POST', '/api/ai_generate/upload');
+                        xhr.send(formData);
+                    });
+
+                    const data = await uploadPromise;
+                    
+                    // Remove preview item
+                    if (previewItem) {
+                        previewItem.remove();
+                    }
+                    
+                    // Clean up preview URL
+                    if (previewUrl) {
+                        URL.revokeObjectURL(previewUrl);
+                    }
+                    
+                    uploadingFiles.delete(file.name);
+                    
+                    if (data.success) {
+                        addAttachment({
+                            url: data.url,
+                            type: data.type,
+                            filename: data.filename,
+                            size: data.size
+                        });
+                    }
+                } catch (error) {
+                    console.error('Upload error:', error);
+                    errors.push(`Gagal upload ${file.name}: ${error.message}`);
+                    
+                    // Remove preview item on error
+                    if (previewItem) {
+                        previewItem.remove();
+                    }
+                    if (previewUrl) {
+                        URL.revokeObjectURL(previewUrl);
+                    }
+                    uploadingFiles.delete(file.name);
+                }
+            });
+
+            await Promise.all(uploadPromises);
+            
+            // Remove uploading state
+            if (dropZone) {
+                dropZone.classList.remove('uploading');
+            }
+
+            // Show errors if any
+            if (errors.length > 0) {
+                alert(errors.join('\n'));
+            }
+        }
+
+        // Drop Zone Click Handler
+        if (dropZone && fileInput) {
+            dropZone.addEventListener('click', () => {
+                fileInput.click();
+            });
+        }
+        if (dropHint && fileInput) {
+            dropHint.addEventListener('click', () => fileInput.click());
+        }
+
+        // Inline Drop Zone Drag & Drop on input bar
+        if (promptWrapperEl && inlineDropZone) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                promptWrapperEl.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                promptWrapperEl.addEventListener(eventName, () => {
+                    inlineDropZone.classList.add('active');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                promptWrapperEl.addEventListener(eventName, () => {
+                    inlineDropZone.classList.remove('active');
+                });
+            });
+
+            promptWrapperEl.addEventListener('drop', async (e) => {
+                const files = Array.from(e.dataTransfer.files || []);
+                if (files.length > 0) {
+                    await uploadFiles(files);
+                }
+            });
+        }
+
+        // Drop Zone Drag & Drop (legacy hidden zone)
+        if (dropZone) {
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                dropZone.addEventListener(eventName, (e) => {
+                    dropZone.classList.add('dragover');
+                    // Show file count badge
+                    if (e.dataTransfer && e.dataTransfer.files) {
+                        const fileCount = e.dataTransfer.files.length;
+                        if (fileCount > 0 && fileCountBadge) {
+                            fileCountBadge.textContent = `${fileCount} file${fileCount > 1 ? 's' : ''}`;
+                        }
+                    }
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                dropZone.addEventListener(eventName, () => {
+                    dropZone.classList.remove('dragover');
+                    // Hide file count badge
+                    if (fileCountBadge) {
+                        fileCountBadge.textContent = '';
+                    }
+                });
+            });
+
+            dropZone.addEventListener('drop', async (e) => {
+                const files = Array.from(e.dataTransfer.files || []);
+                if (files.length > 0) {
+                    await uploadFiles(files);
+                }
+            });
+        }
 
         // Attachment Button Click
         if (attachBtn && fileInput) {
@@ -1916,58 +2864,9 @@
         if (fileInput) {
             fileInput.addEventListener('change', async (e) => {
                 const files = Array.from(e.target.files || []);
-                if (files.length === 0) return;
-
-                for (const file of files) {
-                    try {
-                        // Validate file type
-                        const isImage = file.type.startsWith('image/');
-                        const isVideo = file.type.startsWith('video/');
-                        
-                        if (!isImage && !isVideo) {
-                            alert(`File ${file.name} tidak didukung. Gunakan gambar atau video.`);
-                            continue;
-                        }
-
-                        // Validate file size
-                        const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
-                        if (file.size > maxSize) {
-                            const maxSizeMB = isVideo ? 50 : 10;
-                            alert(`File ${file.name} terlalu besar (maksimal ${maxSizeMB}MB)`);
-                            continue;
-                        }
-
-                        // Upload file
-                        const formData = new FormData();
-                        formData.append('file', file);
-
-                        const res = await fetch('/api/ai_generate/upload', {
-                            method: 'POST',
-                            body: formData,
-                            credentials: 'same-origin'
-                        });
-
-                        if (!res.ok) {
-                            const error = await res.json();
-                            alert(`Gagal upload ${file.name}: ${error.error || 'Unknown error'}`);
-                            continue;
-                        }
-
-                        const data = await res.json();
-                        if (data.success) {
-                            addAttachment({
-                                url: data.url,
-                                type: data.type,
-                                filename: data.filename,
-                                size: data.size
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Upload error:', error);
-                        alert(`Gagal upload ${file.name}: ${error.message}`);
-                    }
+                if (files.length > 0) {
+                    await uploadFiles(files);
                 }
-
                 // Reset file input
                 fileInput.value = '';
             });
@@ -2001,41 +2900,8 @@
 
             inputArea.addEventListener('drop', async (e) => {
                 const files = Array.from(e.dataTransfer.files || []);
-                if (files.length === 0) return;
-
-                for (const file of files) {
-                    try {
-                        const isImage = file.type.startsWith('image/');
-                        const isVideo = file.type.startsWith('video/');
-                        
-                        if (!isImage && !isVideo) continue;
-
-                        const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
-                        if (file.size > maxSize) continue;
-
-                        const formData = new FormData();
-                        formData.append('file', file);
-
-                        const res = await fetch('/api/ai_generate/upload', {
-                            method: 'POST',
-                            body: formData,
-                            credentials: 'same-origin'
-                        });
-
-                        if (!res.ok) continue;
-
-                        const data = await res.json();
-                        if (data.success) {
-                            addAttachment({
-                                url: data.url,
-                                type: data.type,
-                                filename: data.filename,
-                                size: data.size
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Drop upload error:', error);
-                    }
+                if (files.length > 0) {
+                    await uploadFiles(files);
                 }
             });
         }
@@ -2084,6 +2950,102 @@
         window.showTyping = function(show) {
             if (typing) typing.classList.toggle('active', show);
         };
+
+        // Premium Lightbox Functionality
+        const lightbox = document.getElementById('lightbox');
+        const lightboxImage = document.getElementById('lightboxImage');
+        const lightboxClose = document.getElementById('lightboxClose');
+
+        function openLightbox(imageSrc) {
+            if (lightbox && lightboxImage) {
+                lightboxImage.src = imageSrc;
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeLightbox() {
+            if (lightbox) {
+                lightbox.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        if (lightboxClose) {
+            lightboxClose.addEventListener('click', closeLightbox);
+        }
+
+        if (lightbox) {
+            lightbox.addEventListener('click', (e) => {
+                if (e.target === lightbox) {
+                    closeLightbox();
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+                    closeLightbox();
+                }
+            });
+        }
+
+        // Premium Toast Notification System
+        const toastContainer = document.getElementById('toastContainer');
+
+        window.showToast = function(message, type = 'info', title = '') {
+            if (!toastContainer) return;
+
+            const toast = document.createElement('div');
+            toast.className = `ai-toast ${type}`;
+
+            const icons = {
+                success: 'bi-check-circle-fill',
+                error: 'bi-x-circle-fill',
+                warning: 'bi-exclamation-triangle-fill',
+                info: 'bi-info-circle-fill'
+            };
+
+            const titles = {
+                success: 'Berhasil',
+                error: 'Error',
+                warning: 'Peringatan',
+                info: 'Info'
+            };
+
+            toast.innerHTML = `
+                <div class="ai-toast-icon">
+                    <i class="bi ${icons[type] || icons.info}"></i>
+                </div>
+                <div class="ai-toast-content">
+                    ${title ? `<div class="ai-toast-title">${title || titles[type]}</div>` : ''}
+                    <div class="ai-toast-message">${message}</div>
+                </div>
+                <button class="ai-toast-close" onclick="this.parentElement.remove()">
+                    <i class="bi bi-x"></i>
+                </button>
+            `;
+
+            toastContainer.appendChild(toast);
+
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.style.animation = 'slideOutRight 0.3s ease';
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.remove();
+                    }
+                }, 300);
+            }, 5000);
+        };
+
+        // Add click handler to media images for lightbox
+        document.addEventListener('click', (e) => {
+            const img = e.target.closest('.ai-media-grid img, .ai-attachment-item img');
+            if (img && img.src) {
+                e.preventDefault();
+                openLightbox(img.src);
+            }
+        });
 
         // Render Assistant Result
         window.renderAssistantResult = function(resp) {

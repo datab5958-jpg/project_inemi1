@@ -1090,6 +1090,38 @@ def reply_comment():
         return jsonify({'success': False, 'error': 'Failed to create reply'}), 500
 
 
+@web_pages.route('/api/notifications/unread-count')
+def api_notifications_unread_count():
+    """API endpoint untuk mendapatkan jumlah notifikasi yang belum dibaca"""
+    try:
+        if 'user_id' not in session:
+            return jsonify({
+                'success': False,
+                'error': 'Not authenticated',
+                'unread_count': 0
+            }), 401
+        
+        user_id = session['user_id']
+        from models import Notification
+        
+        # Count unread notifications
+        unread_count = Notification.query.filter_by(
+            recipient_id=user_id,
+            is_read=False
+        ).count()
+        
+        return jsonify({
+            'success': True,
+            'unread_count': unread_count
+        })
+    except Exception as e:
+        print(f"Error fetching unread count: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'unread_count': 0
+        }), 500
+
 @web_pages.route('/notifications')
 def notifications_page():
     """Halaman untuk melihat semua notifikasi"""
