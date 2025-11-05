@@ -32,6 +32,7 @@ from web.image_video import image_video_bp # Image to video conversion
 from web.musik import musik_bp            # Music generation and management
 from web.profil import profil_bp          # User profile management
 from web.video import video_bp            # Video generation and management
+from web.ai_generate import ai_generate_bp  # Unified AI Generate page and API
 from generate_banner import generate_banner_bp  # Banner generation functionality
 from Generate_video_avatar import generate_video_avatar_bp  # Video avatar generation functionality
 
@@ -51,6 +52,13 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root:@localhost/inemi'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
+    # Session Configuration
+    from datetime import timedelta
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
+    app.config['SESSION_COOKIE_SECURE'] = False  # Set to True in production with HTTPS
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    
     # API Keys
     app.config['WAVESPEED_API_KEY'] = os.environ.get('WAVESPEED_API_KEY')
     app.config['GEMINI_API_KEY'] = os.environ.get('GEMINI_API_KEY')
@@ -65,8 +73,8 @@ def create_app():
     # Create upload directory if it doesn't exist
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     
-    # Enable CORS
-    CORS(app)
+    # Enable CORS with credentials support
+    CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
     
     # Initialize database
     db.init_app(app)
@@ -150,6 +158,12 @@ def create_app():
         print("SUCCESS: video_bp blueprint registered")
     except Exception as e:
         print(f"ERROR: Failed to register video_bp: {e}")
+
+    try:
+        app.register_blueprint(ai_generate_bp)
+        print("SUCCESS: ai_generate_bp blueprint registered")
+    except Exception as e:
+        print(f"ERROR: Failed to register ai_generate_bp: {e}")
     
     try:
         app.register_blueprint(generate_banner_bp)

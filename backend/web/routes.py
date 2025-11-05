@@ -1455,11 +1455,25 @@ def home_favorite():
 
 @web_pages.route('/post_musik/<string:song_id>')
 def post_musik(song_id):
-    song = Song.query.get_or_404(song_id)
-    playlist = Song.query.filter(Song.id != song_id).order_by(func.random()).limit(10).all()
+    """Post musik page - dapat menerima ID sebagai string atau integer"""
+    # Try to convert to int if possible, otherwise use as string
+    song_id_int = None
+    try:
+        song_id_int = int(song_id)
+        song = Song.query.get_or_404(song_id_int)
+    except (ValueError, TypeError):
+        # If not a valid integer, try as string ID (for UUID or other string IDs)
+        song = Song.query.filter_by(id=song_id).first_or_404()
+        song_id_int = song.id  # Get the actual integer ID from the song object
+    
+    # Use integer ID for filtering (more reliable)
+    if song_id_int is None:
+        song_id_int = song.id
+    
+    playlist = Song.query.filter(Song.id != song_id_int).order_by(func.random()).limit(10).all()
     
     # Get database songs for browser (exclude current song)
-    database_songs = Song.query.filter(Song.id != song_id).order_by(Song.created_at.desc()).limit(20).all()
+    database_songs = Song.query.filter(Song.id != song_id_int).order_by(Song.created_at.desc()).limit(20).all()
     database_songs_with_user = []
     for s in database_songs:
         user = db.session.get(User, s.user_id)
@@ -1475,7 +1489,7 @@ def post_musik(song_id):
         })
     
     # Get recommendations (similar songs or random)
-    recommendations = Song.query.filter(Song.id != song_id).order_by(func.random()).limit(6).all()
+    recommendations = Song.query.filter(Song.id != song_id_int).order_by(func.random()).limit(6).all()
     recommendations_with_user = []
     for s in recommendations:
         user = db.session.get(User, s.user_id)

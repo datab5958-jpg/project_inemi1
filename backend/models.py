@@ -79,7 +79,9 @@ class Song(db.Model):
     """Model untuk tabel songs yang sudah ada di database"""
     __tablename__ = 'songs'
     
-    id = db.Column(db.Integer, primary_key=True)
+    # Note: Database uses char(36) for UUID, not auto-increment integer
+    # SQLAlchemy will handle the conversion, but we need to set ID explicitly when creating Song objects
+    id = db.Column(db.String(36), primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     title = db.Column(db.String(200))
     prompt = db.Column(db.Text)

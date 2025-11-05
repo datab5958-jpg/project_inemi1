@@ -2816,6 +2816,12 @@
                 <span class="ai-tools-title">AI Tools</span>
             </div>
             <div class="ai-tools-menu">
+                <a href="/ai_generate" class="ai-tool-item" {% if request.path == '/ai_generate' %}style="background: rgba(76, 126, 255, 0.15); border-color: var(--accent-neon);"{% endif %}>
+                    <i class="bi bi-cpu-fill"></i>
+                    <span class="ai-tool-text">AI Generate</span>
+                    <span class="ai-tool-badge new">New</span>
+                </a>
+
                 <a href="/generate_music" class="ai-tool-item" {% if session.get('role') == 'notfree' and session.get('music_trial', 0) >= 2 %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
                     <i class="bi bi-music-note-beamed"></i>
                     <span class="ai-tool-text">Music</span>
@@ -2979,6 +2985,11 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <a href="/ai_generate" class="modal-btn btn-ai">
+                        <i class="bi bi-cpu-fill"></i>
+                        <span>AI Generate</span>
+                        <span class="badge-modern">New</span>
+                    </a>
                     <a href="/generate_music" class="modal-btn btn-music" {% if session.get('role') == 'notfree' and session.get('music_trial', 0) >= 2 %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
                         <i class="bi bi-music-note-beamed"></i>
                         <span>Generate Music</span>
@@ -3083,6 +3094,11 @@
                             AI Tools
                         </h5>
                         <div class="mobile-nav-links">
+                            <a href="/ai_generate" class="mobile-nav-link{% if request.path == '/ai_generate' %} active{% endif %}">
+                                <i class="bi bi-cpu-fill"></i>
+                                <span>AI Generate</span>
+                                <span class="mobile-badge new">New</span>
+                            </a>
                             <a href="/generate_music" class="mobile-nav-link" {% if session.get('role') == 'notfree' and session.get('music_trial', 0) >= 2 %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
                                 <i class="bi bi-music-note-beamed"></i>
                                 <span>Music</span>

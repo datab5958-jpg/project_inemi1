@@ -2366,17 +2366,185 @@ def get_music_result(task_id):
 @musik_bp.route('/callback', methods=['POST'])
 def suno_callback():
     try:
+        print(f'[Suno Callback] Received callback request')
+        print(f'[Suno Callback] Request method: {request.method}')
+        print(f'[Suno Callback] Request headers: {dict(request.headers)}')
+        print(f'[Suno Callback] Request content type: {request.content_type}')
+        
         data = request.json
         if not data:
+            print(f'[Suno Callback] ❌ Empty callback data')
             return jsonify({"error": "Empty callback data"}), 400
+        
+        print(f'[Suno Callback] Callback data received: {json.dumps(data, indent=2)[:500]}...')
+        
         task_id = data.get('data', {}).get('task_id')
         if not task_id:
+            print(f'[Suno Callback] ❌ No task_id in callback data')
+            print(f'[Suno Callback] Full data: {json.dumps(data, indent=2)}')
             return jsonify({"error": "No task_id in callback"}), 400
+        
+        print(f'[Suno Callback] ✅ Task ID: {task_id}')
+        
+        # Save callback file in multiple locations to ensure it's found
+        import os
         callback_file = f'suno_callback_result_{task_id}.json'
-        with open(callback_file, 'w', encoding='utf-8') as f:
-            json.dump(data, f, ensure_ascii=False, indent=2)
+        
+        # Save in current directory (where Flask app is running)
+        try:
+            with open(callback_file, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            print(f'[Suno Callback] ✅ Saved callback file: {os.path.abspath(callback_file)}')
+        except Exception as e:
+            print(f'[Suno Callback] ❌ Error saving callback file: {e}')
+            import traceback
+            print(traceback.format_exc())
+        
+        # Also save in backend directory (backup)
+        try:
+            backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            callback_file_backup = os.path.join(backend_dir, callback_file)
+            with open(callback_file_backup, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            print(f'[Suno Callback] ✅ Saved backup callback file: {callback_file_backup}')
+        except Exception as e:
+            print(f'[Suno Callback] ⚠️ Error saving backup callback file: {e}')
+        
+        # Check if callback contains music data
+        cb_data = data.get('data', {})
+        songs_data = cb_data.get('data', [])
+        if songs_data:
+            print(f'[Suno Callback] ✅ Found {len(songs_data)} song(s) in callback')
+            for i, song in enumerate(songs_data):
+                audio_url = song.get('audio_url', '')
+                title = song.get('title', 'Unknown')
+                print(f'  - Song {i+1}: {title}, Audio URL: {audio_url[:50] if audio_url else "None"}...')
+            
+            # Try to save to database immediately if we can get user_id
+            # This ensures music is saved even if callback file is not found
+            try:
+                from models import Song, db
+                from datetime import datetime
+                
+                # Try to get user_id from task_user_mapping in ai_generate module
+                user_id = None
+                try:
+                    # Import ai_generate module to access task_user_mapping
+                    import sys
+                    import os
+                    ai_generate_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ai_generate.py')
+                    if os.path.exists(ai_generate_path):
+                        # Try to get from ai_generate module
+                        if 'web.ai_generate' in sys.modules:
+                            ai_generate_module = sys.modules['web.ai_generate']
+                            if hasattr(ai_generate_module, 'task_user_mapping'):
+                                task_info = ai_generate_module.task_user_mapping.get(task_id)
+                                # Handle both old format (direct user_id) and new format (dict with user_id)
+                                if task_info:
+                                    if isinstance(task_info, dict):
+                                        user_id = task_info.get('user_id')
+                                    else:
+                                        # Old format: direct user_id
+                                        user_id = task_info
+                                    print(f'[Suno Callback] Found user_id from mapping: {user_id}')
+                                else:
+                                    print(f'[Suno Callback] Task {task_id} not found in mapping')
+                except Exception as e:
+                    print(f'[Suno Callback] Could not get user_id from mapping: {e}')
+                    import traceback
+                    print(traceback.format_exc())
+                
+                # Fallback: try to get from session
+                if not user_id:
+                    try:
+                        from flask import session
+                        user_id = session.get('user_id')
+                        print(f'[Suno Callback] Got user_id from session: {user_id}')
+                    except:
+                        pass
+                
+                if user_id and songs_data:
+                    # Save all songs from callback (usually 2 songs)
+                    saved_count = 0
+                    for song_data in songs_data:
+                        audio_url = song_data.get('audio_url', '')
+                        if not audio_url:
+                            print(f'[Suno Callback] ⚠️ Skipping song - no audio_url')
+                            continue
+                        
+                        # Check if already exists
+                        existing = Song.query.filter_by(
+                            user_id=user_id,
+                            audio_url=audio_url
+                        ).first()
+                        
+                        if existing:
+                            print(f'[Suno Callback] ⚠️ Music already exists in database: {existing.id} - {existing.title}')
+                            continue
+                        
+                        try:
+                            # Generate UUID for ID (database uses char(36) for ID, not auto-increment)
+                            import uuid
+                            song_id = str(uuid.uuid4())
+                            
+                            # Check if UUID already exists (very rare, but just in case)
+                            existing_by_id = Song.query.filter_by(id=song_id).first()
+                            if existing_by_id:
+                                print(f'[Suno Callback] ⚠️ UUID collision detected, generating new one')
+                                song_id = str(uuid.uuid4())
+                            
+                            # Create new song WITH UUID as ID
+                            new_song = Song(
+                                id=song_id,
+                                user_id=user_id,
+                                title=song_data.get('title', 'Untitled'),
+                                lyrics="",
+                                genre='AI Generated',
+                                mode='prompt',
+                                prompt=song_data.get('prompt', ''),
+                                audio_url=audio_url,
+                                image_url=song_data.get('image_url', ''),
+                                duration=song_data.get('duration', 0),
+                                model_name=song_data.get('model_name', 'V4_5PLUS') or 'V4_5PLUS',
+                                created_at=datetime.now()
+                            )
+                            db.session.add(new_song)
+                            db.session.flush()  # Flush to get the ID without committing
+                            print(f'[Suno Callback] ✅ Prepared music for save: {new_song.id} - {new_song.title}')
+                            saved_count += 1
+                        except Exception as e:
+                            print(f'[Suno Callback] ⚠️ Error preparing song: {e}')
+                            import traceback
+                            print(traceback.format_exc())
+                            db.session.rollback()
+                            continue
+                    
+                    # Commit all songs at once
+                    if saved_count > 0:
+                        try:
+                            db.session.commit()
+                            print(f'[Suno Callback] ✅ Successfully saved {saved_count} song(s) to database')
+                        except Exception as e:
+                            db.session.rollback()
+                            print(f'[Suno Callback] ⚠️ Error committing to database: {e}')
+                            import traceback
+                            print(traceback.format_exc())
+                    else:
+                        print(f'[Suno Callback] ⚠️ No new songs to save')
+                else:
+                    print(f'[Suno Callback] ⚠️ Cannot save to database: user_id={user_id}, has_songs={bool(songs_data)}')
+            except Exception as e:
+                print(f'[Suno Callback] ⚠️ Error saving to database: {e}')
+                import traceback
+                print(traceback.format_exc())
+        else:
+            print(f'[Suno Callback] ⚠️ No songs data in callback')
+        
         return jsonify({"status": "success", "message": "Callback received"}), 200
     except Exception as e:
+        print(f'[Suno Callback] ❌ Callback processing error: {str(e)}')
+        import traceback
+        print(traceback.format_exc())
         return jsonify({"error": f"Callback processing error: {str(e)}"}), 500
 
 @musik_bp.route('/foto/<path:filename>')

@@ -1,0 +1,2776 @@
+{% extends 'base.html' %}
+{% block content %}
+<style>
+    /* Font Import & Base */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    
+    * {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+        box-sizing: border-box;
+    }
+    
+    /* Prevent horizontal scroll globally */
+    html, body {
+        overflow-x: hidden;
+        max-width: 100vw;
+        width: 100%;
+    }
+
+    /* Color Variables */
+    :root {
+        --bg-dark: #0E0B2C;
+        --bg-darker: #0E0B25;
+        --bg-main: #14122E;
+        --bg-card: #1D1B3F;
+        --bg-bubble-user: #25234F;
+        --bg-bubble-ai: #1D1B3F;
+        --bg-sidebar: #0E0B25;
+        --bg-input: #18163A;
+        --bg-input-extra: #1E1C40;
+        --bg-chip: #28264C;
+        --bg-chip-active: #1D1B3A;
+        --accent-neon: #4C7EFF;
+        --accent-neon-glow: #5D5FEF;
+        --text-primary: #FFFFFF;
+        --text-secondary: #B8B8D9;
+        --text-muted: #A0A0C4;
+        --border-neon: rgba(76, 126, 255, 0.35);
+        --shadow-glow: 0 0 20px rgba(76, 126, 255, 0.2);
+        --shadow-glow-strong: 0 0 30px rgba(93, 95, 239, 0.3);
+    }
+
+    body {
+        background: linear-gradient(180deg, #0E0B2C 0%, #1B1F46 50%, #0E0B2C 100%);
+        color: var(--text-primary);
+        min-height: 100vh;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Main Container - Mobile First */
+    .ai-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 12px;
+        min-height: calc(100vh - 80px);
+        position: relative;
+        overflow-x: hidden;
+        overflow-y: visible;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    /* Background Light Effects */
+    .ai-container::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background:
+            radial-gradient(1200px 800px at 10% 50%, rgba(76, 126, 255, 0.08), transparent 60%),
+            radial-gradient(1000px 700px at 90% 80%, rgba(93, 95, 239, 0.06), transparent 55%);
+        z-index: 0;
+    }
+
+    /* Sidebar - Top Navigation on Mobile */
+    .ai-sidebar {
+        display: flex;
+        flex-direction: row;
+        position: sticky;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        background: var(--bg-sidebar);
+        border-bottom: 1px solid var(--border-neon);
+        padding: 10px 12px;
+        gap: 8px;
+        align-items: center;
+        justify-content: space-around;
+        z-index: 1000;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 20px rgba(76, 126, 255, 0.1);
+        backdrop-filter: blur(10px);
+        margin-bottom: 12px;
+        border-radius: 0 0 16px 16px;
+    }
+    
+    .ai-sidebar-logo {
+        display: none;
+    }
+    
+    .ai-sidebar-item {
+        flex: 1;
+        min-width: 0;
+        height: 44px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        color: var(--text-secondary);
+        font-size: 18px;
+        cursor: pointer;
+        transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        max-width: 50px;
+    }
+    
+    .ai-sidebar-item:hover {
+        color: var(--text-primary);
+        background: rgba(76, 126, 255, 0.1);
+    }
+    
+    .ai-sidebar-item.active {
+        color: var(--accent-neon);
+        background: rgba(76, 126, 255, 0.15);
+        border: 1px solid var(--accent-neon);
+        box-shadow: 0 0 12px rgba(76, 126, 255, 0.3);
+    }
+    
+    /* Settings dropdown on mobile - positioned below */
+    .ai-sidebar-item.settings {
+        position: relative;
+    }
+    
+    .ai-settings-dropdown {
+        position: fixed;
+        top: auto;
+        left: auto;
+        right: auto;
+        bottom: auto;
+        width: calc(100% - 32px);
+        max-width: 280px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-neon);
+        border-radius: 12px;
+        padding: 8px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(76, 126, 255, 0.2);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateX(-50%) translateY(-8px) scale(0.95);
+        transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 1001;
+        backdrop-filter: blur(10px);
+    }
+    
+    .ai-settings-dropdown.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+    
+    .ai-settings-dropdown::before {
+        content: '';
+        position: absolute;
+        top: -6px;
+        left: 50%;
+        transform: translateX(-50%) rotate(45deg);
+        width: 12px;
+        height: 12px;
+        background: var(--bg-card);
+        border-left: 1px solid var(--border-neon);
+        border-top: 1px solid var(--border-neon);
+    }
+    
+    .ai-settings-item {
+        padding: 12px 14px;
+        border-radius: 8px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--text-primary);
+        font-size: 14px;
+        transition: all 150ms;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .ai-settings-item::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, transparent, rgba(76, 126, 255, 0.1), transparent);
+        transform: translateX(-100%);
+        transition: transform 300ms;
+    }
+    
+    .ai-settings-item:hover::before {
+        transform: translateX(100%);
+    }
+    
+    .ai-settings-item:hover {
+        background: rgba(76, 126, 255, 0.15);
+        color: var(--accent-neon);
+    }
+    
+    .ai-settings-item.success:hover {
+        background: rgba(76, 255, 126, 0.15);
+        color: #4CFF7E;
+    }
+    
+    .ai-settings-item.danger:hover {
+        background: rgba(255, 77, 77, 0.15);
+        color: #FF4D4D;
+    }
+    
+    /* Remove bottom padding for mobile */
+    .ai-container {
+        padding-bottom: 12px;
+    }
+
+    /* Main Chat Area */
+    .ai-main {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        flex: 1;
+        overflow: hidden;
+        overflow-x: hidden;
+    }
+
+    .ai-chat-area {
+        flex: 1;
+        background: var(--bg-main);
+        border-radius: 16px;
+        border: 1px solid rgba(76, 126, 255, 0.15);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        position: relative;
+        width: 100%;
+        max-width: 100%;
+        min-height: 400px;
+    }
+
+    /* Empty State - Feature Cards */
+    .ai-empty-hero {
+        padding: 24px 16px 32px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        width: 100%;
+        overflow: hidden;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+    .ai-feature-cards {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 12px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--accent-neon) transparent;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+    }
+    
+    .ai-feature-cards::after {
+        content: '';
+        flex-shrink: 0;
+        width: 1px;
+    }
+
+    .ai-feature-cards::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .ai-feature-cards::-webkit-scrollbar-thumb {
+        background: var(--accent-neon);
+        border-radius: 3px;
+    }
+
+    .ai-feature-card {
+        min-width: 160px;
+        max-width: 200px;
+        width: 160px;
+        flex-shrink: 0;
+        background: var(--bg-chip-active);
+        border: 1px solid rgba(76, 126, 255, 0.2);
+        border-radius: 14px;
+        padding: 14px 16px;
+        cursor: pointer;
+        transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        color: var(--text-primary);
+        box-shadow: 0 4px 12px rgba(46, 55, 166, 0.2);
+    }
+
+    .ai-feature-card:hover {
+        transform: translateY(-2px) scale(1.02);
+        border-color: var(--accent-neon);
+        box-shadow: 0 8px 24px rgba(76, 126, 255, 0.3);
+        background: rgba(29, 27, 58, 0.8);
+    }
+
+    .ai-feature-card-title {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ai-feature-card-desc {
+        font-size: 12px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+    }
+
+    /* Chat Stream */
+    .ai-chat-stream {
+        flex: 1;
+        padding: 16px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        display: none;
+        flex-direction: column;
+        gap: 16px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--accent-neon) transparent;
+        width: 100%;
+    }
+
+    .ai-chat-stream::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .ai-chat-stream::-webkit-scrollbar-thumb {
+        background: var(--accent-neon);
+        border-radius: 3px;
+    }
+
+    .ai-chat-stream.active {
+        display: flex;
+    }
+
+    /* Messages */
+    .ai-message {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        animation: fadeSlideIn 250ms ease-out;
+    }
+
+    @keyframes fadeSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .ai-message.user {
+        flex-direction: row-reverse;
+    }
+
+    .ai-message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+
+    .ai-message.user .ai-message-avatar {
+        background: var(--bg-bubble-user);
+        color: var(--accent-neon);
+        box-shadow: 0 0 12px rgba(76, 126, 255, 0.3);
+    }
+
+    .ai-message.assistant .ai-message-avatar {
+        background: var(--bg-bubble-ai);
+        color: var(--accent-neon);
+        box-shadow: 0 0 12px rgba(76, 126, 255, 0.3);
+    }
+
+    .ai-message-bubble {
+        max-width: 85%;
+        min-width: 0;
+        border-radius: 14px;
+        padding: 12px 16px;
+        position: relative;
+        line-height: 1.5;
+        font-size: 14px;
+        color: var(--text-primary);
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    .ai-message.user .ai-message-bubble {
+        background: var(--bg-bubble-user);
+        border: 1px solid rgba(76, 126, 255, 0.22);
+    }
+
+    .ai-message.assistant .ai-message-bubble {
+        background: var(--bg-bubble-ai);
+        border: 1px solid var(--border-neon);
+        box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+    }
+
+    .ai-message-meta {
+        font-size: 11px;
+        color: var(--text-secondary);
+        margin-top: 6px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ai-message-actions {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        display: flex;
+        gap: 4px;
+        opacity: 0;
+        transition: opacity 150ms;
+    }
+
+    .ai-message-bubble:hover .ai-message-actions {
+        opacity: 1;
+    }
+
+    .ai-message-actions button {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        border: none;
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-secondary);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-size: 12px;
+        transition: all 150ms;
+    }
+
+    .ai-message-actions button:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: var(--text-primary);
+    }
+
+    /* Media Results */
+    .ai-result-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--accent-neon);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ai-media-grid {
+        display: grid;
+        gap: 12px;
+        margin-top: 10px;
+        grid-template-columns: 1fr;
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .ai-media-grid img,
+    .ai-media-grid video {
+        width: 100%;
+        max-width: 100%;
+        height: auto;
+        border-radius: 12px;
+        border: 1px solid var(--border-neon);
+        box-shadow: var(--shadow-glow);
+        object-fit: contain;
+    }
+
+    .ai-result-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+        flex-wrap: wrap;
+    }
+
+    .ai-result-actions a,
+    .ai-result-actions button {
+        padding: 6px 12px;
+        font-size: 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border-neon);
+        background: rgba(76, 126, 255, 0.1);
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 150ms;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ai-result-actions a:hover,
+    .ai-result-actions button:hover {
+        background: rgba(76, 126, 255, 0.2);
+        border-color: var(--accent-neon);
+        transform: translateY(-1px);
+    }
+
+    /* Music Card - Keren dan Rapi */
+    .ai-music-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-neon);
+        border-radius: 16px;
+        overflow: hidden;
+        margin-top: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 20px rgba(76, 126, 255, 0.1);
+        transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ai-music-card:hover {
+        border-color: var(--accent-neon);
+        box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4), 0 0 30px rgba(76, 126, 255, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .ai-music-cover {
+        width: 100%;
+        aspect-ratio: 1;
+        overflow: hidden;
+        background: linear-gradient(135deg, rgba(76, 126, 255, 0.1) 0%, rgba(93, 95, 239, 0.1) 100%);
+        position: relative;
+    }
+
+    .ai-music-cover img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .ai-music-player-wrapper {
+        padding: 16px;
+        background: var(--bg-card);
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .ai-music-info {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .ai-music-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+        line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .ai-music-meta {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .ai-music-model {
+        padding: 4px 10px;
+        background: rgba(76, 126, 255, 0.15);
+        border: 1px solid rgba(76, 126, 255, 0.3);
+        border-radius: 12px;
+        color: var(--accent-neon);
+        font-weight: 500;
+    }
+
+    .ai-music-duration {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .ai-music-audio-player {
+        width: 100%;
+        margin-top: 4px;
+    }
+
+    .ai-music-audio-player audio {
+        width: 100%;
+        height: 40px;
+        outline: none;
+        border-radius: 8px;
+    }
+
+    .ai-music-audio-player audio::-webkit-media-controls-panel {
+        background-color: var(--bg-input-extra);
+        border-radius: 8px;
+    }
+
+    .ai-music-audio-player audio::-webkit-media-controls-play-button {
+        background-color: var(--accent-neon);
+        border-radius: 50%;
+    }
+
+    .ai-action-btn {
+        padding: 8px 14px;
+        font-size: 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border-neon);
+        background: rgba(76, 126, 255, 0.1);
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-weight: 500;
+    }
+
+    .ai-action-btn:hover {
+        background: rgba(76, 126, 255, 0.2);
+        border-color: var(--accent-neon);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(76, 126, 255, 0.2);
+    }
+
+    .ai-action-btn:active {
+        transform: translateY(0);
+    }
+
+    /* Typing Indicator */
+    .ai-typing {
+        display: none;
+        align-items: center;
+        gap: 6px;
+        padding: 0 16px 12px;
+        color: var(--text-secondary);
+    }
+
+    .ai-typing.active {
+        display: flex;
+    }
+
+    .ai-typing-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent-neon);
+        opacity: 0.4;
+        animation: typingBlink 1.2s infinite;
+    }
+
+    .ai-typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .ai-typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    @keyframes typingBlink {
+        0%, 80%, 100% {
+            opacity: 0.2;
+        }
+        40% {
+            opacity: 1;
+        }
+    }
+
+    /* Input Area - Bottom */
+    .ai-input-area {
+        background: var(--bg-input);
+        border-radius: 14px;
+        padding: 16px;
+        margin-top: 16px;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3), var(--shadow-glow);
+        border: 1px solid rgba(76, 126, 255, 0.2);
+        position: sticky;
+        bottom: 12px;
+        z-index: 10;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Mode Chips */
+    .ai-mode-chips {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 4px;
+    }
+    
+    .ai-mode-chips::-webkit-scrollbar {
+        display: none;
+    }
+
+    .ai-mode-chip {
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 200ms;
+        border: 1px solid transparent;
+        background: var(--bg-chip);
+        color: var(--text-muted);
+        white-space: nowrap;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ai-mode-chip:hover {
+        color: var(--text-primary);
+        background: rgba(76, 126, 255, 0.1);
+    }
+
+    .ai-mode-chip.active {
+        background: var(--bg-chip-active);
+        color: var(--text-primary);
+        border-color: var(--accent-neon);
+        box-shadow: 0 0 8px rgba(76, 126, 255, 0.3);
+        font-weight: 600;
+    }
+
+    /* Prompt Input */
+    .ai-prompt-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--bg-input-extra);
+        border: 1px solid var(--border-neon);
+        border-radius: 12px;
+        padding: 10px 12px;
+        transition: all 200ms;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .ai-prompt-wrapper:focus-within {
+        border-color: var(--accent-neon);
+        box-shadow: 0 0 16px rgba(76, 126, 255, 0.2);
+    }
+
+    /* Attachment Button */
+    .ai-attach-btn {
+        width: 36px;
+        height: 36px;
+        min-width: 36px;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--text-secondary);
+        border: none;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        transition: all 150ms;
+        flex-shrink: 0;
+    }
+
+    .ai-attach-btn:hover {
+        color: var(--accent-neon);
+        background: rgba(76, 126, 255, 0.1);
+    }
+
+    .ai-attach-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* Attachment Preview */
+    .ai-attachment-preview {
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(76, 126, 255, 0.15);
+        animation: slideDown 200ms ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .ai-attachment-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .ai-attachment-item {
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        background: var(--bg-input-extra);
+        border: 1px solid var(--border-neon);
+        transition: all 200ms;
+    }
+
+    .ai-attachment-item:hover {
+        border-color: var(--accent-neon);
+        box-shadow: 0 0 12px rgba(76, 126, 255, 0.2);
+    }
+
+    .ai-attachment-item img,
+    .ai-attachment-item video {
+        display: block;
+        max-width: 120px;
+        max-height: 120px;
+        width: auto;
+        height: auto;
+        object-fit: cover;
+        border-radius: 8px 8px 0 0;
+    }
+
+    .ai-attachment-item video {
+        background: #000;
+        width: 120px;
+        height: 120px;
+    }
+
+    .ai-attachment-remove {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: rgba(0, 0, 0, 0.7);
+        border: none;
+        color: #fff;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-size: 12px;
+        transition: all 150ms;
+        backdrop-filter: blur(4px);
+    }
+
+    .ai-attachment-remove:hover {
+        background: rgba(255, 77, 77, 0.9);
+        transform: scale(1.1);
+    }
+
+    .ai-attachment-info {
+        padding: 6px 8px;
+        font-size: 11px;
+        color: var(--text-muted);
+        text-align: center;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .ai-prompt-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--text-primary);
+        font-size: 14px;
+        line-height: 1.5;
+        resize: none;
+        min-height: 22px;
+        max-height: 120px;
+        font-family: inherit;
+        min-width: 0;
+        max-width: 100%;
+        width: 100%;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .ai-prompt-input::placeholder {
+        color: var(--text-muted);
+        font-style: italic;
+    }
+
+    .ai-send-btn {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        border-radius: 10px;
+        background: var(--accent-neon-glow);
+        color: var(--text-primary);
+        border: none;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-size: 16px;
+        transition: all 200ms;
+        box-shadow: 0 0 12px rgba(93, 95, 239, 0.3);
+        flex-shrink: 0;
+    }
+
+    .ai-send-btn:hover {
+        transform: scale(1.08);
+        box-shadow: 0 0 20px rgba(93, 95, 239, 0.4);
+    }
+
+    .ai-send-btn:active {
+        transform: scale(0.98);
+    }
+
+    .ai-send-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    /* Drag & Drop Overlay */
+    .ai-drag-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(76, 126, 255, 0.1);
+        border: 2px dashed var(--accent-neon);
+        border-radius: 14px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        pointer-events: none;
+        backdrop-filter: blur(4px);
+    }
+
+    .ai-drag-overlay.active {
+        display: flex;
+    }
+
+    .ai-drag-overlay-text {
+        color: var(--accent-neon);
+        font-size: 18px;
+        font-weight: 600;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    /* Mode Dropdown */
+    .ai-mode-dropdown {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+        padding-top: 12px;
+        border-top: 1px dashed rgba(76, 126, 255, 0.3);
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .ai-mode-select {
+        width: 100%;
+        padding: 10px 12px;
+        background: var(--bg-input-extra);
+        border: 1px solid var(--border-neon);
+        border-radius: 10px;
+        color: var(--text-primary);
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+        transition: all 150ms;
+        min-height: 40px;
+    }
+    
+    .ai-mode-select:focus {
+        border-color: var(--accent-neon);
+        box-shadow: 0 0 8px rgba(76, 126, 255, 0.2);
+    }
+
+    .ai-auto-detect-btn {
+        width: 100%;
+        padding: 10px 14px;
+        background: transparent;
+        border: 1px solid var(--accent-neon);
+        border-radius: 10px;
+        color: var(--accent-neon);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 150ms;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        min-height: 40px;
+    }
+
+    .ai-auto-detect-btn:hover {
+        background: rgba(76, 126, 255, 0.1);
+        box-shadow: 0 0 8px rgba(76, 126, 255, 0.2);
+    }
+
+    .ai-auto-detect-btn.active {
+        background: rgba(76, 126, 255, 0.15);
+        box-shadow: 0 0 12px rgba(76, 126, 255, 0.3);
+    }
+
+    /* Tablet Styles */
+    @media (min-width: 768px) {
+        .ai-container {
+            padding: 16px;
+            max-width: 1200px;
+        }
+        
+        .ai-empty-hero {
+            padding: 32px 20px 40px;
+        }
+        
+        .ai-feature-card {
+            min-width: 180px;
+            max-width: 220px;
+            width: 180px;
+            padding: 16px 18px;
+        }
+        
+        .ai-feature-card-title {
+            font-size: 15px;
+        }
+        
+        .ai-feature-card-desc {
+            font-size: 13px;
+        }
+        
+        .ai-chat-stream {
+            padding: 20px;
+        }
+        
+        .ai-message-bubble {
+            max-width: 75%;
+            font-size: 15px;
+            padding: 14px 18px;
+        }
+        
+        .ai-message-avatar {
+            width: 36px;
+            height: 36px;
+            font-size: 18px;
+        }
+        
+        .ai-input-area {
+            padding: 20px;
+        }
+        
+        .ai-mode-chips {
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .ai-mode-chip {
+            padding: 8px 14px;
+            font-size: 13px;
+        }
+        
+        .ai-prompt-wrapper {
+            padding: 12px 14px;
+            gap: 12px;
+        }
+        
+        .ai-prompt-input {
+            font-size: 15px;
+        }
+        
+        .ai-send-btn {
+            width: 44px;
+            height: 44px;
+            font-size: 18px;
+        }
+        
+        .ai-extra-inputs {
+            flex-direction: row;
+            align-items: stretch;
+        }
+        
+        .ai-extra-inputs input {
+            flex: 1;
+        }
+        
+        .ai-generate-btn {
+            width: auto;
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+        
+        .ai-media-grid {
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        }
+    }
+
+    /* Desktop Styles */
+    @media (min-width: 1024px) {
+        .ai-container {
+            flex-direction: row;
+            gap: 20px;
+            padding: 20px;
+            padding-bottom: 20px;
+            max-width: 1400px;
+        }
+        
+        .ai-sidebar {
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+            width: 80px;
+            flex-shrink: 0;
+            background: var(--bg-sidebar);
+            border: 1px solid var(--border-neon);
+            border-radius: 18px;
+            padding: 16px 0 20px;
+            align-items: center;
+            gap: 36px;
+            z-index: 10;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            bottom: auto;
+            left: auto;
+            right: auto;
+            overflow: visible;
+        }
+        
+        .ai-sidebar-logo {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            text-align: center;
+            padding: 4px 8px;
+            line-height: 1.4;
+            letter-spacing: 0.5px;
+        }
+        
+        .ai-sidebar-item {
+            width: 44px;
+            height: 44px;
+            max-width: 44px;
+            flex: none;
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        
+        .ai-sidebar-item:hover {
+            color: var(--text-primary);
+            background: rgba(76, 126, 255, 0.1);
+        }
+        
+        .ai-sidebar-item.active {
+            color: var(--accent-neon);
+            background: rgba(76, 126, 255, 0.15);
+            border: 1px solid var(--accent-neon);
+            box-shadow: 0 0 12px rgba(76, 126, 255, 0.3);
+        }
+        
+        .ai-sidebar-item[title]::after {
+            content: attr(title);
+            position: absolute;
+            left: calc(100% + 12px);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 150ms;
+            border: 1px solid var(--border-neon);
+            box-shadow: var(--shadow-glow);
+        }
+        
+        .ai-sidebar-item:hover[title]::after {
+            opacity: 1;
+        }
+
+        /* Settings Dropdown - Desktop (muncul di atas settings button) */
+        .ai-sidebar-item.settings {
+            position: relative;
+        }
+
+        .ai-settings-dropdown {
+            position: absolute;
+            /* bottom: calc(100% + 12px); */
+            left: calc(100% + 12px);
+            transform: translateY(-8px) scale(0.95);
+            background: var(--bg-card);
+            border: 1px solid var(--border-neon);
+            border-radius: 14px;
+            padding: 6px;
+            min-width: 220px;
+            width: auto;
+            max-width: none;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.6),
+                0 0 0 1px rgba(76, 126, 255, 0.2),
+                0 0 30px rgba(76, 126, 255, 0.15);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 99999;
+            backdrop-filter: blur(12px);
+            overflow: hidden;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        
+        .ai-settings-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .ai-settings-dropdown::before {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 20px;
+            transform: rotate(45deg);
+            width: 12px;
+            height: 12px;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border-neon);
+            border-bottom: 1px solid var(--border-neon);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .ai-settings-dropdown::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(76, 126, 255, 0.05) 0%, rgba(93, 95, 239, 0.03) 100%);
+            pointer-events: none;
+            border-radius: 14px;
+        }
+
+        .ai-settings-item {
+            padding: 12px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 4px;
+        }
+
+        .ai-settings-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .ai-settings-item::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent, rgba(76, 126, 255, 0.12), transparent);
+            transform: translateX(-100%);
+            transition: transform 400ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ai-settings-item:hover::before {
+            transform: translateX(100%);
+        }
+
+        .ai-settings-item:hover {
+            background: rgba(76, 126, 255, 0.12);
+            color: var(--accent-neon);
+            transform: translateX(3px);
+            box-shadow: 0 2px 8px rgba(76, 126, 255, 0.15);
+        }
+
+        .ai-settings-item:active {
+            transform: translateX(3px) scale(0.98);
+        }
+
+        .ai-settings-item i {
+            font-size: 17px;
+            width: 22px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 200ms;
+        }
+
+        .ai-settings-item:hover i {
+            transform: scale(1.1);
+        }
+
+        .ai-settings-item span {
+            flex: 1;
+            white-space: nowrap;
+        }
+
+        .ai-settings-item.danger {
+            color: #ff6b6b;
+        }
+
+        .ai-settings-item.danger:hover {
+            background: rgba(255, 107, 107, 0.12);
+            color: #ff6b6b;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.15);
+        }
+
+        .ai-settings-item.danger i {
+            color: #ff6b6b;
+        }
+
+        .ai-settings-item.success {
+            color: #6bcf7f;
+        }
+
+        .ai-settings-item.success:hover {
+            background: rgba(107, 207, 127, 0.12);
+            color: #6bcf7f;
+            box-shadow: 0 2px 8px rgba(107, 207, 127, 0.15);
+        }
+
+        .ai-settings-item.success i {
+            color: #6bcf7f;
+        }
+        
+        .ai-main {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .ai-feature-card {
+            min-width: 200px;
+            max-width: 240px;
+            width: 200px;
+            padding: 18px 20px;
+        }
+        
+        .ai-message-bubble {
+            max-width: 75%;
+        }
+        
+        .ai-input-area {
+            padding: 20px 24px 24px;
+            margin-top: 20px;
+        }
+        
+        .ai-mode-dropdown {
+            flex-direction: row;
+        }
+        
+        .ai-mode-select {
+            flex: 1;
+        }
+        
+        .ai-auto-detect-btn {
+            width: auto;
+            min-width: 120px;
+        }
+    }
+</style>
+
+<div class="ai-container">
+    <!-- Sidebar Left - Desktop Only -->
+    <div class="ai-sidebar">
+        <div class="ai-sidebar-logo">AI<br>Generate</div>
+        <div class="ai-sidebar-item active" title="Chat" data-mode="">
+            <i class="bi bi-chat-dots"></i>
+        </div>
+        <div class="ai-sidebar-item" title="Gambar" data-mode="image_generate">
+            <i class="bi bi-image"></i>
+        </div>
+        <div class="ai-sidebar-item" title="Video" data-mode="video_generate">
+            <i class="bi bi-camera-reels"></i>
+        </div>
+        <div class="ai-sidebar-item" title="Musik" data-mode="music_generate">
+            <i class="bi bi-music-note-beamed"></i>
+        </div>
+        <div class="ai-sidebar-item settings" title="Pengaturan" id="settingsBtn">
+            <i class="bi bi-gear"></i>
+            <div class="ai-settings-dropdown" id="settingsDropdown">
+                <div class="ai-settings-item success" id="downloadHistoryBtn">
+                    <i class="bi bi-download"></i>
+                    <span>Download Riwayat Chat</span>
+                </div>
+                <div class="ai-settings-item danger" id="clearHistoryBtn">
+                    <i class="bi bi-trash"></i>
+                    <span>Hapus Riwayat Chat</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Chat Area -->
+    <div class="ai-main">
+        <div class="ai-chat-area">
+            <!-- Empty State - Feature Cards -->
+            <div class="ai-empty-hero" id="emptyHero">
+                <div class="ai-feature-cards" id="featureCards">
+                    <div class="ai-feature-card" data-text="Buat gambar naga biru terbang di atas kota cyberpunk, gaya 3D realistis, pencahayaan neon.">
+                        <div class="ai-feature-card-title">
+                            <span>🎬</span> Gambar Sinematik
+                        </div>
+                        <div class="ai-feature-card-desc">3D, neon, cyberpunk</div>
+                    </div>
+                    <div class="ai-feature-card" data-text="Edit gambar ini menjadi versi anime dengan rambut berwarna perak dan pakaian futuristik.">
+                        <div class="ai-feature-card-title">
+                            <span>🖌️</span> Edit jadi Anime
+                        </div>
+                        <div class="ai-feature-card-desc">Perubahan gaya</div>
+                    </div>
+                    <div class="ai-feature-card" data-text="Ubah gambar ini jadi video loop 6 detik yang halus, nuansa elegan.">
+                        <div class="ai-feature-card-title">
+                            <span>🖼️</span> Gambar ke Video
+                        </div>
+                        <div class="ai-feature-card-desc">Loop 6 detik</div>
+                    </div>
+                    <div class="ai-feature-card" data-text="Buat video pendek pemandangan hutan berkabut saat matahari terbit, gaya dokumenter sinematik.">
+                        <div class="ai-feature-card-title">
+                            <span>🎞️</span> Video Sinematik
+                        </div>
+                        <div class="ai-feature-card-desc">Vibe natural</div>
+                    </div>
+                    <div class="ai-feature-card" data-text="Buat musik lo-fi santai dengan sentuhan jazz, tempo 85 BPM, suasana malam kota.">
+                        <div class="ai-feature-card-title">
+                            <span>🎵</span> Musik Lo-Fi
+                        </div>
+                        <div class="ai-feature-card-desc">85 BPM, jazzy</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Stream -->
+            <div class="ai-chat-stream" id="chatStream"></div>
+
+            <!-- Typing Indicator -->
+            <div class="ai-typing" id="typing">
+                <span class="ai-typing-dot"></span>
+                <span class="ai-typing-dot"></span>
+                <span class="ai-typing-dot"></span>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="ai-input-area" id="inputArea">
+            <!-- Attachment Preview Area -->
+            <div class="ai-attachment-preview" id="attachmentPreview" style="display: none;">
+                <div class="ai-attachment-list" id="attachmentList"></div>
+            </div>
+
+            <!-- Mode Chips -->
+            <div class="ai-mode-chips">
+                <div class="ai-mode-chip active" data-mode="">Auto</div>
+                <div class="ai-mode-chip" data-mode="image_generate">Gambar</div>
+                <div class="ai-mode-chip" data-mode="image_edit">Edit</div>
+                <div class="ai-mode-chip" data-mode="image_to_video" title="Gambar ke Video">G→V</div>
+                <div class="ai-mode-chip" data-mode="video_generate">Video</div>
+                <div class="ai-mode-chip" data-mode="music_generate">Musik</div>
+            </div>
+
+            <!-- Prompt Input - ChatGPT Style -->
+            <div class="ai-prompt-wrapper" id="promptWrapper">
+                <button type="button" id="attachBtn" class="ai-attach-btn" title="Lampirkan file">
+                    <i class="bi bi-paperclip"></i>
+                </button>
+                <textarea id="aiPrompt" class="ai-prompt-input" rows="1" placeholder="Ketik ide atau perintah AI di sini…"></textarea>
+                <button type="button" id="runBtn" class="ai-send-btn" title="Kirim">
+                    <i class="bi bi-send"></i>
+                </button>
+            </div>
+
+            <!-- Hidden File Input -->
+            <input type="file" id="fileInput" accept="image/*,video/*" multiple style="display: none;" />
+
+            <!-- Mode Selector Dropdown (Hidden by default) -->
+            <div class="ai-mode-dropdown" id="modeDropdown" style="display: none;">
+                <select id="mode" class="ai-mode-select">
+                    <option value="">Auto Detect</option>
+                    <option value="image_generate">Generate Image</option>
+                    <option value="image_edit">Edit Image</option>
+                    <option value="image_to_video">Gambar ke Video</option>
+                    <option value="video_generate">Generate Video</option>
+                    <option value="music_generate">Generate Music</option>
+                </select>
+                <button type="button" id="autoDetectBtn" class="ai-auto-detect-btn" title="Auto Detect Mode">
+                    <i class="bi bi-sliders"></i> Auto Detect
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Error handling and Android compatibility
+(function() {
+    'use strict';
+    
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+    
+    function init() {
+        try {
+            // Ensure container is visible
+            const container = document.querySelector('.ai-container');
+            if (container) {
+                container.style.visibility = 'visible';
+                container.style.opacity = '1';
+                container.style.display = 'flex';
+            }
+            
+            // Initialize all components
+            initializeComponents();
+        } catch (e) {
+            console.error('AI Generate initialization error:', e);
+            // Show error message to user
+            const container = document.querySelector('.ai-container');
+            if (container) {
+                container.innerHTML = '<div style="padding: 20px; color: #fff; text-align: center;">Error loading AI Generate. Please refresh the page.</div>';
+            }
+        }
+    }
+    
+    function initializeComponents() {
+        // Constants with null checks
+        const stream = document.getElementById('chatStream');
+        const runBtn = document.getElementById('runBtn');
+        const emptyHero = document.getElementById('emptyHero');
+        const typing = document.getElementById('typing');
+        const promptInput = document.getElementById('aiPrompt');
+        const modeSelect = document.getElementById('mode');
+        const autoDetectBtn = document.getElementById('autoDetectBtn');
+        const attachBtn = document.getElementById('attachBtn');
+        const fileInput = document.getElementById('fileInput');
+        const attachmentPreview = document.getElementById('attachmentPreview');
+        const attachmentList = document.getElementById('attachmentList');
+        const inputArea = document.getElementById('inputArea');
+        
+        // Store attachments
+        let attachments = [];
+        
+        if (!stream || !runBtn || !promptInput) {
+            console.error('Required elements not found');
+            return;
+        }
+
+        
+        // Mode Chips
+        const modeChips = document.querySelectorAll('.ai-mode-chip');
+        modeChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                modeChips.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                if (modeSelect) {
+                    modeSelect.value = chip.dataset.mode || '';
+                }
+            });
+        });
+        
+        // Mode select change handler
+        if (modeSelect) {
+            modeSelect.addEventListener('change', () => {
+                // Update active chip
+                modeChips.forEach(c => {
+                    c.classList.toggle('active', c.dataset.mode === modeSelect.value);
+                });
+            });
+        }
+
+        // Sidebar Items
+        const sidebarItems = document.querySelectorAll('.ai-sidebar-item');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsDropdown = document.getElementById('settingsDropdown');
+        const downloadHistoryBtn = document.getElementById('downloadHistoryBtn');
+        const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+        
+        sidebarItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                // Don't toggle mode if clicking settings
+                if (item === settingsBtn) {
+                    e.stopPropagation();
+                    // Toggle settings dropdown
+                    if (settingsDropdown) {
+                        const isShowing = settingsDropdown.classList.contains('show');
+                        if (isShowing) {
+                            settingsDropdown.classList.remove('show');
+                        } else {
+                            // Calculate position dynamically
+                            const rect = settingsBtn.getBoundingClientRect();
+                            const isDesktop = window.innerWidth >= 1024;
+                            
+                            if (isDesktop) {
+                                // Desktop: reset any inline styles and use CSS positioning
+                                settingsDropdown.style.position = '';
+                                settingsDropdown.style.left = '';
+                                settingsDropdown.style.top = '';
+                                settingsDropdown.style.bottom = '';
+                                settingsDropdown.style.right = '';
+                                settingsDropdown.style.transform = '';
+                                // Just show it - CSS will handle positioning
+                                settingsDropdown.classList.add('show');
+                            } else {
+                                // Mobile: position below settings button in top nav
+                                // Calculate position relative to settings button
+                                const dropdownHeight = 100; // Approximate height
+                                settingsDropdown.style.position = 'fixed';
+                                settingsDropdown.style.left = `${rect.left + rect.width / 2}px`;
+                                settingsDropdown.style.top = `${rect.bottom + 8}px`;
+                                settingsDropdown.style.bottom = 'auto';
+                                settingsDropdown.style.right = 'auto';
+                                settingsDropdown.style.transform = 'translateX(-50%) translateY(-8px) scale(0.95)';
+                                
+                                settingsDropdown.classList.add('show');
+                                
+                                // Update transform when showing
+                                setTimeout(() => {
+                                    settingsDropdown.style.transform = 'translateX(-50%) translateY(0) scale(1)';
+                                }, 10);
+                            }
+                        }
+                    }
+                    return;
+                }
+                
+                // Close settings dropdown if open
+                if (settingsDropdown) {
+                    settingsDropdown.classList.remove('show');
+                }
+                
+                if (item.dataset.mode !== undefined) {
+                    sidebarItems.forEach(s => s.classList.remove('active'));
+                    item.classList.add('active');
+                    if (modeSelect) {
+                        modeSelect.value = item.dataset.mode || '';
+                    }
+                    modeChips.forEach(c => {
+                        c.classList.toggle('active', c.dataset.mode === item.dataset.mode);
+                    });
+                }
+            });
+        });
+        
+        // Update dropdown position on window resize (mobile only)
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (settingsDropdown && settingsDropdown.classList.contains('show') && settingsBtn) {
+                    const isDesktop = window.innerWidth >= 1024;
+                    
+                    if (!isDesktop) {
+                        // Mobile: recalculate position
+                        const rect = settingsBtn.getBoundingClientRect();
+                        settingsDropdown.style.left = `${rect.left + rect.width / 2}px`;
+                        settingsDropdown.style.top = `${rect.bottom + 8}px`;
+                        settingsDropdown.style.transform = 'translateX(-50%) translateY(0) scale(1)';
+                    } else {
+                        // Desktop: reset all inline styles to use CSS
+                        settingsDropdown.style.position = '';
+                        settingsDropdown.style.left = '';
+                        settingsDropdown.style.top = '';
+                        settingsDropdown.style.bottom = '';
+                        settingsDropdown.style.right = '';
+                        settingsDropdown.style.transform = '';
+                    }
+                }
+            }, 100);
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (settingsDropdown && settingsBtn && !settingsBtn.contains(e.target) && !settingsDropdown.contains(e.target)) {
+                settingsDropdown.classList.remove('show');
+            }
+        });
+        
+        // Download History
+        if (downloadHistoryBtn) {
+            downloadHistoryBtn.addEventListener('click', () => {
+                try {
+                    const HISTORY_KEY = 'ai_generate_history_v2';
+                    const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+                    
+                    if (history.length === 0) {
+                        alert('Riwayat chat kosong. Tidak ada yang bisa diunduh.');
+                        if (settingsDropdown) settingsDropdown.classList.remove('show');
+                        return;
+                    }
+                    
+                    // Create download data with metadata
+                    const downloadData = {
+                        export_date: new Date().toISOString(),
+                        version: '1.0',
+                        total_messages: history.length,
+                        history: history
+                    };
+                    
+                    // Create blob and download
+                    const blob = new Blob([JSON.stringify(downloadData, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `ai_generate_history_${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    
+                    // Show success feedback
+                    downloadHistoryBtn.innerHTML = '<i class="bi bi-check-circle"></i><span>Berhasil!</span>';
+                    setTimeout(() => {
+                        downloadHistoryBtn.innerHTML = '<i class="bi bi-download"></i><span>Download Riwayat Chat</span>';
+                    }, 2000);
+                    
+                    if (settingsDropdown) settingsDropdown.classList.remove('show');
+                } catch (error) {
+                    console.error('Download history error:', error);
+                    alert('Gagal mengunduh riwayat chat. ' + error.message);
+                }
+            });
+        }
+        
+        // Clear History
+        if (clearHistoryBtn) {
+            clearHistoryBtn.addEventListener('click', () => {
+                if (!confirm('Yakin ingin menghapus semua riwayat chat? Tindakan ini tidak dapat dibatalkan.')) {
+                    if (settingsDropdown) settingsDropdown.classList.remove('show');
+                    return;
+                }
+                
+                try {
+                    const HISTORY_KEY = 'ai_generate_history_v2';
+                    localStorage.removeItem(HISTORY_KEY);
+                    
+                    // Clear chat stream
+                    if (stream) {
+                        stream.innerHTML = '';
+                    }
+                    
+                    // Show empty state
+                    if (emptyHero) {
+                        emptyHero.style.display = 'flex';
+                    }
+                    if (stream) {
+                        stream.classList.remove('active');
+                    }
+                    
+                    // Show success feedback
+                    clearHistoryBtn.innerHTML = '<i class="bi bi-check-circle"></i><span>Berhasil!</span>';
+                    setTimeout(() => {
+                        clearHistoryBtn.innerHTML = '<i class="bi bi-trash"></i><span>Hapus Riwayat Chat</span>';
+                    }, 2000);
+                    
+                    if (settingsDropdown) settingsDropdown.classList.remove('show');
+                } catch (error) {
+                    console.error('Clear history error:', error);
+                    alert('Gagal menghapus riwayat chat. ' + error.message);
+                }
+            });
+        }
+
+        // Feature Cards
+        document.querySelectorAll('.ai-feature-card').forEach(card => {
+            card.addEventListener('click', () => {
+                if (promptInput) {
+                    promptInput.value = card.dataset.text || '';
+                    promptInput.focus();
+                    autoResizeTextarea();
+                }
+            });
+        });
+
+        // Auto Resize Textarea
+        function autoResizeTextarea() {
+            if (!promptInput) return;
+            promptInput.style.height = 'auto';
+            promptInput.style.height = Math.min(promptInput.scrollHeight, 120) + 'px';
+        }
+        if (promptInput) {
+            promptInput.addEventListener('input', autoResizeTextarea);
+        }
+
+        // Enter to Send
+        if (promptInput && runBtn) {
+            promptInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Trigger click which will handle the submission
+                    runBtn.click();
+                }
+            });
+        }
+
+        // Attachment Functions
+        function addAttachment(fileData) {
+            attachments.push(fileData);
+            updateAttachmentPreview();
+        }
+
+        function removeAttachment(index) {
+            attachments.splice(index, 1);
+            updateAttachmentPreview();
+        }
+
+        function updateAttachmentPreview() {
+            if (!attachmentList || !attachmentPreview) return;
+            
+            attachmentList.innerHTML = '';
+            
+            if (attachments.length === 0) {
+                attachmentPreview.style.display = 'none';
+                return;
+            }
+            
+            attachmentPreview.style.display = 'block';
+            
+            attachments.forEach((att, index) => {
+                const item = document.createElement('div');
+                item.className = 'ai-attachment-item';
+                
+                if (att.type === 'image') {
+                    item.innerHTML = `
+                        <img src="${att.url}" alt="${att.filename}" />
+                        <button class="ai-attachment-remove" onclick="window.removeAttachment(${index})" title="Hapus">
+                            <i class="bi bi-x"></i>
+                        </button>
+                        <div class="ai-attachment-info">${att.filename}</div>
+                    `;
+                } else if (att.type === 'video') {
+                    item.innerHTML = `
+                        <video src="${att.url}" muted></video>
+                        <button class="ai-attachment-remove" onclick="window.removeAttachment(${index})" title="Hapus">
+                            <i class="bi bi-x"></i>
+                        </button>
+                        <div class="ai-attachment-info">${att.filename}</div>
+                    `;
+                }
+                
+                attachmentList.appendChild(item);
+            });
+        }
+
+        // Expose removeAttachment globally
+        window.removeAttachment = function(index) {
+            removeAttachment(index);
+        };
+
+        // Attachment Button Click
+        if (attachBtn && fileInput) {
+            attachBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+        }
+
+        // File Input Change
+        if (fileInput) {
+            fileInput.addEventListener('change', async (e) => {
+                const files = Array.from(e.target.files || []);
+                if (files.length === 0) return;
+
+                for (const file of files) {
+                    try {
+                        // Validate file type
+                        const isImage = file.type.startsWith('image/');
+                        const isVideo = file.type.startsWith('video/');
+                        
+                        if (!isImage && !isVideo) {
+                            alert(`File ${file.name} tidak didukung. Gunakan gambar atau video.`);
+                            continue;
+                        }
+
+                        // Validate file size
+                        const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+                        if (file.size > maxSize) {
+                            const maxSizeMB = isVideo ? 50 : 10;
+                            alert(`File ${file.name} terlalu besar (maksimal ${maxSizeMB}MB)`);
+                            continue;
+                        }
+
+                        // Upload file
+                        const formData = new FormData();
+                        formData.append('file', file);
+
+                        const res = await fetch('/api/ai_generate/upload', {
+                            method: 'POST',
+                            body: formData,
+                            credentials: 'same-origin'
+                        });
+
+                        if (!res.ok) {
+                            const error = await res.json();
+                            alert(`Gagal upload ${file.name}: ${error.error || 'Unknown error'}`);
+                            continue;
+                        }
+
+                        const data = await res.json();
+                        if (data.success) {
+                            addAttachment({
+                                url: data.url,
+                                type: data.type,
+                                filename: data.filename,
+                                size: data.size
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Upload error:', error);
+                        alert(`Gagal upload ${file.name}: ${error.message}`);
+                    }
+                }
+
+                // Reset file input
+                fileInput.value = '';
+            });
+        }
+
+        // Drag & Drop
+        if (inputArea) {
+            const dragOverlay = document.createElement('div');
+            dragOverlay.className = 'ai-drag-overlay';
+            dragOverlay.innerHTML = '<div class="ai-drag-overlay-text">Lepaskan file di sini untuk melampirkan</div>';
+            inputArea.appendChild(dragOverlay);
+
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                inputArea.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                });
+            });
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                inputArea.addEventListener(eventName, () => {
+                    dragOverlay.classList.add('active');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                inputArea.addEventListener(eventName, () => {
+                    dragOverlay.classList.remove('active');
+                });
+            });
+
+            inputArea.addEventListener('drop', async (e) => {
+                const files = Array.from(e.dataTransfer.files || []);
+                if (files.length === 0) return;
+
+                for (const file of files) {
+                    try {
+                        const isImage = file.type.startsWith('image/');
+                        const isVideo = file.type.startsWith('video/');
+                        
+                        if (!isImage && !isVideo) continue;
+
+                        const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+                        if (file.size > maxSize) continue;
+
+                        const formData = new FormData();
+                        formData.append('file', file);
+
+                        const res = await fetch('/api/ai_generate/upload', {
+                            method: 'POST',
+                            body: formData,
+                            credentials: 'same-origin'
+                        });
+
+                        if (!res.ok) continue;
+
+                        const data = await res.json();
+                        if (data.success) {
+                            addAttachment({
+                                url: data.url,
+                                type: data.type,
+                                filename: data.filename,
+                                size: data.size
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Drop upload error:', error);
+                    }
+                }
+            });
+        }
+
+        // Add Message
+        window.addMessage = function(role, html) {
+            if (!stream) return;
+            const el = document.createElement('div');
+            el.className = `ai-message ${role}`;
+            try {
+                el.innerHTML = `
+                    <div class="ai-message-avatar">
+                        ${role === 'user' ? '<i class="bi bi-person"></i>' : '<i class="bi bi-robot"></i>'}
+                    </div>
+                    <div class="ai-message-bubble">
+                        ${html}
+                        <div class="ai-message-actions">
+                            <button title="Copy" onclick="window.copyMessage(this)"><i class="bi bi-clipboard"></i></button>
+                            ${role === 'assistant' ? '<button title="Regenerate" onclick="window.regenerateMessage(this)"><i class="bi bi-arrow-repeat"></i></button>' : ''}
+                        </div>
+                        <div class="ai-message-meta">
+                            ${role === 'user' ? 'You' : 'AI Assistant'} • ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+                        </div>
+                    </div>
+                `;
+                stream.appendChild(el);
+                stream.scrollTop = stream.scrollHeight;
+                // Smooth scroll with fallback
+                try {
+                    stream.scrollTo({ top: stream.scrollHeight, behavior: 'smooth' });
+                } catch (e) {
+                    stream.scrollTop = stream.scrollHeight;
+                }
+            } catch (e) {
+                console.error('Error adding message:', e);
+            }
+        };
+
+        // Show/Hide Stream
+        window.ensureStreamVisible = function() {
+            if (emptyHero) emptyHero.style.display = 'none';
+            if (stream) stream.classList.add('active');
+        };
+
+        // Show/Hide Typing
+        window.showTyping = function(show) {
+            if (typing) typing.classList.toggle('active', show);
+        };
+
+        // Render Assistant Result
+        window.renderAssistantResult = function(resp) {
+            if (!resp || !resp.success) {
+                const msg = (resp && resp.message) || 'Gagal memproses.';
+                window.addMessage('assistant', `<div style="color: #ff6b6b;">${msg}</div>`);
+                return;
+            }
+
+            const type = resp.type;
+            let html = '';
+
+            if (type === 'chat') {
+                // Chat response from Gemini
+                const message = resp.message || '';
+                // Format message with line breaks
+                const formattedMessage = message.replace(/\n/g, '<br>');
+                html = `<div style="white-space: pre-wrap; line-height: 1.6;">${formattedMessage}</div>`;
+                window.addMessage('assistant', html);
+                return;
+            }
+
+            if (type === 'image') {
+                // Handle different response structures
+                let url = resp.url;
+                if (!url && resp.data) {
+                    url = resp.data.photo_url || resp.data.url || resp.data.image_url;
+                }
+                if (!url) {
+                    window.addMessage('assistant', `<div style="color: #ffd93d;">Tidak ada URL gambar.</div>`);
+                    return;
+                }
+                const data = resp.data || {};
+                const modelUsed = data.model_used || 'imagen4-ultra';
+                html = `
+                    <div class="ai-result-label">🖼️ Hasil: Gambar (${modelUsed})</div>
+                    <div class="ai-media-grid">
+                        <img src="${url}" alt="AI Image" />
+                    </div>
+                    <div class="ai-result-actions">
+                        <a href="${url}" target="_blank"><i class="bi bi-box-arrow-up-right"></i> Buka</a>
+                        <button onclick="navigator.clipboard.writeText('${url}')"><i class="bi bi-clipboard"></i> Copy URL</button>
+                        <a href="${url}" download><i class="bi bi-download"></i> Download</a>
+                    </div>
+                `;
+            } else if (type === 'video') {
+                const d = resp.data || {};
+                const vurl = d.url || d.video_url || (d.result && d.result.video_url) || '';
+                if (!vurl) {
+                    html = `<div style="color: #6bcf7f;">Video sedang diproses. Silakan cek halaman video.</div>`;
+                } else {
+                    // Generate unique filename
+                    const timestamp = Date.now();
+                    const filename = `ai_video_${timestamp}.mp4`;
+                    html = `
+                        <div class="ai-result-label">🎬 Hasil: Video Sinematik (6 detik)</div>
+                        <div class="ai-media-grid">
+                            <video src="${vurl}" controls></video>
+                        </div>
+                        <div class="ai-result-actions">
+                            <a href="${vurl}" target="_blank"><i class="bi bi-box-arrow-up-right"></i> Buka</a>
+                            <button onclick="window.navigator.clipboard.writeText('${vurl}')"><i class="bi bi-clipboard"></i> Copy URL</button>
+                            <button onclick="window.downloadVideo('${vurl}', '${filename}', this)"><i class="bi bi-download"></i> Download</button>
+                        </div>
+                    `;
+                }
+            } else if (type === 'music') {
+                const d = resp.data || {};
+                const aurl = d.url || d.audio_url || (d.result && d.result.audio_url) || '';
+                const title = d.title || 'Musik AI';
+                const modelName = d.model_name || 'V4_5PLUS';
+                const duration = d.duration || 0;
+                const musicId = d.music_id || (resp.music_id) || '';
+                
+                if (!aurl) {
+                    // Still processing
+                    html = `<div style="color: #6bcf7f;">⏳ Musik sedang diproses oleh Suno AI. Silakan tunggu...</div>`;
+                } else {
+                    // Music completed
+                    const durationText = duration > 0 ? `${Math.floor(duration / 60)}:${String(duration % 60).padStart(2, '0')}` : '0:00';
+                    // Build link to post_musik page if music_id is available
+                    const detailLink = musicId ? `/post_musik/${musicId}` : '';
+                    html = `
+                        <div class="ai-result-label">🎵 Hasil: ${title}</div>
+                        <div class="ai-music-card">
+                            ${d.image_url ? `
+                                <div class="ai-music-cover">
+                                    <img src="${d.image_url}" alt="Cover" />
+                                </div>
+                            ` : ''}
+                            <div class="ai-music-player-wrapper">
+                                <div class="ai-music-info">
+                                    <div class="ai-music-title">${title}</div>
+                                    <div class="ai-music-meta">
+                                        <span class="ai-music-model">${modelName}</span>
+                                        <span class="ai-music-duration">${durationText}</span>
+                                    </div>
+                                </div>
+                                <div class="ai-music-audio-player">
+                                    <audio controls src="${aurl}">
+                                        Your browser does not support the audio element.
+                                    </audio>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ai-result-actions">
+                            ${detailLink ? `<a href="${detailLink}" class="ai-action-btn"><i class="bi bi-eye"></i> Lihat Detail</a>` : ''}
+                            <a href="${aurl}" target="_blank" class="ai-action-btn"><i class="bi bi-box-arrow-up-right"></i> Buka</a>
+                            <button onclick="navigator.clipboard.writeText('${aurl}')" class="ai-action-btn"><i class="bi bi-clipboard"></i> Copy URL</button>
+                            <a href="${aurl}" download class="ai-action-btn"><i class="bi bi-download"></i> Download</a>
+                        </div>
+                    `;
+                }
+            } else {
+                html = `<div style="color: #a0a0c4;">Permintaan selesai.</div>`;
+            }
+
+            window.addMessage('assistant', html);
+        };
+
+        // Send Message
+        if (runBtn) {
+            runBtn.addEventListener('click', async (e) => {
+            // Prevent any form submission or default behavior
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+            }
+            
+                const prompt = promptInput ? promptInput.value.trim() : '';
+                let mode = modeSelect ? modeSelect.value : '';
+                
+                // Normalize mode: empty string or 'auto' means auto-detect
+                if (mode === 'auto' || mode === '') {
+                    mode = ''; // Send empty string to backend for auto-detect
+                }
+                
+                // IMPORTANT: Get attachment URL BEFORE clearing attachments
+                // This ensures we capture the current state of attachments
+                const hasActiveAttachments = attachments.length > 0;
+                const imageUrl = (hasActiveAttachments && attachments[0] && attachments[0].url) ? attachments[0].url : '';
+
+                if (!prompt && !hasActiveAttachments) {
+                    if (e) e.preventDefault();
+                    return false;
+                }
+                
+                // Auto-detect mode if not set (mode is empty) and has attachments
+                // Only auto-detect if user hasn't explicitly selected a mode
+                if (!mode && hasActiveAttachments) {
+                    const hasImage = attachments.some(a => a.type === 'image');
+                    const promptLower = prompt.toLowerCase();
+                    // Only auto-detect if prompt contains explicit action keywords
+                    const hasActionKeyword = promptLower.includes('edit') || promptLower.includes('ubah') || 
+                                            promptLower.includes('video') || promptLower.includes('i2v') || 
+                                            promptLower.includes('gambar jadi video');
+                    
+                    if (hasImage && hasActionKeyword) {
+                        if (hasImage && (promptLower.includes('edit') || promptLower.includes('ubah'))) {
+                            if (modeSelect) {
+                                modeSelect.value = 'image_edit';
+                                mode = 'image_edit';
+                            }
+                        } else if (hasImage && (promptLower.includes('video') || promptLower.includes('i2v') || promptLower.includes('gambar jadi video'))) {
+                            if (modeSelect) {
+                                modeSelect.value = 'image_to_video';
+                                mode = 'image_to_video';
+                            }
+                        }
+                    }
+                    // If no specific mode detected or no action keyword, keep mode empty for chat
+                }
+
+            window.ensureStreamVisible();
+            
+            // Build message HTML with attachments (before clearing)
+            let messageHtml = prompt;
+            if (hasActiveAttachments) {
+                messageHtml += '<div style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px;">';
+                attachments.forEach(att => {
+                    if (att.type === 'image') {
+                        messageHtml += `<img src="${att.url}" alt="${att.filename}" style="max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover;" />`;
+                    } else if (att.type === 'video') {
+                        messageHtml += `<video src="${att.url}" controls style="max-width: 200px; max-height: 200px; border-radius: 8px;" muted></video>`;
+                    }
+                });
+                messageHtml += '</div>';
+            }
+            
+            window.addMessage('user', messageHtml);
+            if (promptInput) promptInput.value = '';
+            autoResizeTextarea();
+            
+            // Clear attachments AFTER capturing needed data
+            attachments = [];
+            updateAttachmentPreview();
+
+            runBtn.disabled = true;
+            runBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            window.showTyping(true);
+
+            // Input area animation
+            const inputArea = document.querySelector('.ai-input-area');
+            if (inputArea) {
+                inputArea.style.transform = 'translateY(-4px)';
+                setTimeout(() => {
+                    inputArea.style.transform = 'translateY(0)';
+                }, 200);
+            }
+
+            try {
+                // First check session status
+                const sessionCheck = await fetch('/api/ai_generate/check-session', {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+                
+                if (sessionCheck.ok) {
+                    const sessionData = await sessionCheck.json();
+                    console.log('Session status:', sessionData);
+                    if (!sessionData.logged_in) {
+                        window.addMessage('assistant', `<div style="color: #ff6b6b;">Sesi Anda telah berakhir. Silakan <a href="/login" style="color: #4C7EFF; text-decoration: underline;">login ulang</a>.</div>`);
+                        return;
+                    }
+                }
+                
+                // Only send image_url if we had active attachments when capturing
+                // Use the captured hasActiveAttachments state, not current attachments (which are already cleared)
+                const payload = { 
+                    prompt, 
+                    image_url: (hasActiveAttachments && imageUrl) ? imageUrl : '', 
+                    mode 
+                };
+                
+                // Debug logging
+                console.log('[AI Generate] Sending payload:', {
+                    prompt: prompt.substring(0, 50),
+                    hasActiveAttachments,
+                    image_url: imageUrl ? `${imageUrl.substring(0, 50)}...` : '(empty)',
+                    mode: mode || '(auto)'
+                });
+                const res = await fetch('/api/ai_generate', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(payload),
+                    credentials: 'same-origin',
+                    redirect: 'manual'
+                });
+                
+                // Check if response is a redirect
+                if (res.type === 'opaqueredirect' || res.status === 302 || res.status === 301) {
+                    window.addMessage('assistant', `<div style="color: #ff6b6b;">Server mengirim redirect yang tidak diharapkan. Silakan refresh halaman.</div>`);
+                    return;
+                }
+                
+                // Check response status
+                if (!res.ok) {
+                    // Try to get error message from JSON
+                    let errorData;
+                    try {
+                        errorData = await res.json();
+                    } catch (e) {
+                        errorData = { message: `HTTP ${res.status}: ${res.statusText}` };
+                    }
+                    
+                    // Don't redirect for 401, just show error message
+                    if (res.status === 401) {
+                        window.addMessage('assistant', `<div style="color: #ff6b6b;">${errorData.message || 'Sesi Anda telah berakhir. Silakan login ulang.'}</div>`);
+                        return;
+                    }
+                    
+                    window.addMessage('assistant', `<div style="color: #ff6b6b;">${errorData.message || 'Terjadi kesalahan pada server.'}</div>`);
+                    return;
+                }
+                
+                // Parse JSON response
+                let data;
+                try {
+                    const text = await res.text();
+                    if (!text) {
+                        throw new Error('Response kosong');
+                    }
+                    data = JSON.parse(text);
+                } catch (e) {
+                    window.addMessage('assistant', `<div style="color: #ff6b6b;">Gagal memparse response: ${e.message}</div>`);
+                    return;
+                }
+                
+                // Handle music generation with async polling
+                if (data.type === 'music' && data.status === 'processing' && data.task_id) {
+                    console.log('[AI Generate] Starting music polling for task_id:', data.task_id);
+                    // Show processing message
+                    window.addMessage('assistant', `<div style="color: #6bcf7f;">🎵 Musik sedang diproses oleh Suno AI. Silakan tunggu...</div>`);
+                    // Start polling
+                    window.pollMusicStatus(data.task_id);
+                } else {
+                    window.renderAssistantResult(data);
+                }
+                
+                // Save user message with prompt and attachments (prioritize attachments array)
+                const userHistoryItem = {
+                    role: 'user',
+                    content: prompt,
+                    attachments: attachments.length > 0 ? attachments.map(a => a.url) : []
+                };
+                // Only add image field if no attachments (for backward compatibility)
+                if (attachments.length === 0 && imageUrl) {
+                    userHistoryItem.image = imageUrl;
+                }
+                saveHistoryItem(userHistoryItem);
+                saveHistoryItem({ role: 'assistant', content: data });
+            } catch (e) {
+                window.addMessage('assistant', `<div style="color: #ff6b6b;">${e?.message || 'Terjadi kesalahan. Pastikan Anda masih terhubung ke internet.'}</div>`);
+            } finally {
+                runBtn.disabled = false;
+                runBtn.innerHTML = '<i class="bi bi-send"></i>';
+                window.showTyping(false);
+            }
+        });
+        }
+
+        // Auto Detect Button
+        if (autoDetectBtn) {
+            autoDetectBtn.addEventListener('click', (e) => {
+                // Prevent any form submission
+                if (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                
+                const prompt = promptInput ? promptInput.value.trim() : '';
+                if (!prompt && attachments.length === 0) return;
+                
+                autoDetectBtn.classList.add('active');
+                // Simple auto-detect logic
+                const text = prompt.toLowerCase();
+                if (modeSelect) {
+                    // Check if has attachments
+                    if (attachments.length > 0) {
+                        const hasImage = attachments.some(a => a.type === 'image');
+                        if (hasImage && (text.includes('edit') || text.includes('ubah'))) {
+                            modeSelect.value = 'image_edit';
+                        } else if (hasImage && (text.includes('video') || text.includes('vidio') || text.includes('i2v'))) {
+                            modeSelect.value = 'image_to_video';
+                        }
+                    }
+                    
+                    if (text.includes('video') || text.includes('vidio')) {
+                        modeSelect.value = 'video_generate';
+                    } else if (text.includes('musik') || text.includes('music') || text.includes('lagu')) {
+                        modeSelect.value = 'music_generate';
+                    } else if (text.includes('image') || text.includes('gambar') || text.includes('foto')) {
+                        modeSelect.value = 'image_generate';
+                    }
+                }
+                
+                modeChips.forEach(c => {
+                    c.classList.toggle('active', c.dataset.mode === (modeSelect ? modeSelect.value : ''));
+                });
+                
+                setTimeout(() => {
+                    autoDetectBtn.classList.remove('active');
+                }, 1000);
+            });
+        }
+
+        // Helper Functions
+        window.copyMessage = function(btn) {
+            try {
+                const bubble = btn.closest('.ai-message-bubble');
+                if (!bubble) return;
+                const text = bubble.innerText.replace(/\s+$/, '');
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text);
+                }
+                btn.innerHTML = '<i class="bi bi-check"></i>';
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="bi bi-clipboard"></i>';
+                }, 2000);
+            } catch (e) {
+                console.error('Copy error:', e);
+            }
+        };
+
+        // Download Video Function
+        window.downloadVideo = async function(url, filename, button) {
+            // Show loading state
+            const downloadBtn = button || (event && event.target ? event.target.closest('button') : null);
+            const originalHTML = downloadBtn ? downloadBtn.innerHTML : '<i class="bi bi-download"></i> Download';
+            
+            try {
+                if (downloadBtn) {
+                    downloadBtn.disabled = true;
+                    downloadBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Downloading...';
+                }
+
+                // Fetch the video as blob
+                const response = await fetch(url, {
+                    method: 'GET',
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                
+                // Create download link
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = filename || 'ai_video.mp4';
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Clean up the URL object
+                setTimeout(() => {
+                    window.URL.revokeObjectURL(downloadUrl);
+                }, 100);
+
+                // Restore button state
+                if (downloadBtn) {
+                    downloadBtn.disabled = false;
+                    downloadBtn.innerHTML = '<i class="bi bi-check"></i> Downloaded';
+                    setTimeout(() => {
+                        downloadBtn.innerHTML = originalHTML;
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Download error:', error);
+                // Fallback: try direct download link
+                try {
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = filename || 'ai_video.mp4';
+                    link.target = '_blank';
+                    link.style.display = 'none';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch (e) {
+                    console.error('Fallback download error:', e);
+                    alert('Gagal mendownload video. Silakan coba klik kanan pada video dan pilih "Save video as..."');
+                }
+
+                // Restore button state on error
+                if (downloadBtn) {
+                    downloadBtn.disabled = false;
+                    downloadBtn.innerHTML = originalHTML;
+                }
+            }
+        };
+
+        window.regenerateMessage = function(btn) {
+            const userMessages = Array.from(document.querySelectorAll('.ai-message.user .ai-message-bubble'));
+            const lastUser = userMessages[userMessages.length - 1];
+            if (!lastUser || !runBtn) return;
+            runBtn.click();
+        };
+
+        // Local Storage History
+        const HISTORY_KEY = 'ai_generate_history_v2';
+        window.saveHistoryItem = function(item) {
+            try {
+                const arr = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+                arr.push(item);
+                if (arr.length > 50) arr.shift(); // Keep last 50
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(arr));
+            } catch (e) {
+                console.error('Save history error:', e);
+            }
+        };
+
+        window.restoreHistory = function() {
+            try {
+                const arr = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+                if (!arr.length) return;
+                window.ensureStreamVisible();
+                arr.forEach(it => {
+                    if (it.role === 'user') {
+                        // Build message HTML similar to when sending (prompt + attachments/images)
+                        let messageHtml = it.content || '';
+                        
+                        // Handle attachments array (preferred format)
+                        if (it.attachments && Array.isArray(it.attachments) && it.attachments.length > 0) {
+                            messageHtml += '<div style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px;">';
+                            it.attachments.forEach(attUrl => {
+                                // Check if it's base64 or URL
+                                if (attUrl.startsWith('data:image/')) {
+                                    // Base64 image
+                                    messageHtml += `<img src="${attUrl}" alt="Uploaded image" style="max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover;" />`;
+                                } else if (attUrl.startsWith('data:video/')) {
+                                    // Base64 video
+                                    messageHtml += `<video src="${attUrl}" controls style="max-width: 200px; max-height: 200px; border-radius: 8px;" muted></video>`;
+                                } else if (attUrl.startsWith('http://') || attUrl.startsWith('https://')) {
+                                    // Regular URL - try to detect type from extension or assume image
+                                    const isVideo = /\.(mp4|webm|ogg|mov)(\?|$)/i.test(attUrl);
+                                    if (isVideo) {
+                                        messageHtml += `<video src="${attUrl}" controls style="max-width: 200px; max-height: 200px; border-radius: 8px;" muted></video>`;
+                                    } else {
+                                        messageHtml += `<img src="${attUrl}" alt="Uploaded image" style="max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover;" />`;
+                                    }
+                                }
+                            });
+                            messageHtml += '</div>';
+                        } else if (it.image) {
+                            // Legacy format: single image (could be base64 or URL)
+                            messageHtml += '<div style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px;">';
+                            if (it.image.startsWith('data:image/')) {
+                                // Base64 image
+                                messageHtml += `<img src="${it.image}" alt="Uploaded image" style="max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover;" />`;
+                            } else if (it.image.startsWith('http://') || it.image.startsWith('https://')) {
+                                // Regular URL
+                                messageHtml += `<img src="${it.image}" alt="Uploaded image" style="max-width: 200px; max-height: 200px; border-radius: 8px; object-fit: cover;" />`;
+                            }
+                            messageHtml += '</div>';
+                        }
+                        
+                        window.addMessage('user', messageHtml);
+                    } else if (it.role === 'assistant') {
+                        // Skip music items that are still processing (no audio_url)
+                        if (it.content && it.content.type === 'music') {
+                            const d = it.content.data || {};
+                            const aurl = d.url || d.audio_url || (it.content.url) || '';
+                            // Only render if music is completed (has audio_url)
+                            if (aurl) {
+                                window.renderAssistantResult(it.content);
+                            } else {
+                                // Skip processing messages - they will be restored as completed if available
+                                console.log('[AI Generate] Skipping incomplete music in history');
+                            }
+                        } else {
+                            window.renderAssistantResult(it.content);
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error('Restore history error:', e);
+            }
+        };
+
+        // Poll Music Status
+        window.pollMusicStatus = async function(task_id) {
+            if (!task_id) {
+                console.error('[AI Generate] No task_id provided for polling');
+                return;
+            }
+            
+            console.log('[AI Generate] Starting music polling for task_id:', task_id);
+            let pollCount = 0;
+            const maxPolls = 240; // 20 minutes (240 * 5 seconds)
+            const pollInterval = 5000; // 5 seconds
+            let processingMessageElement = null;
+            
+            // Find the processing message element
+            const findProcessingMessage = () => {
+                const messages = document.querySelectorAll('.ai-message.assistant');
+                for (let i = messages.length - 1; i >= 0; i--) {
+                    const msg = messages[i];
+                    const bubble = msg.querySelector('.ai-message-bubble');
+                    if (bubble && bubble.textContent.includes('Musik sedang diproses')) {
+                        return { message: msg, bubble: bubble };
+                    }
+                }
+                return null;
+            };
+            
+            const poll = async () => {
+                try {
+                    pollCount++;
+                    console.log(`[AI Generate] Polling attempt ${pollCount}/${maxPolls} for task_id: ${task_id}`);
+                    
+                    const res = await fetch(`/api/ai_generate/music-status/${task_id}`, {
+                        method: 'GET',
+                        credentials: 'same-origin',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    
+                    if (!res.ok) {
+                        throw new Error(`HTTP ${res.status}`);
+                    }
+                    
+                    const data = await res.json();
+                    console.log('[AI Generate] Poll response:', data);
+                    
+                    if (data.success && data.status === 'completed') {
+                        console.log('[AI Generate] Music completed! Updating UI...');
+                        
+                        // Save completed music data to history (replace processing status)
+                        // Find the last assistant message in history and update it
+                        try {
+                            const HISTORY_KEY = 'ai_generate_history_v2';
+                            const historyArr = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+                            // Find and update the last assistant message with type 'music' and status 'processing'
+                            for (let i = historyArr.length - 1; i >= 0; i--) {
+                                if (historyArr[i].role === 'assistant' && 
+                                    historyArr[i].content && 
+                                    historyArr[i].content.type === 'music' && 
+                                    (historyArr[i].content.status === 'processing' || !historyArr[i].content.data?.url)) {
+                                    // Update with completed data
+                                    historyArr[i].content = data;
+                                    localStorage.setItem(HISTORY_KEY, JSON.stringify(historyArr));
+                                    console.log('[AI Generate] Updated history with completed music data');
+                                    break;
+                                }
+                            }
+                        } catch (e) {
+                            console.error('[AI Generate] Error updating history:', e);
+                        }
+                        
+                        // Find and update processing message
+                        const processingMsg = findProcessingMessage();
+                        if (processingMsg) {
+                            // Update the existing message
+                            processingMsg.bubble.innerHTML = '';
+                            window.renderAssistantResult(data);
+                            processingMsg.message.remove();
+                        } else {
+                            // No processing message found, just add result
+                            window.renderAssistantResult(data);
+                        }
+                        
+                        console.log('[AI Generate] UI updated successfully');
+                        return; // Stop polling
+                    }
+                    
+                    // Still processing - update message with progress
+                    if (pollCount % 12 === 0) { // Every minute (12 * 5 seconds)
+                        const processingMsg = findProcessingMessage();
+                        if (processingMsg && processingMsg.bubble) {
+                            const minutes = Math.floor(pollCount / 12);
+                            processingMsg.bubble.innerHTML = `<div style="color: #6bcf7f;">🎵 Musik sedang diproses oleh Suno AI. Silakan tunggu... (${minutes} menit)</div>`;
+                        }
+                    }
+                    
+                    // Check timeout
+                    if (pollCount >= maxPolls) {
+                        console.log('[AI Generate] Polling timeout reached');
+                        const processingMsg = findProcessingMessage();
+                        if (processingMsg && processingMsg.bubble) {
+                            processingMsg.bubble.innerHTML = `<div style="color: #ff6b6b;">⏱️ Timeout menunggu hasil. Silakan cek halaman musik atau coba lagi.</div>`;
+                        }
+                        return; // Stop polling
+                    }
+                    
+                    // Continue polling
+                    setTimeout(poll, pollInterval);
+                } catch (error) {
+                    console.error('[AI Generate] Poll music status error:', error);
+                    pollCount++;
+                    
+                    if (pollCount >= maxPolls) {
+                        // Timeout
+                        const processingMsg = findProcessingMessage();
+                        if (processingMsg && processingMsg.bubble) {
+                            processingMsg.bubble.innerHTML = `<div style="color: #ff6b6b;">❌ Error: ${error.message}. Silakan refresh halaman dan coba lagi.</div>`;
+                        }
+                        return;
+                    }
+                    
+                    // Continue polling on error (with backoff)
+                    setTimeout(poll, pollInterval * 2); // Longer delay on error
+                }
+            };
+            
+            // Start polling immediately (not after delay)
+            poll();
+        };
+
+        // Restore history on load
+        setTimeout(() => {
+            window.restoreHistory();
+        }, 100);
+    }
+})();
+</script>
+{% endblock %}
