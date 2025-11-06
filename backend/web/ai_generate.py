@@ -410,6 +410,21 @@ def api_contextual_suggestions():
             has_image = any(a.get('type') == 'image' for a in attachments)
             has_video = any(a.get('type') == 'video' for a in attachments)
             
+            # Video Face Swap suggestion (if has both image and video)
+            if has_image and has_video:
+                suggestions.extend([
+                    {
+                        'text': 'Video Face Swap - Tukar wajah di video',
+                        'action': 'set_mode',
+                        'mode': 'video_face_swap'
+                    },
+                    {
+                        'text': 'Face swap dengan gambar ini',
+                        'action': 'set_mode',
+                        'mode': 'video_face_swap'
+                    }
+                ])
+            
             if has_image:
                 suggestions.extend([
                     {
@@ -426,6 +441,15 @@ def api_contextual_suggestions():
                         'text': 'Analisis gambar ini',
                         'action': 'chat',
                         'prompt': 'Analisis gambar yang saya upload dan berikan deskripsi detail'
+                    }
+                ])
+            
+            if has_video and not has_image:
+                suggestions.extend([
+                    {
+                        'text': 'Analisis video ini',
+                        'action': 'chat',
+                        'prompt': 'Analisis video yang saya upload dan berikan deskripsi detail'
                     }
                 ])
         
@@ -694,6 +718,7 @@ Tentukan intent yang paling tepat:
 - 'image_to_video': Convert gambar ke video
 - 'video_generate': Generate video baru
 - 'music_generate': Generate musik
+- 'video_face_swap': Swap wajah di video (membutuhkan gambar wajah dan video)
 
 Berikan:
 1. Intent (hanya nama intent, tanpa penjelasan)
@@ -854,15 +879,19 @@ def detect_intent(prompt: str, has_image: bool, mode: str = None) -> str:
     if has_image and any(k in text for k in ['video', 'vidio', 'i2v', 'gambar jadi video', 'gambar jadi vidio']):
         return 'image_to_video'
     
-    # Priority 3: Video generation (with action keyword)
+    # Priority 3: Video Face Swap (if has image and video)
+    if has_image and has_action and any(k in text for k in ['face swap', 'faceswap', 'swap face', 'tukar wajah', 'ganti wajah']):
+        return 'video_face_swap'
+    
+    # Priority 4: Video generation (with action keyword)
     if has_action and any(k in text for k in content_keywords['video']):
         return 'video_generate'
     
-    # Priority 4: Music generation (with action keyword)
+    # Priority 5: Music generation (with action keyword)
     if has_action and any(k in text for k in content_keywords['music']):
         return 'music_generate'
     
-    # Priority 5: Image generation (with action keyword)
+    # Priority 6: Image generation (with action keyword)
     if has_action and any(k in text for k in content_keywords['image']):
         return 'image_generate'
     
@@ -910,6 +939,7 @@ def api_ai_generate():
         prompt = (data.get('prompt') or '').strip()
         image_url = (data.get('image_url') or '').strip()
         mode = data.get('mode')
+        attachments = data.get('attachments', [])
         print(f"[AI Generate] Parsed - prompt: '{prompt[:50]}...', image_url: '{image_url[:50] if image_url else 'None'}...', mode: {mode}")
     except Exception as e:
         print(f"[AI Generate] Error parsing request data: {e}")
@@ -917,8 +947,18 @@ def api_ai_generate():
         print(traceback.format_exc())
         return jsonify({'success': False, 'message': f'Error parsing request: {str(e)}'}), 400
 
+    # Allow empty prompt for specific intents (e.g., video_face_swap) if required inputs exist
     if not prompt:
-        return jsonify({'success': False, 'message': 'Prompt tidak boleh kosong'}), 400
+        # If user explicitly selected face swap OR attachments include both image and video, allow empty prompt
+        has_image_att = False
+        has_video_att = False
+        try:
+            has_image_att = any((a or {}).get('type') == 'image' for a in (attachments or []))
+            has_video_att = any((a or {}).get('type') == 'video' for a in (attachments or []))
+        except Exception:
+            pass
+        if not (mode == 'video_face_swap' or (has_image_att and has_video_att)):
+            return jsonify({'success': False, 'message': 'Prompt tidak boleh kosong'}), 400
 
     try:
         intent = detect_intent(prompt, bool(image_url), mode)
@@ -1689,6 +1729,287 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                             'credits_used': required_credits
                         }
                     })
+
+        if intent == 'video_face_swap':
+            print(f"[AI Generate] Handling video_face_swap intent")
+            
+            # Get user from database
+            user = db.session.get(User, user_id)
+            if not user:
+                return jsonify({'success': False, 'message': 'User tidak ditemukan'}), 404
+            
+            # Check API key
+            API_KEY = current_app.config.get('WAVESPEED_API_KEY')
+            if not API_KEY:
+                return jsonify({'success': False, 'message': 'API key tidak ditemukan'}), 500
+            
+            # For face swap, we need:
+            # 1. Face image (from attachments or image_url)
+            # 2. Video (from attachments or video_url)
+            
+            # Get face image
+            face_image_url = None
+            video_url = None
+            
+            # Check attachments first
+            if attachments and len(attachments) > 0:
+                # Find face image (first image)
+                for att in attachments:
+                    if att.get('type') == 'image' and not face_image_url:
+                        face_image_url = att.get('url', '')
+                    elif att.get('type') == 'video' and not video_url:
+                        video_url = att.get('url', '')
+            
+            # Fallback to image_url for face
+            if not face_image_url and image_url:
+                face_image_url = image_url
+            
+            # Validate required files
+            if not face_image_url:
+                return jsonify({
+                    'success': False,
+                    'message': 'Gambar wajah (face image) diperlukan untuk face swap. Silakan upload gambar wajah terlebih dahulu.'
+                }), 400
+            
+            if not video_url:
+                return jsonify({
+                    'success': False,
+                    'message': 'Video diperlukan untuk face swap. Silakan upload video terlebih dahulu.'
+                }), 400
+            
+            # Convert data URL to regular URL if needed
+            if face_image_url.startswith('data:'):
+                # Upload face image first
+                try:
+                    import base64
+                    header, encoded = face_image_url.split(',', 1)
+                    image_data = base64.b64decode(encoded)
+                    
+                    # Save temporarily
+                    import uuid
+                    face_filename = f"face_{uuid.uuid4().hex}.jpg"
+                    face_path = os.path.join('static', 'uploads', face_filename)
+                    os.makedirs(os.path.dirname(face_path), exist_ok=True)
+                    
+                    with open(face_path, 'wb') as f:
+                        f.write(image_data)
+                    
+                    # Get public absolute URL (avoids double slashes and wrong domains)
+                    try:
+                        face_image_url = url_for('static', filename=f'uploads/{face_filename}', _external=True)
+                    except Exception:
+                        face_image_url = f"{base_url.rstrip('/')}/static/uploads/{face_filename}"
+                except Exception as e:
+                    print(f"[AI Generate] Error processing face image: {e}")
+                    return jsonify({'success': False, 'message': f'Error processing face image: {str(e)}'}), 500
+            
+            if video_url.startswith('data:'):
+                # Upload video first
+                try:
+                    import base64
+                    header, encoded = video_url.split(',', 1)
+                    video_data = base64.b64decode(encoded)
+                    
+                    # Save temporarily
+                    import uuid
+                    video_filename = f"video_{uuid.uuid4().hex}.mp4"
+                    video_path = os.path.join('static', 'uploads', video_filename)
+                    os.makedirs(os.path.dirname(video_path), exist_ok=True)
+                    
+                    with open(video_path, 'wb') as f:
+                        f.write(video_data)
+                    
+                    # Get public absolute URL (avoids double slashes and wrong domains)
+                    try:
+                        video_url = url_for('static', filename=f'uploads/{video_filename}', _external=True)
+                    except Exception:
+                        video_url = f"{base_url.rstrip('/')}/static/uploads/{video_filename}"
+                except Exception as e:
+                    print(f"[AI Generate] Error processing video: {e}")
+                    return jsonify({'success': False, 'message': f'Error processing video: {str(e)}'}), 500
+            
+            # Check user credits (estimate: 20 credits for face swap)
+            required_credits = 20
+            if user.kredit < required_credits:
+                return jsonify({
+                    'success': False,
+                    'message': f'Kredit tidak cukup. Diperlukan {required_credits} kredit, Anda memiliki {user.kredit} kredit.'
+                }), 400
+            
+            # Deduct credits upfront
+            try:
+                user.kredit -= required_credits
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                return jsonify({'success': False, 'message': f'Error deducting credits: {str(e)}'}), 500
+            
+            # Call WaveSpeed Face Swap API
+            url = "https://api.wavespeed.ai/api/v3/wavespeed-ai/video-face-swap"
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {API_KEY}",
+            }
+            
+            payload = {
+                "face_image": face_image_url,
+                "max_duration": 0,
+                "target_gender": "all",
+                "target_index": 0,
+                "video": video_url
+            }
+            
+            begin = time.time()
+            
+            try:
+                response = requests.post(url, headers=headers, data=json.dumps(payload), timeout=30)
+                
+                if response.status_code != 200:
+                    # Rollback credits
+                    try:
+                        user.kredit += required_credits
+                        db.session.commit()
+                    except:
+                        db.session.rollback()
+                    
+                    error_msg = response.text
+                    print(f"[AI Generate] Face Swap API error: {response.status_code} - {error_msg}")
+                    return jsonify({
+                        'success': False,
+                        'message': f'Error from API: {error_msg}'
+                    }), 500
+                
+                result = response.json()
+                if "data" not in result or "id" not in result["data"]:
+                    # Rollback credits
+                    try:
+                        user.kredit += required_credits
+                        db.session.commit()
+                    except:
+                        db.session.rollback()
+                    
+                    return jsonify({
+                        'success': False,
+                        'message': 'Invalid response from API'
+                    }), 500
+                
+                request_id = result["data"]["id"]
+                print(f"[AI Generate] Face Swap task submitted. Request ID: {request_id}")
+                
+                # Poll for results
+                poll_url = f"https://api.wavespeed.ai/api/v3/predictions/{request_id}/result"
+                poll_headers = {"Authorization": f"Bearer {API_KEY}"}
+                
+                output_video_url = None
+                error_message = None
+                attempt = 0
+                max_attempts = 120  # 60 seconds max (0.5s * 120)
+                
+                while attempt < max_attempts:
+                    try:
+                        poll_response = requests.get(poll_url, headers=poll_headers, timeout=10)
+                        
+                        if poll_response.status_code == 200:
+                            poll_data = poll_response.json()
+                            if "data" in poll_data:
+                                poll_data = poll_data["data"]
+                            
+                            status = poll_data.get("status")
+                            
+                            if status == "completed":
+                                outputs = poll_data.get("outputs", [])
+                                if outputs and len(outputs) > 0:
+                                    output_video_url = outputs[0] if isinstance(outputs[0], str) else outputs[0].get('url')
+                                    if output_video_url:
+                                        end = time.time()
+                                        print(f'[AI Generate] Face Swap completed in {end - begin:.2f} seconds: {output_video_url}')
+                                        break
+                                else:
+                                    error_message = 'Tidak ada output video yang dihasilkan'
+                                    break
+                            elif status == "failed":
+                                error_msg = poll_data.get('error', 'Unknown error')
+                                error_message = f'Task gagal: {error_msg}'
+                                break
+                            elif status == "processing":
+                                if attempt % 20 == 0:  # Log every 10 seconds
+                                    print(f'[AI Generate] Face Swap still processing... attempt {attempt + 1}')
+                        else:
+                            error_message = f'Gagal polling: HTTP {poll_response.status_code}'
+                            break
+                    except Exception as e:
+                        error_message = str(e)
+                        print(f'[AI Generate] Polling error: {error_message}')
+                        break
+                    
+                    attempt += 1
+                    time.sleep(0.5)
+                
+                # If failed, rollback credits
+                if not output_video_url:
+                    try:
+                        user.kredit += required_credits
+                        db.session.commit()
+                        print(f'[AI Generate] Credits rolled back due to failure')
+                    except:
+                        db.session.rollback()
+                    
+                    return jsonify({
+                        'success': False,
+                        'message': error_message or 'Timeout: Task took too long to complete'
+                    }), 500
+                
+                # Success - save to database
+                try:
+                    video = Video(
+                        user_id=user_id,
+                        video_url=output_video_url,
+                        caption=f"Face Swap: {prompt or 'Video Face Swap'}"
+                    )
+                    db.session.add(video)
+                    db.session.commit()
+                    
+                    return jsonify({
+                        'success': True,
+                        'type': 'video',
+                        'url': output_video_url,
+                        'data': {
+                            'video_url': output_video_url,
+                            'url': output_video_url,
+                            'message': 'Video Face Swap berhasil dibuat',
+                            'credits_used': required_credits
+                        }
+                    })
+                except Exception as e:
+                    db.session.rollback()
+                    # Even if DB save fails, return success with URL
+                    return jsonify({
+                        'success': True,
+                        'type': 'video',
+                        'url': output_video_url,
+                        'data': {
+                            'video_url': output_video_url,
+                            'url': output_video_url,
+                            'message': 'Video Face Swap berhasil dibuat (gagal menyimpan ke database)',
+                            'credits_used': required_credits
+                        }
+                    })
+                    
+            except Exception as e:
+                # Rollback credits on exception
+                try:
+                    user.kredit += required_credits
+                    db.session.commit()
+                except:
+                    db.session.rollback()
+                
+                print(f"[AI Generate] Face Swap error: {e}")
+                import traceback
+                print(traceback.format_exc())
+                return jsonify({
+                    'success': False,
+                    'message': f'Error: {str(e)}'
+                }), 500
 
         if intent == 'music_generate':
             print(f"[AI Generate] Handling music_generate intent")

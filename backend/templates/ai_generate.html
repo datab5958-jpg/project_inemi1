@@ -2941,6 +2941,9 @@
         <div class="ai-sidebar-item" title="Musik" data-mode="music_generate">
             <i class="bi bi-music-note-beamed"></i>
         </div>
+        <div class="ai-sidebar-item" title="Video Face Swap" data-mode="video_face_swap">
+            <i class="bi bi-person-badge"></i>
+        </div>
         <div class="ai-sidebar-item settings" title="Pengaturan" id="settingsBtn">
             <i class="bi bi-gear"></i>
             <div class="ai-settings-dropdown" id="settingsDropdown">
@@ -3038,6 +3041,7 @@
                 <div class="ai-mode-chip" data-mode="image_to_video" title="Gambar ke Video">G→V</div>
                 <div class="ai-mode-chip" data-mode="video_generate">Video</div>
                 <div class="ai-mode-chip" data-mode="music_generate">Musik</div>
+                <div class="ai-mode-chip" data-mode="video_face_swap" title="Video Face Swap">Video Face Swap</div>
             </div>
 
             <!-- Prompt Input - ChatGPT Style -->
@@ -3089,6 +3093,7 @@
                     <option value="image_to_video">Gambar ke Video</option>
                     <option value="video_generate">Generate Video</option>
                     <option value="music_generate">Generate Music</option>
+                    <option value="video_face_swap">Video Face Swap</option>
                 </select>
                 <button type="button" id="autoDetectBtn" class="ai-auto-detect-btn" title="Auto Detect Mode">
                     <i class="bi bi-sliders"></i> Auto Detect
@@ -3831,6 +3836,30 @@
                 dropZone.classList.add('has-attachments');
             }
             if (dropHint) dropHint.style.display = 'none';
+            
+            // Auto-detect Video Face Swap: check if has both image and video
+            const hasImage = attachments.some(a => a.type === 'image');
+            const hasVideo = attachments.some(a => a.type === 'video');
+            
+            if (hasImage && hasVideo && modeSelect) {
+                // Auto-set mode to video_face_swap if mode is auto/empty
+                const currentMode = modeSelect.value;
+                if (currentMode === '' || currentMode === 'auto') {
+                    modeSelect.value = 'video_face_swap';
+                    // Update active chip
+                    const modeChips = document.querySelectorAll('.ai-mode-chip');
+                    modeChips.forEach(c => {
+                        c.classList.toggle('active', c.dataset.mode === 'video_face_swap');
+                    });
+                    
+                    // Show hint toast
+                    if (window.showToast) {
+                        setTimeout(() => {
+                            window.showToast('Mode otomatis: Video Face Swap terdeteksi!', 'info', 'Auto-detect');
+                        }, 500);
+                    }
+                }
+            }
             
             attachments.forEach((att, index) => {
                 const item = document.createElement('div');
@@ -4687,14 +4716,19 @@
                     // Generate unique filename
                     const timestamp = Date.now();
                     const filename = `ai_video_${timestamp}.mp4`;
+                    // Check if it's face swap video
+                    const message = d.message || '';
+                    const isFaceSwap = message.includes('Face Swap') || message.includes('face swap');
+                    const resultLabel = isFaceSwap ? '🎭 Hasil: Video Face Swap' : '🎬 Hasil: Video Sinematik';
+                    
                     html = `
-                        <div class="ai-result-label">🎬 Hasil: Video Sinematik (6 detik)</div>
+                        <div class="ai-result-label">${resultLabel}</div>
                         <div class="ai-media-grid">
-                            <video src="${vurl}" controls></video>
+                            <video src="${vurl}" controls style="max-width: 100%; border-radius: 12px;"></video>
                         </div>
                         <div class="ai-result-actions">
-                            <a href="${vurl}" target="_blank"><i class="bi bi-box-arrow-up-right"></i> Buka</a>
-                            <button onclick="window.navigator.clipboard.writeText('${vurl}')"><i class="bi bi-clipboard"></i> Copy URL</button>
+                            <a href="${vurl}" target="_blank"><i class="bi bi-box-arrow-up-right"></i> Buka Video</a>
+                            <button onclick="navigator.clipboard.writeText('${vurl}'); if (window.showToast) window.showToast('URL disalin!', 'success');"><i class="bi bi-clipboard"></i> Copy URL</button>
                             <button onclick="window.downloadVideo('${vurl}', '${filename}', this)"><i class="bi bi-download"></i> Download</button>
                         </div>
                     `;
@@ -4771,9 +4805,10 @@
                     mode = ''; // Send empty string to backend for auto-detect
                 }
                 
-                // IMPORTANT: Get attachment URL BEFORE clearing attachments
-                // This ensures we capture the current state of attachments
+                // IMPORTANT: Snapshot attachments BEFORE clearing them
+                // This ensures we capture the current state for backend processing
                 const hasActiveAttachments = attachments.length > 0;
+                const attachmentsSnapshot = hasActiveAttachments ? JSON.parse(JSON.stringify(attachments)) : [];
                 const imageUrl = (hasActiveAttachments && attachments[0] && attachments[0].url) ? attachments[0].url : '';
 
                 if (!prompt && !hasActiveAttachments) {
@@ -4785,22 +4820,39 @@
                 // Only auto-detect if user hasn't explicitly selected a mode
                 if (!mode && hasActiveAttachments) {
                     const hasImage = attachments.some(a => a.type === 'image');
+                    const hasVideo = attachments.some(a => a.type === 'video');
                     const promptLower = prompt.toLowerCase();
-                    // Only auto-detect if prompt contains explicit action keywords
-                    const hasActionKeyword = promptLower.includes('edit') || promptLower.includes('ubah') || 
-                                            promptLower.includes('video') || promptLower.includes('i2v') || 
-                                            promptLower.includes('gambar jadi video');
                     
-                    if (hasImage && hasActionKeyword) {
-                        if (hasImage && (promptLower.includes('edit') || promptLower.includes('ubah'))) {
-                            if (modeSelect) {
-                                modeSelect.value = 'image_edit';
-                                mode = 'image_edit';
-                            }
-                        } else if (hasImage && (promptLower.includes('video') || promptLower.includes('i2v') || promptLower.includes('gambar jadi video'))) {
-                            if (modeSelect) {
-                                modeSelect.value = 'image_to_video';
-                                mode = 'image_to_video';
+                    // Priority 1: Video Face Swap (if has both image and video)
+                    if (hasImage && hasVideo) {
+                        if (modeSelect) {
+                            modeSelect.value = 'video_face_swap';
+                            mode = 'video_face_swap';
+                            // Update active chip
+                            const modeChips = document.querySelectorAll('.ai-mode-chip');
+                            modeChips.forEach(c => {
+                                c.classList.toggle('active', c.dataset.mode === 'video_face_swap');
+                            });
+                        }
+                    }
+                    // Priority 2: Image edit or image to video (if has image only)
+                    else if (hasImage) {
+                        // Only auto-detect if prompt contains explicit action keywords
+                        const hasActionKeyword = promptLower.includes('edit') || promptLower.includes('ubah') || 
+                                                promptLower.includes('video') || promptLower.includes('i2v') || 
+                                                promptLower.includes('gambar jadi video');
+                        
+                        if (hasActionKeyword) {
+                            if (promptLower.includes('edit') || promptLower.includes('ubah')) {
+                                if (modeSelect) {
+                                    modeSelect.value = 'image_edit';
+                                    mode = 'image_edit';
+                                }
+                            } else if (promptLower.includes('video') || promptLower.includes('i2v') || promptLower.includes('gambar jadi video')) {
+                                if (modeSelect) {
+                                    modeSelect.value = 'image_to_video';
+                                    mode = 'image_to_video';
+                                }
                             }
                         }
                     }
@@ -4868,7 +4920,8 @@
                 const payload = { 
                     prompt, 
                     image_url: (hasActiveAttachments && imageUrl) ? imageUrl : '', 
-                    mode 
+                    mode,
+                    attachments: attachmentsSnapshot
                 };
                 
                 // Debug logging
@@ -4980,14 +5033,26 @@
                     // Check if has attachments
                     if (attachments.length > 0) {
                         const hasImage = attachments.some(a => a.type === 'image');
-                        if (hasImage && (text.includes('edit') || text.includes('ubah'))) {
+                        const hasVideo = attachments.some(a => a.type === 'video');
+                        
+                        // Priority 1: Video Face Swap (both image and video)
+                        if (hasImage && hasVideo) {
+                            modeSelect.value = 'video_face_swap';
+                        }
+                        // Priority 2: Image edit (image only)
+                        else if (hasImage && (text.includes('edit') || text.includes('ubah'))) {
                             modeSelect.value = 'image_edit';
-                        } else if (hasImage && (text.includes('video') || text.includes('vidio') || text.includes('i2v'))) {
+                        }
+                        // Priority 3: Image to video (image only)
+                        else if (hasImage && (text.includes('video') || text.includes('vidio') || text.includes('i2v'))) {
                             modeSelect.value = 'image_to_video';
                         }
                     }
                     
-                    if (text.includes('video') || text.includes('vidio')) {
+                    // Text-based detection
+                    if (text.includes('face swap') || text.includes('faceswap') || text.includes('swap face') || text.includes('tukar wajah') || text.includes('ganti wajah')) {
+                        modeSelect.value = 'video_face_swap';
+                    } else if (text.includes('video') || text.includes('vidio')) {
                         modeSelect.value = 'video_generate';
                     } else if (text.includes('musik') || text.includes('music') || text.includes('lagu')) {
                         modeSelect.value = 'music_generate';
