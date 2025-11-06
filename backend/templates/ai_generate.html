@@ -539,6 +539,7 @@
         color: var(--text-primary);
         word-wrap: break-word;
         overflow-wrap: break-word;
+        overflow: visible; /* Allow actions to overflow */
     }
 
     .ai-message.user .ai-message-bubble {
@@ -578,6 +579,7 @@
         gap: 4px;
         opacity: 0;
         transition: opacity 150ms;
+        z-index: 10;
     }
 
     .ai-message-bubble:hover .ai-message-actions {
@@ -596,11 +598,83 @@
         place-items: center;
         font-size: 12px;
         transition: all 150ms;
+        flex-shrink: 0;
     }
 
     .ai-message-actions button:hover {
         background: rgba(255, 255, 255, 0.2);
         color: var(--text-primary);
+    }
+
+    /* Mobile: Force show actions and make them bigger */
+    @media (max-width: 768px) {
+        .ai-message-actions {
+            opacity: 1 !important; /* Always visible on mobile */
+            top: 8px;
+            right: 8px;
+            gap: 6px;
+            /* Ensure buttons don't get cut off */
+            flex-wrap: nowrap;
+            z-index: 15 !important; /* Higher z-index for mobile */
+        }
+
+        .ai-message-bubble {
+            /* Ensure bubble has enough padding for actions */
+            padding-right: 50px !important;
+            overflow: visible !important;
+            position: relative;
+        }
+
+        /* Ensure result label doesn't overlap with actions */
+        .ai-result-label {
+            margin-top: 0 !important;
+            padding-right: 50px !important; /* Space for action buttons */
+            position: relative;
+            z-index: 1;
+            word-break: break-word; /* Prevent text overflow */
+            max-width: 100%;
+        }
+        
+        /* Ensure actions are positioned correctly relative to bubble */
+        .ai-message.assistant .ai-message-bubble {
+            padding-right: 50px !important;
+        }
+
+        .ai-message-actions button {
+            width: 36px !important;
+            height: 36px !important;
+            min-width: 36px !important;
+            min-height: 36px !important;
+            font-size: 16px !important;
+            background: rgba(76, 126, 255, 0.3) !important;
+            border: 1px solid rgba(76, 126, 255, 0.5) !important;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4) !important;
+            color: var(--accent-neon) !important;
+            backdrop-filter: blur(10px) !important;
+        }
+
+        .ai-message-actions button:active {
+            background: rgba(76, 126, 255, 0.5) !important;
+            transform: scale(0.95);
+        }
+
+        /* Ensure message bubble doesn't clip actions */
+        .ai-message .ai-message-bubble {
+            position: relative;
+            overflow: visible;
+        }
+
+        /* Ensure chat stream doesn't clip buttons */
+        .ai-chat-stream {
+            overflow-x: visible !important;
+            padding-right: 8px !important; /* Extra padding for buttons */
+        }
+
+        /* Make sure message container doesn't clip */
+        .ai-message {
+            overflow: visible !important;
+            position: relative;
+        }
     }
 
     /* Media Results */
