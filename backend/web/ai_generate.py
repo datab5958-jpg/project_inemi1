@@ -25,6 +25,35 @@ chat_history = {}
 # Task ID to User ID mapping (for callback handling)
 # Format: {task_id: {'user_id': user_id, 'created_at': datetime}}
 task_user_mapping = {}
+def _build_public_url(relative_path: str) -> str:
+    """Build absolute public URL for a given /static path.
+    Prefers DOMAIN_PUBLIC if configured, otherwise uses url_for with _external.
+    Ensures no localhost URLs are returned for external services (e.g., WaveSpeed).
+    """
+    try:
+        domain_public = getattr(Config, 'DOMAIN_PUBLIC', None) or current_app.config.get('DOMAIN_PUBLIC')
+    except Exception:
+        domain_public = None
+    relative_path = '/' + relative_path.lstrip('/')
+    # If DOMAIN_PUBLIC is present, always use it
+    if domain_public:
+        return f"{domain_public.rstrip('/')}{relative_path}"
+    # Fallback to url_for external
+    try:
+        # relative_path expected like '/static/uploads/xxx'
+        if relative_path.startswith('/static/'):
+            filename = relative_path[len('/static/'):]
+            abs_url = url_for('static', filename=filename, _external=True)
+        else:
+            abs_url = url_for('static', filename=relative_path.strip('/'), _external=True)
+    except Exception:
+        # ultimate fallback to localhost with http
+        abs_url = f"http://127.0.0.1:5000{relative_path}"
+    # If url_for produced localhost but we have DOMAIN_PUBLIC in config later, swap
+    if ('127.0.0.1' in abs_url or 'localhost' in abs_url) and domain_public:
+        return f"{domain_public.rstrip('/')}{relative_path}"
+    return abs_url
+
 
 
 @ai_generate_bp.route('/ai_generate', methods=['GET'])
@@ -1795,10 +1824,8 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                         f.write(image_data)
                     
                     # Get public absolute URL (avoids double slashes and wrong domains)
-                    try:
-                        face_image_url = url_for('static', filename=f'uploads/{face_filename}', _external=True)
-                    except Exception:
-                        face_image_url = f"{base_url.rstrip('/')}/static/uploads/{face_filename}"
+                    # Build absolute public URL
+                    face_image_url = _build_public_url(f"/static/uploads/{face_filename}")
                 except Exception as e:
                     print(f"[AI Generate] Error processing face image: {e}")
                     return jsonify({'success': False, 'message': f'Error processing face image: {str(e)}'}), 500
@@ -1820,10 +1847,8 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                         f.write(video_data)
                     
                     # Get public absolute URL (avoids double slashes and wrong domains)
-                    try:
-                        video_url = url_for('static', filename=f'uploads/{video_filename}', _external=True)
-                    except Exception:
-                        video_url = f"{base_url.rstrip('/')}/static/uploads/{video_filename}"
+                    # Build absolute public URL
+                    video_url = _build_public_url(f"/static/uploads/{video_filename}")
                 except Exception as e:
                     print(f"[AI Generate] Error processing video: {e}")
                     return jsonify({'success': False, 'message': f'Error processing video: {str(e)}'}), 500
