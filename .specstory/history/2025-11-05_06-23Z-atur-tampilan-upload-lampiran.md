@@ -20051,3 +20051,499 @@ Cara uji cepat:
 
 ---
 
+_**User (2025-11-05 06:23Z)**_
+
+masih error ini
+
+Kiis3sWNlUEZNAiQdBRRTAmaNQhIHTpSbFooqOpX2hsyKpyBT4FB6+tFFOOw5bEsyqEyBUUQ3DmiipFEslFCcCo0UHrRRWi3JHSKBnApVRc4NFFbQ+EzHSRoEbAqqQDwaKKb2JjuRTKFzjt0qiw3Nz60UVnLYo//9k=', 'type': 'image', 'filename': '1756791142912066316_FET62YUQ.jpeg', 'size': 219623}]}
+[AI Generate] Parsed - prompt: '...', image_url: 'data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21p...', mode: video_face_swap
+[AI Generate] User explicitly selected mode: 'video_face_swap' - using explicit mode (not a pure greeting)
+[AI Generate] Detected intent: video_face_swap
+[AI Generate] Starting intent handling for: video_face_swap
+[AI Generate] Handling video_face_swap intent
+INFO:werkzeug:127.0.0.1 - - [06/Nov/2025 13:26:56] "GET /api/notifications/unread-count HTTP/1.1" 200 -
+INFO:werkzeug:127.0.0.1 - - [06/Nov/2025 13:26:56] "GET /api/notifications/unread-count HTTP/1.1" 200 -
+[AI Generate] Face Swap task submitted. Request ID: 654c5c601b1348afb4b78ec0e098bb2f
+[AI Generate] Face Swap still processing... attempt 1
+[AI Generate] Credits rolled back due to failure
+INFO:werkzeug:127.0.0.1 - - [06/Nov/2025 13:26:59] "POST /api/ai_generate HTTP/1.1" 500 -
+INFO:werkzeug:127.0.0.1 - - [06/Nov/2025 13:27:26] "GET /api/notifications/unread-count HTTP/1.1" 200 -
+
+dan di foto
+
+
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="apply_patch">
+<details>
+        <summary>Tool use: **apply_patch** • Apply patch for backend/web/ai_generate.py</summary>
+      
+
+```diff
+&lt;&lt;&#39;PATCH&#39;
+*** Begin Patch
+*** Update File: backend/web/ai_generate.py
+@@
+-from flask import Blueprint, render_template, request, jsonify, session, current_app, url_for
++from flask import Blueprint, render_template, request, jsonify, session, current_app, url_for
+@@
+ ai_generate_bp = Blueprint(&#39;ai_generate&#39;, __name__)
+@@
+ text_model = genai.GenerativeModel(&#39;gemini-2.0-flash&#39;)
+@@
+ task_user_mapping = {}
+@@
++def _build_public_url(relative_path: str) -&gt; str:
++    &quot;&quot;&quot;Build absolute public URL for a given /static path.
++    Prefers DOMAIN_PUBLIC if configured, otherwise uses url_for with _external.
++    Ensures no localhost URLs are returned for external services (e.g., WaveSpeed).
++    &quot;&quot;&quot;
++    try:
++        domain_public = getattr(Config, &#39;DOMAIN_PUBLIC&#39;, None) or current_app.config.get(&#39;DOMAIN_PUBLIC&#39;)
++    except Exception:
++        domain_public = None
++    relative_path = &#39;/&#39; + relative_path.lstrip(&#39;/&#39;)
++    # If DOMAIN_PUBLIC is present, always use it
++    if domain_public:
++        return f&quot;{domain_public.rstrip(&#39;/&#39;)}{relative_path}&quot;
++    # Fallback to url_for external
++    try:
++        # relative_path expected like &#39;/static/uploads/xxx&#39;
++        if relative_path.startswith(&#39;/static/&#39;):
++            filename = relative_path[len(&#39;/static/&#39;):]
++            abs_url = url_for(&#39;static&#39;, filename=filename, _external=True)
++        else:
++            abs_url = url_for(&#39;static&#39;, filename=relative_path.strip(&#39;/&#39;), _external=True)
++    except Exception:
++        # ultimate fallback to localhost with http
++        abs_url = f&quot;http://127.0.0.1:5000{relative_path}&quot;
++    # If url_for produced localhost but we have DOMAIN_PUBLIC in config later, swap
++    if (&#39;127.0.0.1&#39; in abs_url or &#39;localhost&#39; in abs_url) and domain_public:
++        return f&quot;{domain_public.rstrip(&#39;/&#39;)}{relative_path}&quot;
++    return abs_url
++
+*** End Patch
+PATCH
+```
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="apply_patch">
+<details>
+        <summary>Tool use: **apply_patch** • Apply patch for backend/web/ai_generate.py</summary>
+      
+
+```diff
+&lt;&lt;&#39;PATCH&#39;
+*** Begin Patch
+*** Update File: backend/web/ai_generate.py
+@@
+-                    try:
+-                        face_image_url = url_for(&#39;static&#39;, filename=f&#39;uploads/{face_filename}&#39;, _external=True)
+-                    except Exception:
+-                        face_image_url = f&quot;{base_url.rstrip(&#39;/&#39;)}/static/uploads/{face_filename}&quot;
++                    # Build absolute public URL
++                    face_image_url = _build_public_url(f&quot;/static/uploads/{face_filename}&quot;)
+@@
+-                    try:
+-                        video_url = url_for(&#39;static&#39;, filename=f&#39;uploads/{video_filename}&#39;, _external=True)
+-                    except Exception:
+-                        video_url = f&quot;{base_url.rstrip(&#39;/&#39;)}/static/uploads/{video_filename}&quot;
++                    # Build absolute public URL
++                    video_url = _build_public_url(f&quot;/static/uploads/{video_filename}&quot;)
+*** End Patch
+PATCH
+```
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `backend/web/ai_generate.py`
+
+Lint results
+
+Lint errors for `backend/web/ai_generate.py`
+
+
+| Message | Range | Severity |
+|-------|-------|----------|
+| Import "FlaskClient" is not accessed | 2:27-2:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Import "requests" is not accessed | 3:8-3:16 | DIAGNOSTIC_SEVERITY_HINT |
+| Import "re" is not accessed | 4:8-4:10 | DIAGNOSTIC_SEVERITY_HINT |
+| Import "time" is not accessed | 5:8-5:12 | DIAGNOSTIC_SEVERITY_HINT |
+| Import "os" is not accessed | 6:8-6:10 | DIAGNOSTIC_SEVERITY_HINT |
+| Import "Image" is not accessed | 10:24-10:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Import "User" is not accessed | 10:31-10:35 | DIAGNOSTIC_SEVERITY_HINT |
+| Import "Video" is not accessed | 10:37-10:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Function "_build_public_url" is not accessed | 28:5-28:22 | DIAGNOSTIC_SEVERITY_HINT |
+| Import "genai" is not accessed | 243:39-243:44 | DIAGNOSTIC_SEVERITY_HINT |
+| "image_url" is not accessed | 379:65-379:74 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "user_id" is not accessed | 935:5-935:12 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "user_id" is not accessed | 939:9-939:16 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "data" is not accessed | 966:9-966:13 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "prompt" is not accessed | 968:9-968:15 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "image_url" is not accessed | 969:9-969:18 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "mode" is not accessed | 970:9-970:13 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "attachments" is not accessed | 971:9-971:20 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 973:25-973:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Import "traceback" is not accessed | 975:16-975:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "has_image_att" is not accessed | 982:9-982:22 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "has_video_att" is not accessed | 983:9-983:22 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "has_image_att" is not accessed | 985:13-985:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "has_video_att" is not accessed | 986:13-986:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "intent" is not accessed | 993:9-993:15 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 995:25-995:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "base_url" is not accessed | 1001:5-1001:13 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "headers" is not accessed | 1003:5-1003:12 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "user_id_str" is not accessed | 1016:13-1016:24 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "history_for_gemini" is not accessed | 1024:13-1024:31 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "history_for_gemini" is not accessed | 1026:17-1026:35 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "system_instruction" is not accessed | 1029:13-1029:31 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "chat" is not accessed | 1047:13-1047:17 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "enhanced_prompt" is not accessed | 1052:17-1052:32 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "enhanced_prompt" is not accessed | 1055:17-1055:32 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "response" is not accessed | 1057:13-1057:21 | DIAGNOSTIC_SEVERITY_HINT |
+| Function "bersihkan_markdown" is not accessed | 1061:17-1061:35 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "clean_response" is not accessed | 1077:13-1077:27 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "user" is not accessed | 1100:13-1100:17 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "required_credits" is not accessed | 1105:13-1105:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "API_KEY" is not accessed | 1113:13-1113:20 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "validated_images" is not accessed | 1118:13-1118:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "test_response" is not accessed | 1121:21-1121:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 1124:37-1124:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "url" is not accessed | 1138:13-1138:16 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "headers" is not accessed | 1139:13-1139:20 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "payload" is not accessed | 1143:13-1143:20 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "image_url_result" is not accessed | 1157:13-1157:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1158:13-1158:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "response" is not accessed | 1160:17-1160:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "result" is not accessed | 1164:21-1164:27 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1166:25-1166:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "result_data" is not accessed | 1169:21-1169:32 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1171:25-1171:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "request_id" is not accessed | 1174:21-1174:31 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg" is not accessed | 1177:21-1177:30 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_data" is not accessed | 1179:25-1179:35 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg" is not accessed | 1181:29-1181:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg" is not accessed | 1183:29-1183:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1188:25-1188:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1190:25-1190:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1192:25-1192:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1195:17-1195:30 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 1197:33-1197:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1198:17-1198:30 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "all_image_urls" is not accessed | 1203:13-1203:27 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_url" is not accessed | 1205:17-1205:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_headers" is not accessed | 1206:17-1206:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "max_attempts" is not accessed | 1208:17-1208:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "attempt" is not accessed | 1209:17-1209:24 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_response" is not accessed | 1213:25-1213:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_result" is not accessed | 1216:29-1216:40 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "attempt" is not accessed | 1218:33-1218:40 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_data" is not accessed | 1222:29-1222:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "status" is not accessed | 1223:29-1223:35 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "outputs" is not accessed | 1226:33-1226:40 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "image_urls" is not accessed | 1229:37-1229:47 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "output" is not accessed | 1230:41-1230:47 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "url" is not accessed | 1234:45-1234:48 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "image_url_result" is not accessed | 1240:41-1240:57 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "all_image_urls" is not accessed | 1241:41-1241:55 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1245:37-1245:50 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg" is not accessed | 1248:33-1248:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg_lower" is not accessed | 1250:33-1250:48 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1252:37-1252:50 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1254:37-1254:50 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1256:37-1256:50 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1261:29-1261:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 1263:41-1263:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1265:29-1265:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "attempt" is not accessed | 1270:21-1270:28 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "all_image_urls" is not accessed | 1295:25-1295:39 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "image" is not accessed | 1298:21-1298:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 1316:37-1316:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "API_KEY" is not accessed | 1339:13-1339:20 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "user" is not accessed | 1344:13-1344:17 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "required_credits" is not accessed | 1349:13-1349:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 1360:33-1360:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "duration" is not accessed | 1365:13-1365:21 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "url" is not accessed | 1368:13-1368:16 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "headers_api" is not accessed | 1369:13-1369:24 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "payload" is not accessed | 1373:13-1373:20 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "request_id" is not accessed | 1385:13-1385:23 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1386:13-1386:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "begin" is not accessed | 1387:13-1387:18 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "response" is not accessed | 1390:17-1390:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "result" is not accessed | 1394:21-1394:27 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1396:25-1396:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "result_data" is not accessed | 1399:21-1399:32 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1401:25-1401:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "request_id" is not accessed | 1404:21-1404:31 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg" is not accessed | 1407:21-1407:30 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_data" is not accessed | 1409:25-1409:35 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg" is not accessed | 1411:29-1411:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg" is not accessed | 1413:29-1413:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1416:21-1416:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1419:17-1419:30 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 1427:33-1427:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1428:17-1428:30 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_url" is not accessed | 1440:17-1440:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_headers" is not accessed | 1441:17-1441:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "max_attempts" is not accessed | 1443:17-1443:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "attempt" is not accessed | 1444:17-1444:24 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "video_url" is not accessed | 1445:17-1445:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_response" is not accessed | 1449:25-1449:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_result" is not accessed | 1452:29-1452:40 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "attempt" is not accessed | 1454:33-1454:40 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_data" is not accessed | 1458:29-1458:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "status" is not accessed | 1459:29-1459:35 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "outputs" is not accessed | 1462:33-1462:40 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "video_url" is not accessed | 1464:37-1464:46 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "end" is not accessed | 1466:41-1466:44 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1470:37-1470:50 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg" is not accessed | 1473:33-1473:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg_lower" is not accessed | 1475:33-1475:48 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1477:37-1477:50 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1479:37-1479:50 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1481:37-1481:50 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1487:29-1487:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 1489:41-1489:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1491:29-1491:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "attempt" is not accessed | 1496:21-1496:28 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "video" is not accessed | 1515:21-1515:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 1535:37-1535:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "duration" is not accessed | 1554:13-1554:21 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "size" is not accessed | 1555:13-1555:17 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "aspect_ratio" is not accessed | 1558:13-1558:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "size_map" is not accessed | 1560:17-1560:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "size" is not accessed | 1567:17-1567:21 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "API_KEY" is not accessed | 1570:13-1570:20 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "user" is not accessed | 1575:13-1575:17 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "required_credits" is not accessed | 1580:13-1580:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "url" is not accessed | 1588:13-1588:16 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "headers_api" is not accessed | 1589:13-1589:24 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "payload" is not accessed | 1593:13-1593:20 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "video_url" is not accessed | 1605:13-1605:22 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1606:13-1606:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "request_id" is not accessed | 1607:13-1607:23 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "begin" is not accessed | 1608:13-1608:18 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "response" is not accessed | 1611:17-1611:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "result" is not accessed | 1615:21-1615:27 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1617:25-1617:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "result_data" is not accessed | 1620:21-1620:32 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1622:25-1622:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "request_id" is not accessed | 1625:21-1625:31 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg" is not accessed | 1628:21-1628:30 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_data" is not accessed | 1630:25-1630:35 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg" is not accessed | 1632:29-1632:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg" is not accessed | 1634:29-1634:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1637:21-1637:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1640:17-1640:30 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 1642:33-1642:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1643:17-1643:30 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_url" is not accessed | 1649:17-1649:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_headers" is not accessed | 1650:17-1650:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "max_attempts" is not accessed | 1652:17-1652:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "attempt" is not accessed | 1653:17-1653:24 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_response" is not accessed | 1657:25-1657:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_result" is not accessed | 1660:29-1660:40 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "attempt" is not accessed | 1662:33-1662:40 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_data" is not accessed | 1666:29-1666:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "status" is not accessed | 1667:29-1667:35 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "outputs" is not accessed | 1670:33-1670:40 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "video_url" is not accessed | 1672:37-1672:46 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "end" is not accessed | 1674:41-1674:44 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1678:37-1678:50 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg" is not accessed | 1681:33-1681:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg_lower" is not accessed | 1683:33-1683:48 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1685:37-1685:50 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1687:37-1687:50 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1689:37-1689:50 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1695:29-1695:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 1697:41-1697:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1699:29-1699:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "attempt" is not accessed | 1704:21-1704:28 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "video" is not accessed | 1724:21-1724:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 1745:37-1745:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "user" is not accessed | 1766:13-1766:17 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "API_KEY" is not accessed | 1771:13-1771:20 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "face_image_url" is not accessed | 1780:13-1780:27 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "video_url" is not accessed | 1781:13-1781:22 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "att" is not accessed | 1786:21-1786:24 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "face_image_url" is not accessed | 1788:25-1788:39 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "video_url" is not accessed | 1790:25-1790:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "face_image_url" is not accessed | 1794:17-1794:31 | DIAGNOSTIC_SEVERITY_HINT |
+| Import "base64" is not accessed | 1813:28-1813:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "header" is not accessed | 1814:21-1814:27 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "encoded" is not accessed | 1814:29-1814:36 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "image_data" is not accessed | 1815:21-1815:31 | DIAGNOSTIC_SEVERITY_HINT |
+| Import "uuid" is not accessed | 1818:28-1818:32 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "face_filename" is not accessed | 1819:21-1819:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "face_path" is not accessed | 1820:21-1820:30 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "f" is not accessed | 1823:51-1823:52 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "face_image_url" is not accessed | 1828:21-1828:35 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 1829:37-1829:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "header" is not accessed | 1837:21-1837:27 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "encoded" is not accessed | 1837:29-1837:36 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "video_data" is not accessed | 1838:21-1838:31 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "video_filename" is not accessed | 1842:21-1842:35 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "video_path" is not accessed | 1843:21-1843:31 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "f" is not accessed | 1846:52-1846:53 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "video_url" is not accessed | 1851:21-1851:30 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 1852:37-1852:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "required_credits" is not accessed | 1857:13-1857:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 1868:33-1868:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "url" is not accessed | 1873:13-1873:16 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "headers" is not accessed | 1874:13-1874:20 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "payload" is not accessed | 1879:13-1879:20 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "begin" is not accessed | 1887:13-1887:18 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "response" is not accessed | 1890:17-1890:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg" is not accessed | 1900:21-1900:30 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "result" is not accessed | 1907:17-1907:23 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "request_id" is not accessed | 1921:17-1921:27 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_url" is not accessed | 1925:17-1925:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_headers" is not accessed | 1926:17-1926:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "output_video_url" is not accessed | 1928:17-1928:33 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1929:17-1929:30 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "attempt" is not accessed | 1930:17-1930:24 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "max_attempts" is not accessed | 1931:17-1931:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_response" is not accessed | 1935:25-1935:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_data" is not accessed | 1938:29-1938:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "poll_data" is not accessed | 1940:33-1940:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "status" is not accessed | 1942:29-1942:35 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "outputs" is not accessed | 1945:33-1945:40 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "output_video_url" is not accessed | 1947:37-1947:53 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "end" is not accessed | 1949:41-1949:44 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1953:37-1953:50 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg" is not accessed | 1956:33-1956:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1957:33-1957:46 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1963:29-1963:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 1965:41-1965:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 1966:25-1966:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "attempt" is not accessed | 1970:21-1970:28 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "video" is not accessed | 1989:21-1989:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 2008:37-2008:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 2023:33-2023:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Import "glob" is not accessed | 2042:20-2042:24 | DIAGNOSTIC_SEVERITY_HINT |
+| Import "datetime" is not accessed | 2044:34-2044:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Import "Config" is not accessed | 2045:32-2045:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "SUNO_API_KEY" is not accessed | 2048:13-2048:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "SUNO_BASE_URL" is not accessed | 2049:13-2049:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "CALLBACK_DOMAIN" is not accessed | 2050:13-2050:28 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "user" is not accessed | 2056:13-2056:17 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "required_credits" is not accessed | 2061:13-2061:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 2072:33-2072:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "f" is not accessed | 2077:17-2077:18 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 2080:37-2080:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "model" is not accessed | 2084:13-2084:18 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "customMode" is not accessed | 2085:13-2085:23 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "instrumental" is not accessed | 2086:13-2086:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "prompt_limit" is not accessed | 2089:13-2089:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Function "extract_title_from_analysis" is not accessed | 2097:17-2097:44 | DIAGNOSTIC_SEVERITY_HINT |
+| Function "clean_lyrics_for_suno" is not accessed | 2115:17-2115:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "title" is not accessed | 2129:13-2129:18 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "cleaned_prompt" is not accessed | 2130:13-2130:27 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "callback_url" is not accessed | 2133:13-2133:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "payload" is not accessed | 2137:13-2137:20 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "headers_suno" is not accessed | 2146:13-2146:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "task_id" is not accessed | 2158:13-2158:20 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 2159:13-2159:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "response" is not accessed | 2161:17-2161:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "res_json" is not accessed | 2162:17-2162:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg" is not accessed | 2168:21-2168:30 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 2169:21-2169:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "task_id" is not accessed | 2172:17-2172:24 | DIAGNOSTIC_SEVERITY_HINT |
+| Import "datetime" is not accessed | 2176:38-2176:46 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 2194:33-2194:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 2195:17-2195:30 | DIAGNOSTIC_SEVERITY_HINT |
+| Import "get_width_height" is not accessed | 2209:35-2209:51 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "aspect_ratio" is not accessed | 2211:13-2211:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "width" is not accessed | 2212:13-2212:18 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "height" is not accessed | 2212:20-2212:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "negative_prompt" is not accessed | 2213:13-2213:28 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "model" is not accessed | 2214:13-2214:18 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "API_KEY" is not accessed | 2217:13-2217:20 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "user" is not accessed | 2222:13-2222:17 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "model_configs" is not accessed | 2227:13-2227:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "required_credits" is not accessed | 2267:13-2267:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "model_config" is not accessed | 2275:13-2275:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "url" is not accessed | 2276:13-2276:16 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "payload" is not accessed | 2277:13-2277:20 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "headers_api" is not accessed | 2279:13-2279:24 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "image_url" is not accessed | 2285:13-2285:22 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 2286:13-2286:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "response" is not accessed | 2288:17-2288:25 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 2291:21-2291:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "result" is not accessed | 2293:17-2293:23 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 2295:21-2295:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "request_id" is not accessed | 2297:17-2297:27 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 2298:33-2298:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 2300:17-2300:30 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "request_id" is not accessed | 2301:17-2301:27 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "all_image_urls" is not accessed | 2304:13-2304:27 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "result_url" is not accessed | 2306:17-2306:27 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "headers_result" is not accessed | 2307:17-2307:31 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "resp" is not accessed | 2310:25-2310:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "res" is not accessed | 2313:29-2313:32 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 2315:33-2315:46 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "data_poll" is not accessed | 2317:29-2317:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "status" is not accessed | 2318:29-2318:35 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "outputs" is not accessed | 2319:29-2319:36 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "image_urls" is not accessed | 2323:37-2323:47 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "output" is not accessed | 2324:41-2324:47 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "url" is not accessed | 2328:45-2328:48 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "image_url" is not accessed | 2334:41-2334:50 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "all_image_urls" is not accessed | 2335:41-2335:55 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 2338:37-2338:50 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_msg" is not accessed | 2341:33-2341:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 2342:33-2342:46 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 2344:41-2344:42 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_message" is not accessed | 2346:25-2346:38 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "all_image_urls" is not accessed | 2365:21-2365:35 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "image" is not accessed | 2368:17-2368:22 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "saved_images" is not accessed | 2371:17-2371:29 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 2394:33-2394:34 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "e" is not accessed | 2404:25-2404:26 | DIAGNOSTIC_SEVERITY_HINT |
+| Variable "error_trace" is not accessed | 2406:9-2406:20 | DIAGNOSTIC_SEVERITY_HINT |
+
+
+</details>
+</tool-use>
+
+---
+
+Itu error karena URL file yang dikirim ke WaveSpeed bukan URL publik yang bisa diakses dari internet:
+- Sebelumnya sempat terbentuk http://127.0.0.1:5000/static/uploads/... (local), dan sebelumnya juga sempat double slash di domain. Keduanya akan gagal di server WaveSpeed (Connection refused/404).
+
+Perbaikan yang saya lakukan:
+- Saat menyimpan video/foto hasil upload untuk Face Swap, saya bangun URL absolut publik via helper yang memprioritaskan DOMAIN_PUBLIC:
+  - Jika `Config.DOMAIN_PUBLIC` tersedia (contoh `https://inemi.id`), URL akan menjadi `https://inemi.id/static/uploads/…`.
+  - Jika tidak ada, fallback ke `url_for(..., _external=True)`; bila itu mengarah ke localhost, tetap dipaksa ke DOMAIN_PUBLIC bila tersedia.
+- Jadi WaveSpeed sekarang menerima URL yang valid dan bisa diunduh.
+
+Yang perlu dipastikan di environment:
+- `DOMAIN_PUBLIC` (contoh `https://inemi.id`) sudah diset di config/env di server yang live.
+- Folder `backend/static/uploads` memang di-serve oleh web server (Flask/Nginx) di path `/static/uploads/`.
+
+Coba lagi upload video + foto, pilih “Video Face Swap”, lalu klik generate.
+Jika masih error, kirimkan URL file yang tampil di log (sekarang harus `https://inemi.id/static/uploads/...`) agar saya cek aksesibilitasnya langsung.
+
+---
+
