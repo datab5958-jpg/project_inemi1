@@ -623,6 +623,171 @@
         overflow: hidden;
     }
 
+    /* Variations Grid - 3 Images (Desktop: Horizontal, Mobile: Vertical) */
+    .ai-variations-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); /* Desktop: 3 kolom horizontal */
+        gap: 16px;
+        margin: 16px 0;
+        width: 100%;
+    }
+
+    /* Tablet - 2 columns */
+    @media (max-width: 1024px) and (min-width: 769px) {
+        .ai-variations-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+    }
+
+    /* Mobile - 1 column (vertical stack) */
+    @media (max-width: 768px) {
+        .ai-variations-grid {
+            grid-template-columns: 1fr !important; /* Mobile: 1 kolom vertikal */
+            gap: 20px;
+            margin: 12px 0;
+        }
+    }
+
+    .ai-image-variation {
+        position: relative;
+        border-radius: 14px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .ai-image-variation:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(76, 126, 255, 0.3);
+        border-color: var(--accent-neon);
+    }
+
+    /* Disable hover effect on mobile */
+    @media (max-width: 768px) {
+        .ai-image-variation:hover {
+            transform: none;
+        }
+    }
+
+    .ai-image-variation img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border-radius: 14px 14px 0 0;
+        cursor: pointer;
+        object-fit: cover;
+        aspect-ratio: 1 / 1; /* Square images for consistency */
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    /* Mobile: allow natural aspect ratio */
+    @media (max-width: 768px) {
+        .ai-image-variation img {
+            aspect-ratio: auto;
+            max-height: 400px;
+            object-fit: contain;
+        }
+    }
+
+    .ai-variation-number {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: rgba(0, 0, 0, 0.8);
+        color: var(--text-primary);
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        z-index: 1;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: 768px) {
+        .ai-variation-number {
+            top: 10px;
+            left: 10px;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+    }
+
+    .ai-variation-actions {
+        display: flex;
+        gap: 6px;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(10px);
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 768px) {
+        .ai-variation-actions {
+            padding: 12px;
+            gap: 8px;
+            flex-wrap: nowrap; /* Keep buttons in one row on mobile */
+        }
+    }
+
+    .ai-variation-actions button,
+    .ai-variation-actions a {
+        padding: 8px 12px;
+        background: rgba(76, 126, 255, 0.2);
+        border: 1px solid rgba(76, 126, 255, 0.4);
+        border-radius: 8px;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        min-width: 44px; /* Minimum touch target size */
+        min-height: 44px;
+        flex: 1;
+        max-width: 120px;
+    }
+
+    @media (max-width: 768px) {
+        .ai-variation-actions button,
+        .ai-variation-actions a {
+            padding: 10px 14px;
+            font-size: 13px;
+            min-width: 50px;
+            min-height: 48px;
+            flex: 1;
+            max-width: none;
+        }
+        
+        .ai-variation-actions button i,
+        .ai-variation-actions a i {
+            font-size: 16px;
+        }
+    }
+
+    .ai-variation-actions button:hover,
+    .ai-variation-actions a:hover {
+        background: rgba(76, 126, 255, 0.4);
+        border-color: var(--accent-neon);
+        transform: scale(1.05);
+    }
+
+    @media (max-width: 768px) {
+        .ai-variation-actions button:active,
+        .ai-variation-actions a:active {
+            transform: scale(0.95);
+            background: rgba(76, 126, 255, 0.5);
+        }
+    }
+
     .ai-media-grid img,
     .ai-media-grid video {
         width: 100%;
@@ -1669,6 +1834,214 @@
         color: var(--text-secondary);
     }
 
+    /* Smart Prompt Quality Indicator */
+    .ai-prompt-quality {
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        background: rgba(76, 126, 255, 0.08);
+        border: 1px solid rgba(76, 126, 255, 0.2);
+        border-radius: 10px;
+        font-size: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .ai-prompt-quality.hidden {
+        display: none;
+    }
+
+    .ai-prompt-quality-score {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ai-prompt-quality-bar {
+        width: 60px;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .ai-prompt-quality-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.3s ease, background 0.3s ease;
+    }
+
+    .ai-prompt-quality-fill.low {
+        background: linear-gradient(90deg, #ff6b6b, #ff8787);
+    }
+
+    .ai-prompt-quality-fill.medium {
+        background: linear-gradient(90deg, #fbbf24, #fcd34d);
+    }
+
+    .ai-prompt-quality-fill.high {
+        background: linear-gradient(90deg, #4CFF7E, #22C55E);
+    }
+
+    .ai-prompt-quality-text {
+        color: var(--text-secondary);
+        font-size: 11px;
+    }
+
+    .ai-prompt-enhance-btn {
+        margin-left: auto;
+        padding: 4px 10px;
+        background: rgba(76, 126, 255, 0.2);
+        border: 1px solid rgba(76, 126, 255, 0.4);
+        border-radius: 6px;
+        color: var(--accent-neon);
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .ai-prompt-enhance-btn:hover {
+        background: rgba(76, 126, 255, 0.3);
+        border-color: var(--accent-neon);
+        transform: translateY(-1px);
+    }
+
+    .ai-prompt-enhance-btn.loading {
+        opacity: 0.6;
+        cursor: wait;
+    }
+
+    /* Contextual Suggestions */
+    .ai-contextual-suggestions {
+        margin-top: 8px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .ai-suggestion-chip {
+        padding: 6px 12px;
+        background: rgba(76, 126, 255, 0.1);
+        border: 1px solid rgba(76, 126, 255, 0.3);
+        border-radius: 20px;
+        color: var(--text-primary);
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .ai-suggestion-chip:hover {
+        background: rgba(76, 126, 255, 0.2);
+        border-color: var(--accent-neon);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(76, 126, 255, 0.2);
+    }
+
+    .ai-suggestion-chip i {
+        font-size: 10px;
+        color: var(--accent-neon);
+    }
+
+    /* Error Predictions */
+    .ai-error-predictions {
+        margin-top: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .ai-error-predictions.hidden {
+        display: none;
+    }
+
+    .ai-error-item {
+        padding: 10px 12px;
+        background: rgba(255, 77, 77, 0.1);
+        border: 1px solid rgba(255, 77, 77, 0.3);
+        border-left: 3px solid #FF4D4D;
+        border-radius: 8px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 12px;
+    }
+
+    .ai-error-item.severity-medium {
+        background: rgba(251, 191, 36, 0.1);
+        border-color: rgba(251, 191, 36, 0.3);
+        border-left-color: #FBBF24;
+    }
+
+    .ai-error-item.severity-low {
+        background: rgba(76, 126, 255, 0.1);
+        border-color: rgba(76, 126, 255, 0.3);
+        border-left-color: var(--accent-neon);
+    }
+
+    .ai-error-icon {
+        font-size: 16px;
+        color: #FF4D4D;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+
+    .ai-error-item.severity-medium .ai-error-icon {
+        color: #FBBF24;
+    }
+
+    .ai-error-item.severity-low .ai-error-icon {
+        color: var(--accent-neon);
+    }
+
+    .ai-error-content {
+        flex: 1;
+    }
+
+    .ai-error-message {
+        color: var(--text-primary);
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+
+    .ai-error-suggestion {
+        color: var(--text-secondary);
+        font-size: 11px;
+        line-height: 1.4;
+    }
+
+    .ai-error-action {
+        margin-top: 6px;
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+
+    .ai-error-action-btn {
+        padding: 4px 10px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+        color: var(--text-primary);
+        font-size: 11px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .ai-error-action-btn:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: var(--accent-neon);
+    }
+
     /* Compact inline drop zone inside input bar */
     #promptWrapper {
         position: relative;
@@ -2272,6 +2645,27 @@
                     <i class="bi bi-send"></i>
                 </button>
             </div>
+            
+            <!-- Smart Prompt Quality Indicator -->
+            <div class="ai-prompt-quality hidden" id="promptQuality">
+                <div class="ai-prompt-quality-score">
+                    <span class="ai-prompt-quality-text">Kualitas:</span>
+                    <div class="ai-prompt-quality-bar">
+                        <div class="ai-prompt-quality-fill" id="qualityFill" style="width: 0%"></div>
+                    </div>
+                    <span class="ai-prompt-quality-text" id="qualityScore">0</span>
+                </div>
+                <button type="button" class="ai-prompt-enhance-btn" id="enhanceBtn" title="Enhance prompt dengan AI">
+                    <i class="bi bi-magic"></i> <span>Enhance</span>
+                </button>
+            </div>
+            
+            <!-- Error Prediction Warnings -->
+            <div class="ai-error-predictions hidden" id="errorPredictions"></div>
+            
+            <!-- Contextual Suggestions -->
+            <div class="ai-contextual-suggestions" id="contextualSuggestions"></div>
+            
             <div class="ai-drop-hint" id="dropHint" title="Seret gambar ke kotak input, atau klik untuk memilih">
                 <i class="bi bi-cloud-upload"></i>
                 <span>Drag & drop gambar</span>
@@ -2422,6 +2816,12 @@
         const dropZone = document.getElementById('dropZone');
         const promptWrapperEl = document.getElementById('promptWrapper');
         const dropHint = document.getElementById('dropHint');
+        const promptQuality = document.getElementById('promptQuality');
+        const qualityFill = document.getElementById('qualityFill');
+        const qualityScoreText = document.getElementById('qualityScore');
+        const enhanceBtn = document.getElementById('enhanceBtn');
+        const contextualSuggestions = document.getElementById('contextualSuggestions');
+        const errorPredictions = document.getElementById('errorPredictions');
         
         // Create compact inline drop zone inside input bar
         let inlineDropZone = document.getElementById('inlineDropZone');
@@ -2678,6 +3078,282 @@
         if (promptInput) {
             promptInput.addEventListener('input', autoResizeTextarea);
         }
+
+        // Smart Prompt Quality Analysis
+        let qualityCheckTimeout;
+        async function analyzePromptQuality() {
+            if (!promptInput || !promptQuality) return;
+            
+            const prompt = promptInput.value.trim();
+            
+            // Hide if prompt is empty
+            if (!prompt || prompt.length < 3) {
+                promptQuality.classList.add('hidden');
+                return;
+            }
+            
+            // Show quality indicator
+            promptQuality.classList.remove('hidden');
+            
+            // Simple quality calculation (fast, no API call)
+            const wordCount = prompt.split(/\s+/).filter(w => w.length > 0).length;
+            let score = 30;
+            
+            if (wordCount >= 5) score += 20;
+            if (wordCount >= 10) score += 20;
+            if (wordCount >= 20) score += 20;
+            if (wordCount > 50) score -= 10; // Too long
+            
+            // Check for detail keywords
+            const detailKeywords = ['detail', 'sharp', 'style', 'gaya', 'lighting', 'pencahayaan', 'quality', 'kualitas'];
+            const hasDetails = detailKeywords.some(kw => prompt.toLowerCase().includes(kw));
+            if (hasDetails) score += 10;
+            
+            score = Math.min(score, 100);
+            
+            // Update UI
+            if (qualityFill) {
+                qualityFill.style.width = score + '%';
+                qualityFill.className = 'ai-prompt-quality-fill ' + 
+                    (score < 50 ? 'low' : score < 75 ? 'medium' : 'high');
+            }
+            if (qualityScoreText) {
+                qualityScoreText.textContent = score;
+            }
+        }
+
+        // Debounced quality check
+        if (promptInput) {
+            promptInput.addEventListener('input', () => {
+                clearTimeout(qualityCheckTimeout);
+                qualityCheckTimeout = setTimeout(analyzePromptQuality, 500);
+            });
+            
+            // Initial check
+            setTimeout(analyzePromptQuality, 1000);
+        }
+
+        // Error Prediction
+        let errorCheckTimeout;
+        
+        async function checkPromptErrors() {
+            if (!promptInput || !errorPredictions) return;
+            
+            const prompt = promptInput.value.trim();
+            if (!prompt || prompt.length < 3) {
+                errorPredictions.classList.add('hidden');
+                errorPredictions.innerHTML = '';
+                return;
+            }
+            
+            try {
+                const mode = modeSelect ? modeSelect.value : '';
+                const hasImage = attachments.length > 0 && attachments.some(a => a.type === 'image');
+                
+                const res = await fetch('/api/ai_generate/predict-errors', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        mode: mode,
+                        has_image: hasImage
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success && data.errors && data.errors.length > 0) {
+                    errorPredictions.classList.remove('hidden');
+                    errorPredictions.innerHTML = '';
+                    
+                    data.errors.forEach(error => {
+                        const errorItem = document.createElement('div');
+                        errorItem.className = `ai-error-item severity-${error.severity || 'medium'}`;
+                        errorItem.innerHTML = `
+                            <i class="bi bi-exclamation-triangle ai-error-icon"></i>
+                            <div class="ai-error-content">
+                                <div class="ai-error-message">${error.message}</div>
+                                <div class="ai-error-suggestion">💡 ${error.suggestion}</div>
+                                ${error.auto_fixable ? `
+                                    <div class="ai-error-action">
+                                        ${error.suggested_mode ? `
+                                            <button class="ai-error-action-btn" onclick="
+                                                const modeSelect = document.getElementById('mode');
+                                                if (modeSelect) modeSelect.value = '${error.suggested_mode}';
+                                                const modeChips = document.querySelectorAll('.ai-mode-chip');
+                                                modeChips.forEach(c => c.classList.toggle('active', c.dataset.mode === '${error.suggested_mode}'));
+                                            ">Ubah Mode</button>
+                                        ` : ''}
+                                        <button class="ai-error-action-btn" onclick="
+                                            const enhanceBtn = document.getElementById('enhanceBtn');
+                                            if (enhanceBtn) enhanceBtn.click();
+                                        ">Enhance Prompt</button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                        errorPredictions.appendChild(errorItem);
+                    });
+                } else {
+                    errorPredictions.classList.add('hidden');
+                    errorPredictions.innerHTML = '';
+                }
+            } catch (error) {
+                console.error('Error prediction check failed:', error);
+            }
+        }
+
+        // Debounced error check
+        if (promptInput && modeSelect) {
+            const triggerErrorCheck = () => {
+                clearTimeout(errorCheckTimeout);
+                errorCheckTimeout = setTimeout(checkPromptErrors, 800);
+            };
+            
+            promptInput.addEventListener('input', triggerErrorCheck);
+            if (modeSelect) {
+                modeSelect.addEventListener('change', triggerErrorCheck);
+            }
+        }
+
+        // Enhance Prompt Button
+        if (enhanceBtn && promptInput) {
+            enhanceBtn.addEventListener('click', async () => {
+                const prompt = promptInput.value.trim();
+                if (!prompt) return;
+                
+                enhanceBtn.classList.add('loading');
+                enhanceBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> <span>Enhancing...</span>';
+                
+                try {
+                    const mode = modeSelect ? modeSelect.value : '';
+                    const hasImage = attachments.length > 0 && attachments.some(a => a.type === 'image');
+                    
+                    const res = await fetch('/api/ai_generate/enhance-prompt', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            prompt: prompt,
+                            mode: mode,
+                            has_image: hasImage
+                        })
+                    });
+                    
+                    const data = await res.json();
+                    
+                    if (data.success && data.enhanced) {
+                        promptInput.value = data.enhanced;
+                        autoResizeTextarea();
+                        analyzePromptQuality();
+                        
+                        // Show toast
+                        if (window.showToast) {
+                            window.showToast('Prompt berhasil di-enhance!', 'success');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Enhance error:', error);
+                    if (window.showToast) {
+                        window.showToast('Gagal enhance prompt', 'error');
+                    }
+                } finally {
+                    enhanceBtn.classList.remove('loading');
+                    enhanceBtn.innerHTML = '<i class="bi bi-magic"></i> <span>Enhance</span>';
+                }
+            });
+        }
+
+        // Load Contextual Suggestions
+        async function loadContextualSuggestions() {
+            if (!contextualSuggestions) return;
+            
+            try {
+                const mode = modeSelect ? modeSelect.value : '';
+                const prompt = promptInput ? promptInput.value.trim().toLowerCase() : '';
+                
+                const res = await fetch('/api/ai_generate/contextual-suggestions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        attachments: attachments,
+                        mode: mode,
+                        prompt: prompt
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success && data.suggestions && data.suggestions.length > 0) {
+                    contextualSuggestions.innerHTML = '';
+                    data.suggestions.forEach(suggestion => {
+                        const chip = document.createElement('div');
+                        chip.className = 'ai-suggestion-chip';
+                        chip.innerHTML = `<i class="bi bi-lightbulb"></i> <span>${suggestion.text}</span>`;
+                        
+                        chip.addEventListener('click', () => {
+                            if (suggestion.action === 'suggest' && suggestion.prompt) {
+                                if (promptInput) {
+                                    promptInput.value = suggestion.prompt;
+                                    promptInput.focus();
+                                    autoResizeTextarea();
+                                    analyzePromptQuality();
+                                }
+                            } else if (suggestion.action === 'set_mode' && suggestion.mode) {
+                                if (modeSelect) {
+                                    modeSelect.value = suggestion.mode;
+                                    modeChips.forEach(c => {
+                                        c.classList.toggle('active', c.dataset.mode === suggestion.mode);
+                                    });
+                                }
+                            } else if (suggestion.action === 'enhance' && suggestion.keyword) {
+                                if (promptInput) {
+                                    const current = promptInput.value.trim();
+                                    promptInput.value = current ? `${current}, ${suggestion.keyword}` : suggestion.keyword;
+                                    promptInput.focus();
+                                    autoResizeTextarea();
+                                    analyzePromptQuality();
+                                }
+                            }
+                        });
+                        
+                        contextualSuggestions.appendChild(chip);
+                    });
+                } else {
+                    contextualSuggestions.innerHTML = '';
+                }
+            } catch (error) {
+                console.error('Load suggestions error:', error);
+            }
+        }
+
+        // Load suggestions on attachment change or mode change
+        if (modeSelect) {
+            modeSelect.addEventListener('change', () => {
+                setTimeout(loadContextualSuggestions, 300);
+            });
+        }
+
+        // Hook into updateAttachmentPreview to reload suggestions
+        const originalUpdateAttachmentPreviewFunc = updateAttachmentPreview;
+        if (typeof updateAttachmentPreview === 'function') {
+            updateAttachmentPreview = function() {
+                originalUpdateAttachmentPreviewFunc();
+                setTimeout(loadContextualSuggestions, 300);
+                setTimeout(checkPromptErrors, 500);
+            };
+        }
+
+        // Initial load
+        setTimeout(loadContextualSuggestions, 1000);
 
         // Enter to Send
         if (promptInput && runBtn) {
@@ -3134,6 +3810,9 @@
                 document.body.style.overflow = 'hidden';
             }
         }
+        
+        // Make openLightbox globally available
+        window.openLightbox = openLightbox;
 
         function closeLightbox() {
             if (lightbox) {
@@ -3241,25 +3920,50 @@
 
             if (type === 'image') {
                 // Handle different response structures
+                const data = resp.data || {};
                 let url = resp.url;
-                if (!url && resp.data) {
-                    url = resp.data.photo_url || resp.data.url || resp.data.image_url;
+                if (!url && data) {
+                    url = data.photo_url || data.url || data.image_url;
                 }
                 if (!url) {
                     window.addMessage('assistant', `<div style="color: #ffd93d;">Tidak ada URL gambar.</div>`);
                     return;
                 }
-                const data = resp.data || {};
+                
                 const modelUsed = data.model_used || 'imagen4-ultra';
+                
+                // Get all variations (3 images)
+                let variations = data.variations || data.images || [];
+                if (variations.length === 0 && url) {
+                    variations = [url];  // Fallback to single image
+                }
+                
+                const count = variations.length || 1;
+                
+                // Build grid for multiple variations
+                let gridItems = '';
+                variations.forEach((imgUrl, index) => {
+                    gridItems += `
+                        <div class="ai-image-variation" data-index="${index}">
+                            <img src="${imgUrl}" alt="AI Image Variasi ${index + 1}" onclick="window.openLightbox('${imgUrl}')" />
+                            <div class="ai-variation-number">Variasi ${index + 1}</div>
+                            <div class="ai-variation-actions">
+                                <button onclick="window.openLightbox('${imgUrl}')" title="Preview"><i class="bi bi-eye"></i></button>
+                                <button onclick="navigator.clipboard.writeText('${imgUrl}')" title="Copy URL"><i class="bi bi-clipboard"></i></button>
+                                <a href="${imgUrl}" download title="Download"><i class="bi bi-download"></i></a>
+                            </div>
+                        </div>
+                    `;
+                });
+                
                 html = `
-                    <div class="ai-result-label">🖼️ Hasil: Gambar (${modelUsed})</div>
-                    <div class="ai-media-grid">
-                        <img src="${url}" alt="AI Image" />
+                    <div class="ai-result-label">🖼️ Hasil: ${count} Variasi Gambar (${modelUsed})</div>
+                    <div class="ai-media-grid ai-variations-grid">
+                        ${gridItems}
                     </div>
                     <div class="ai-result-actions">
-                        <a href="${url}" target="_blank"><i class="bi bi-box-arrow-up-right"></i> Buka</a>
-                        <button onclick="navigator.clipboard.writeText('${url}')"><i class="bi bi-clipboard"></i> Copy URL</button>
-                        <a href="${url}" download><i class="bi bi-download"></i> Download</a>
+                        <a href="${variations[0]}" target="_blank"><i class="bi bi-box-arrow-up-right"></i> Buka Semua</a>
+                        <button onclick="navigator.clipboard.writeText('${variations.join('\\n')}')"><i class="bi bi-clipboard"></i> Copy Semua URL</button>
                     </div>
                 `;
             } else if (type === 'video') {
@@ -3682,10 +4386,86 @@
         };
 
         window.regenerateMessage = function(btn) {
-            const userMessages = Array.from(document.querySelectorAll('.ai-message.user .ai-message-bubble'));
-            const lastUser = userMessages[userMessages.length - 1];
-            if (!lastUser || !runBtn) return;
-            runBtn.click();
+            // Find the last assistant message with image result
+            const assistantMessages = Array.from(document.querySelectorAll('.ai-message.assistant'));
+            let lastAssistantMsg = null;
+            
+            // Find the last assistant message that has image result
+            for (let i = assistantMessages.length - 1; i >= 0; i--) {
+                const msg = assistantMessages[i];
+                const hasImage = msg.querySelector('.ai-media-grid img, .ai-variations-grid');
+                if (hasImage) {
+                    lastAssistantMsg = msg;
+                    break;
+                }
+            }
+            
+            if (!lastAssistantMsg) {
+                // If no image found, try to get last user message
+                const userMessages = Array.from(document.querySelectorAll('.ai-message.user'));
+                const lastUser = userMessages[userMessages.length - 1];
+                if (lastUser && runBtn) {
+                    runBtn.click();
+                    return;
+                }
+                return;
+            }
+            
+            // Find the corresponding user message (the one before this assistant message)
+            const allMessages = Array.from(document.querySelectorAll('.ai-message'));
+            const assistantIndex = allMessages.indexOf(lastAssistantMsg);
+            if (assistantIndex > 0) {
+                const userMsg = allMessages[assistantIndex - 1];
+                if (userMsg && userMsg.classList.contains('user')) {
+                    // Extract prompt from user message
+                    const promptText = userMsg.querySelector('.ai-message-bubble');
+                    if (promptText) {
+                        // Get text content (remove images)
+                        const textParts = [];
+                        const textNodes = promptText.childNodes;
+                        textNodes.forEach(node => {
+                            if (node.nodeType === 3) { // Text node
+                                const text = node.textContent.trim();
+                                if (text) textParts.push(text);
+                            }
+                        });
+                        const prompt = textParts.join(' ').trim();
+                        
+                        // Also check for attachments in user message
+                        const userImages = userMsg.querySelectorAll('img');
+                        let imageUrl = '';
+                        if (userImages.length > 0) {
+                            // Get first image URL (could be base64 or URL)
+                            imageUrl = userImages[0].src;
+                        }
+                        
+                        if (prompt && promptInput) {
+                            // Set prompt and trigger send
+                            promptInput.value = prompt;
+                            autoResizeTextarea();
+                            
+                            // Set attachments if there are images
+                            if (imageUrl && imageUrl.startsWith('http')) {
+                                // If it's a URL, add to attachments
+                                attachments = [{
+                                    url: imageUrl,
+                                    type: 'image',
+                                    filename: 'regenerated_image.jpg'
+                                }];
+                                updateAttachmentPreview();
+                            }
+                            
+                            // DO NOT remove the last assistant message - keep it!
+                            // Foto lama tetap ada, foto baru akan ditambahkan setelahnya
+                            
+                            // Trigger send to generate new variations
+                            if (runBtn) {
+                                runBtn.click();
+                            }
+                        }
+                    }
+                }
+            }
         };
 
         // Local Storage History

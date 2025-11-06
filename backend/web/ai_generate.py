@@ -44,6 +44,235 @@ def check_session():
     })
 
 
+@ai_generate_bp.route('/api/ai_generate/enhance-prompt', methods=['POST'])
+def api_enhance_prompt():
+    """API endpoint untuk enhance prompt"""
+    try:
+        data = request.get_json(silent=True) or {}
+        prompt = (data.get('prompt') or '').strip()
+        mode = data.get('mode', '')
+        has_image = data.get('has_image', False)
+        
+        if not prompt:
+            return jsonify({
+                'success': False,
+                'message': 'Prompt tidak boleh kosong'
+            }), 400
+        
+        result = enhance_prompt(prompt, mode, has_image)
+        
+        return jsonify({
+            'success': True,
+            **result
+        })
+    except Exception as e:
+        print(f"[Enhance Prompt API] Error: {e}")
+        import traceback
+        print(traceback.format_exc())
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+def predict_prompt_errors(prompt: str, mode: str, has_image: bool) -> list:
+    """
+    Predict potential errors before generation
+    Returns list of potential issues with suggestions
+    """
+    errors = []
+    
+    # Rule-based checks (fast, no API call)
+    word_count = len(prompt.split())
+    
+    # Check 1: Low detail for generation modes
+    if mode in ['image_generate', 'video_generate'] and word_count < 5:
+        errors.append({
+            'type': 'low_detail',
+            'severity': 'high',
+            'message': 'Prompt terlalu singkat untuk hasil yang optimal',
+            'suggestion': 'Tambahkan detail: style, lighting, composition, atau quality',
+            'auto_fixable': False
+        })
+    
+    # Check 2: Mode mismatch
+    if has_image and mode == 'image_generate':
+        errors.append({
+            'type': 'mode_mismatch',
+            'severity': 'medium',
+            'message': 'Kamu punya gambar tapi mode "Generate", mungkin maksudnya "Edit"?',
+            'suggestion': 'Coba mode Image Edit atau Image to Video',
+            'auto_fixable': True,
+            'suggested_mode': 'image_edit'
+        })
+    
+    # Check 3: Missing image for edit modes
+    if mode in ['image_edit', 'image_to_video'] and not has_image:
+        errors.append({
+            'type': 'missing_attachment',
+            'severity': 'high',
+            'message': f'Mode {mode} membutuhkan gambar, tapi tidak ada gambar yang diupload',
+            'suggestion': 'Upload gambar terlebih dahulu atau ubah mode',
+            'auto_fixable': False
+        })
+    
+    # Check 4: Very long prompt (might confuse model)
+    if word_count > 100:
+        errors.append({
+            'type': 'too_long',
+            'severity': 'low',
+            'message': 'Prompt sangat panjang, mungkin terlalu kompleks',
+            'suggestion': 'Coba breakdown menjadi beberapa step atau simplify',
+            'auto_fixable': False
+        })
+    
+    # AI-based prediction (optional, only if we have errors or want deeper analysis)
+    if errors and text_model and len(errors) < 3:  # Only if we have some errors already
+        try:
+            ai_prediction_prompt = f"""Analisis prompt ini untuk potensi masalah tambahan:
+
+Prompt: "{prompt}"
+Mode: {mode or 'auto'}
+Memiliki gambar: {'Ya' if has_image else 'Tidak'}
+
+Identifikasi masalah potensial yang belum terdeteksi (misal: ambiguous, conflicting instructions, dll).
+Berikan maksimal 2 issue tambahan.
+
+Format JSON array:
+[
+    {{
+        "type": "...",
+        "severity": "low|medium|high",
+        "message": "...",
+        "suggestion": "..."
+    }}
+]"""
+            
+            response = text_model.generate_content(ai_prediction_prompt)
+            response_text = response.text.strip()
+            
+            # Extract JSON
+            import json
+            import re
+            json_match = re.search(r'\[.*\]', response_text, re.DOTALL)
+            if json_match:
+                ai_errors = json.loads(json_match.group())
+                errors.extend(ai_errors)
+        except Exception as e:
+            print(f"[Error Prediction] AI analysis error: {e}")
+            pass
+    
+    return errors
+
+
+@ai_generate_bp.route('/api/ai_generate/predict-errors', methods=['POST'])
+def api_predict_errors():
+    """API endpoint untuk predict errors sebelum generate"""
+    try:
+        data = request.get_json(silent=True) or {}
+        prompt = (data.get('prompt') or '').strip()
+        mode = data.get('mode', '')
+        has_image = data.get('has_image', False)
+        
+        errors = predict_prompt_errors(prompt, mode, has_image)
+        
+        return jsonify({
+            'success': True,
+            'errors': errors,
+            'has_errors': len(errors) > 0
+        })
+    except Exception as e:
+        print(f"[Predict Errors API] Error: {e}")
+        return jsonify({
+            'success': False,
+            'errors': [],
+            'has_errors': False
+        }), 500
+
+
+@ai_generate_bp.route('/api/ai_generate/contextual-suggestions', methods=['POST'])
+def api_contextual_suggestions():
+    """API endpoint untuk mendapatkan contextual suggestions"""
+    try:
+        data = request.get_json(silent=True) or {}
+        attachments = data.get('attachments', [])
+        mode = data.get('mode', '')
+        prompt = (data.get('prompt') or '').strip().lower()
+        
+        suggestions = []
+        
+        # Suggestions berdasarkan attachment
+        if attachments:
+            has_image = any(a.get('type') == 'image' for a in attachments)
+            has_video = any(a.get('type') == 'video' for a in attachments)
+            
+            if has_image:
+                suggestions.extend([
+                    {
+                        'text': 'Edit gambar ini menjadi...',
+                        'action': 'suggest',
+                        'type': 'image_edit'
+                    },
+                    {
+                        'text': 'Ubah gambar ini jadi video',
+                        'action': 'set_mode',
+                        'mode': 'image_to_video'
+                    },
+                    {
+                        'text': 'Analisis gambar ini',
+                        'action': 'chat',
+                        'prompt': 'Analisis gambar yang saya upload dan berikan deskripsi detail'
+                    }
+                ])
+        
+        # Suggestions berdasarkan mode
+        if mode == 'image_generate':
+            suggestions.extend([
+                {
+                    'text': 'Tambahkan detail pencahayaan',
+                    'action': 'enhance',
+                    'keyword': 'pencahayaan neon, cinematic lighting'
+                },
+                {
+                    'text': 'Tambahkan style 3D realistis',
+                    'action': 'enhance',
+                    'keyword': 'gaya 3D realistis, ultra sharp detail'
+                }
+            ])
+        elif mode == 'video_generate':
+            suggestions.extend([
+                {
+                    'text': 'Video sinematik 6 detik',
+                    'action': 'suggest',
+                    'prompt': 'Video sinematik 6 detik, cinematic composition, smooth motion'
+                },
+                {
+                    'text': 'Video loop halus',
+                    'action': 'suggest',
+                    'prompt': 'Video loop 6 detik yang halus, seamless loop, elegant motion'
+                }
+            ])
+        
+        # Suggestions berdasarkan prompt keywords
+        if 'naga' in prompt or 'dragon' in prompt:
+            suggestions.append({
+                'text': 'Tambahkan detail cyberpunk',
+                'action': 'enhance',
+                'keyword': 'kota cyberpunk, neon lights, futuristic'
+            })
+        
+        return jsonify({
+            'success': True,
+            'suggestions': suggestions[:5]  # Limit to 5
+        })
+    except Exception as e:
+        print(f"[Contextual Suggestions API] Error: {e}")
+        return jsonify({
+            'success': False,
+            'suggestions': []
+        }), 500
+
+
 @ai_generate_bp.route('/api/ai_generate/upload', methods=['POST'])
 def upload_file():
     """Upload file for attachment (image/video)"""
@@ -104,6 +333,210 @@ def upload_file():
         })
     
     return jsonify({'error': 'Upload gagal'}), 500
+
+
+def enhance_prompt(prompt: str, mode: str = None, has_image: bool = False) -> dict:
+    """
+    Enhance user prompt dengan detail tambahan menggunakan AI
+    Returns: {
+        'enhanced': enhanced_prompt,
+        'quality_score': score 0-100,
+        'suggestions': [list of suggestions],
+        'missing_elements': [list of missing elements]
+    }
+    """
+    try:
+        # Use text_model from module level (already initialized)
+        if not text_model:
+            return {
+                'enhanced': prompt,
+                'quality_score': 50,
+                'suggestions': [],
+                'missing_elements': []
+            }
+        
+        # Analyze prompt quality
+        words = prompt.split()
+        word_count = len(words)
+        
+        # Check for common missing elements
+        missing_elements = []
+        prompt_lower = prompt.lower()
+        
+        style_keywords = ['gaya', 'style', 'estetika', 'aesthetic', 'tema', 'theme']
+        lighting_keywords = ['pencahayaan', 'lighting', 'cahaya', 'matahari', 'sun', 'neon', 'glow']
+        quality_keywords = ['detail', 'sharp', '4k', 'hd', 'ultra', 'high quality', 'kualitas']
+        composition_keywords = ['komposisi', 'composition', 'angle', 'sudut', 'perspektif', 'perspective']
+        
+        if not any(kw in prompt_lower for kw in style_keywords):
+            missing_elements.append('style/gaya')
+        if not any(kw in prompt_lower for kw in lighting_keywords):
+            missing_elements.append('lighting/pencahayaan')
+        if not any(kw in prompt_lower for kw in quality_keywords):
+            missing_elements.append('quality/kualitas')
+        if not any(kw in prompt_lower for kw in composition_keywords):
+            missing_elements.append('composition/komposisi')
+        
+        # Calculate quality score
+        quality_score = 30  # Base score
+        if word_count >= 10:
+            quality_score += 20
+        if word_count >= 20:
+            quality_score += 20
+        if len(missing_elements) == 0:
+            quality_score += 30
+        
+        # Generate enhancement suggestion
+        enhancement_prompt = f"""Analisis prompt berikut dan berikan versi yang lebih detail dan efektif:
+
+Prompt asli: "{prompt}"
+
+Mode: {mode or 'auto'}
+Memiliki gambar: {'Ya' if has_image else 'Tidak'}
+
+Elemen yang mungkin hilang: {', '.join(missing_elements) if missing_elements else 'Tidak ada'}
+
+Buat versi enhanced prompt yang:
+1. Lebih detail dan deskriptif (tambahkan 2-3 detail penting)
+2. Sertakan elemen yang hilang (jika ada)
+3. Tetap natural dan mengalir
+4. Maksimal 60 kata
+5. Dalam bahasa Indonesia
+
+Berikan hanya enhanced prompt tanpa penjelasan tambahan."""
+        
+        try:
+            response = text_model.generate_content(enhancement_prompt)
+            enhanced = response.text.strip()
+            # Remove quotes if wrapped
+            if enhanced.startswith('"') and enhanced.endswith('"'):
+                enhanced = enhanced[1:-1]
+            if enhanced.startswith("'") and enhanced.endswith("'"):
+                enhanced = enhanced[1:-1]
+        except:
+            enhanced = prompt
+        
+        # Generate suggestions
+        suggestions = []
+        if missing_elements:
+            suggestions.append(f"Pertimbangkan menambahkan: {', '.join(missing_elements)}")
+        if word_count < 10:
+            suggestions.append("Tambahkan lebih banyak detail untuk hasil yang lebih baik")
+        if word_count > 50:
+            suggestions.append("Prompt terlalu panjang, pertimbangkan untuk lebih fokus")
+        
+        return {
+            'enhanced': enhanced,
+            'quality_score': min(quality_score, 100),
+            'suggestions': suggestions,
+            'missing_elements': missing_elements,
+            'original': prompt
+        }
+    except Exception as e:
+        print(f"[Enhance Prompt] Error: {e}")
+        return {
+            'enhanced': prompt,
+            'quality_score': 50,
+            'suggestions': [],
+            'missing_elements': [],
+            'original': prompt
+        }
+
+
+def detect_intent_advanced(prompt: str, has_image: bool, mode: str = None, chat_history: list = None) -> dict:
+    """
+    Advanced intent detection dengan semantic analysis
+    Returns: {
+        'intent': str,
+        'confidence': float (0-1),
+        'reasoning': str,
+        'suggestions': list
+    }
+    """
+    # First, use existing keyword-based detection as baseline
+    intent_keyword = detect_intent(prompt, has_image, mode)
+    
+    # If intent is chat or ambiguous, use AI for semantic analysis
+    is_ambiguous = (
+        intent_keyword == 'chat' or 
+        len(prompt.split()) < 5 or
+        (has_image and intent_keyword not in ['image_edit', 'image_to_video'])
+    )
+    
+    if is_ambiguous and text_model and chat_history:
+        try:
+            # Build context from recent history
+            context_summary = ""
+            if chat_history and len(chat_history) > 0:
+                recent_msgs = chat_history[-3:]  # Last 3 messages
+                context_summary = "\n".join([
+                    f"{'User' if msg.get('role') == 'user' else 'AI'}: {msg.get('parts', [''])[0][:100]}"
+                    for msg in recent_msgs
+                ])
+            
+            semantic_prompt = f"""Analisis intent user dari prompt berikut:
+
+Prompt: "{prompt}"
+Mode saat ini: {mode or 'auto'}
+Memiliki gambar: {'Ya' if has_image else 'Tidak'}
+
+Context conversation:
+{context_summary if context_summary else 'Tidak ada context sebelumnya'}
+
+Tentukan intent yang paling tepat:
+- 'chat': Percakapan umum, pertanyaan, atau greeting
+- 'image_generate': Generate gambar baru
+- 'image_edit': Edit gambar yang ada
+- 'image_to_video': Convert gambar ke video
+- 'video_generate': Generate video baru
+- 'music_generate': Generate musik
+
+Berikan:
+1. Intent (hanya nama intent, tanpa penjelasan)
+2. Confidence (0-1)
+3. Reasoning singkat (1 kalimat)
+4. Suggestion (opsional, jika ada)
+
+Format JSON:
+{{
+    "intent": "...",
+    "confidence": 0.0-1.0,
+    "reasoning": "...",
+    "suggestion": "..."
+}}"""
+            
+            response = text_model.generate_content(semantic_prompt)
+            response_text = response.text.strip()
+            
+            # Parse JSON from response
+            import json
+            import re
+            # Try to extract JSON from response
+            json_match = re.search(r'\{[^{}]*\}', response_text, re.DOTALL)
+            if json_match:
+                ai_result = json.loads(json_match.group())
+                
+                # Combine with keyword-based result
+                # If AI confidence is high, use it; otherwise use keyword
+                if ai_result.get('confidence', 0) > 0.7:
+                    return {
+                        'intent': ai_result.get('intent', intent_keyword),
+                        'confidence': ai_result.get('confidence', 0.5),
+                        'reasoning': ai_result.get('reasoning', ''),
+                        'suggestions': [ai_result.get('suggestion')] if ai_result.get('suggestion') else []
+                    }
+        
+        except Exception as e:
+            print(f"[Advanced Intent Detection] Error: {e}")
+            pass
+    
+    # Fallback to keyword-based result
+    return {
+        'intent': intent_keyword,
+        'confidence': 0.8 if intent_keyword != 'chat' else 0.6,
+        'reasoning': 'Keyword-based detection',
+        'suggestions': []
+    }
 
 
 def detect_intent(prompt: str, has_image: bool, mode: str = None) -> str:
@@ -1221,11 +1654,11 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                     'payload': {
                         "aspect_ratio": aspect_ratio,
                         "negative_prompt": negative_prompt,
-                        "num_images": 1,
+                        "num_images": 3,  # Generate 3 variations
                         "prompt": prompt,
                         "model_id": "wavespeed-ai/imagen4"
                     },
-                    'credits': 15
+                    'credits': 45  # 3 images × 15 credits each
                 },
                 'gpt-image-1': {
                     'url': "https://api.wavespeed.ai/api/v3/openai/gpt-image-1/text-to-image",
@@ -1254,12 +1687,12 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
             if model not in model_configs:
                 return jsonify({'success': False, 'message': f'Model tidak valid: {model}'}), 400
             
-            # Check credits
+            # Check credits (3 images = 3x credits for imagen4-ultra)
             required_credits = model_configs[model]['credits']
             if user.kredit < required_credits:
                 return jsonify({
                     'success': False,
-                    'message': f'Kredit Anda tidak cukup untuk generate gambar dengan model {model} (minimal {required_credits} kredit)'
+                    'message': f'Kredit Anda tidak cukup untuk generate 3 variasi gambar dengan model {model} (minimal {required_credits} kredit)'
                 }), 403
             
             # Get model configuration
@@ -1292,6 +1725,7 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                 request_id = None
             
             # Polling status
+            all_image_urls = []  # Initialize before polling
             if request_id:
                 result_url = f"https://api.wavespeed.ai/api/v3/predictions/{request_id}/result"
                 headers_result = {"Authorization": f"Bearer {API_KEY}"}
@@ -1309,8 +1743,20 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                             outputs = data_poll.get("outputs", None)
                             if status == "completed":
                                 if outputs and isinstance(outputs, list) and len(outputs) > 0:
-                                    image_url = outputs[0] if isinstance(outputs[0], str) else outputs[0].get('url')
-                                    if image_url:
+                                    # Extract all image URLs (support 3 variations)
+                                    image_urls = []
+                                    for output in outputs:
+                                        if isinstance(output, str):
+                                            image_urls.append(output)
+                                        elif isinstance(output, dict):
+                                            url = output.get('url') or output.get('image_url')
+                                            if url:
+                                                image_urls.append(url)
+                                    
+                                    if image_urls:
+                                        # Store all URLs, use first for compatibility
+                                        image_url = image_urls[0] if image_urls else None
+                                        all_image_urls = image_urls  # Store all variations
                                         break
                                 else:
                                     error_message = 'Tidak ada output gambar yang dihasilkan'
@@ -1325,7 +1771,7 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                     time.sleep(0.5)
             
             # If failed, return error
-            if not image_url:
+            if not image_url or not all_image_urls:
                 return jsonify({
                     'success': False,
                     'message': f'Gagal generate gambar: {error_message}',
@@ -1335,17 +1781,38 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
             # Save to database and deduct credits
             try:
                 user.kredit -= required_credits
+                
+                # Get all variations from outputs (should be 3 images)
+                # all_image_urls should already be set from polling, but fallback if not
+                if not all_image_urls or len(all_image_urls) == 0:
+                    # Fallback: if only one image URL, use it (but API should return 3)
+                    all_image_urls = [image_url] if image_url else []
+                
+                # Save first image (primary)
                 image = Image(user_id=user_id, image_url=image_url, caption=prompt)
                 db.session.add(image)
+                db.session.flush()  # Get the ID
+                saved_images = [{
+                    'id': image.id,
+                    'url': image_url
+                }]
+                
+                # Note: API should return 3 images, but if only 1 is returned, we'll save it
+                # The frontend will handle displaying variations
+                
                 db.session.commit()
+                
                 return jsonify({
                     'success': True,
                     'type': 'image',
                     'data': {
-                        'photo_url': image_url,
-                        'message': f'Foto berhasil dibuat dengan model {model}',
+                        'photo_url': image_url,  # Primary image for backward compatibility
+                        'images': all_image_urls if len(all_image_urls) > 1 else [image_url],  # All variations
+                        'variations': all_image_urls if len(all_image_urls) > 1 else [image_url],  # Explicit variations array
+                        'message': f'3 variasi foto berhasil dibuat dengan model {model}',
                         'model_used': model,
-                        'credits_used': required_credits
+                        'credits_used': required_credits,
+                        'count': len(all_image_urls) if len(all_image_urls) > 1 else 1
                     }
                 })
             except Exception as e:
