@@ -783,6 +783,39 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
+    /* Download Button Overlay - Pojok Kanan Atas */
+    .ai-variation-download {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: rgba(76, 126, 255, 0.25);
+        border: 1px solid rgba(76, 126, 255, 0.5);
+        color: var(--accent-neon);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(10px);
+        z-index: 2;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        text-decoration: none;
+    }
+
+    .ai-variation-download:hover {
+        background: rgba(76, 126, 255, 0.4);
+        border-color: var(--accent-neon);
+        transform: scale(1.1);
+        box-shadow: 0 6px 16px rgba(76, 126, 255, 0.5);
+    }
+
+    .ai-variation-download:active {
+        transform: scale(0.95);
+    }
+
     @media (max-width: 768px) {
         .ai-variation-number {
             top: 10px;
@@ -790,75 +823,76 @@
             padding: 6px 12px;
             font-size: 12px;
         }
-    }
 
-    .ai-variation-actions {
-        display: flex;
-        gap: 6px;
-        padding: 12px;
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(10px);
-        justify-content: center;
-        flex-wrap: wrap;
-    }
-
-    @media (max-width: 768px) {
-        .ai-variation-actions {
-            padding: 12px;
-            gap: 8px;
-            flex-wrap: nowrap; /* Keep buttons in one row on mobile */
-        }
-    }
-
-    .ai-variation-actions button,
-    .ai-variation-actions a {
-        padding: 8px 12px;
-        background: rgba(76, 126, 255, 0.2);
-        border: 1px solid rgba(76, 126, 255, 0.4);
-        border-radius: 8px;
-        color: var(--text-primary);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 12px;
-        min-width: 44px; /* Minimum touch target size */
-        min-height: 44px;
-        flex: 1;
-        max-width: 120px;
-    }
-
-    @media (max-width: 768px) {
-        .ai-variation-actions button,
-        .ai-variation-actions a {
-            padding: 10px 14px;
-            font-size: 13px;
-            min-width: 50px;
-            min-height: 48px;
-            flex: 1;
-            max-width: none;
-        }
-        
-        .ai-variation-actions button i,
-        .ai-variation-actions a i {
+        .ai-variation-download {
+            top: 10px;
+            right: 10px;
+            width: 36px;
+            height: 36px;
             font-size: 16px;
         }
     }
 
-    .ai-variation-actions button:hover,
-    .ai-variation-actions a:hover {
-        background: rgba(76, 126, 255, 0.4);
+    /* Simplified Actions - Analisa & Copy URL */
+    .ai-variation-actions {
+        display: flex;
+        gap: 8px;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(10px);
+        justify-content: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .ai-variation-actions button {
+        padding: 0;
+        width: 44px;
+        height: 44px;
+        background: rgba(76, 126, 255, 0.2);
+        border: 1px solid rgba(76, 126, 255, 0.4);
+        border-radius: 10px;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        flex: 0 0 auto;
+    }
+
+    .ai-variation-actions button:first-child {
+        background: rgba(147, 51, 234, 0.2);
+        border-color: rgba(147, 51, 234, 0.4);
+    }
+
+    .ai-variation-actions button:first-child:hover {
+        background: rgba(147, 51, 234, 0.3);
+        border-color: rgba(147, 51, 234, 0.6);
+    }
+
+    .ai-variation-actions button:first-child i {
+        color: #a78bfa;
+    }
+
+    .ai-variation-actions button:hover {
+        background: rgba(76, 126, 255, 0.3);
         border-color: var(--accent-neon);
-        transform: scale(1.05);
+        transform: translateY(-2px);
+    }
+
+    .ai-variation-actions button:active {
+        transform: translateY(0);
     }
 
     @media (max-width: 768px) {
-        .ai-variation-actions button:active,
-        .ai-variation-actions a:active {
-            transform: scale(0.95);
-            background: rgba(76, 126, 255, 0.5);
+        .ai-variation-actions {
+            padding: 10px;
+        }
+
+        .ai-variation-actions button {
+            width: 40px;
+            height: 40px;
+            font-size: 16px;
         }
     }
 
@@ -1623,6 +1657,303 @@
         background: rgba(255, 77, 77, 0.9);
         border-color: rgba(255, 77, 77, 1);
         transform: rotate(90deg) scale(1.1);
+    }
+
+    /* AI Recommendations Modal */
+    .ai-recommendations-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 10001;
+        background: rgba(0, 0, 0, 0.95);
+        backdrop-filter: blur(20px);
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        overflow-y: auto;
+        animation: fadeIn 0.3s ease;
+    }
+
+    .ai-recommendations-modal.active {
+        display: flex;
+    }
+
+    .ai-recommendations-content {
+        background: linear-gradient(135deg, rgba(29, 27, 63, 0.98) 0%, rgba(21, 18, 58, 0.98) 100%);
+        border: 2px solid rgba(76, 126, 255, 0.3);
+        border-radius: 20px;
+        max-width: 600px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 
+            0 25px 50px -12px rgba(0, 0, 0, 0.8),
+            0 0 40px rgba(76, 126, 255, 0.3);
+        backdrop-filter: blur(20px);
+        animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .ai-recommendations-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 24px;
+        border-bottom: 1px solid rgba(76, 126, 255, 0.2);
+    }
+
+    .ai-recommendations-header h3 {
+        margin: 0;
+        color: var(--accent-neon);
+        font-size: 18px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .ai-recommendations-close {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-primary);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        transition: all 0.2s ease;
+        font-size: 16px;
+    }
+
+    .ai-recommendations-close:hover {
+        background: rgba(255, 77, 77, 0.2);
+        border-color: rgba(255, 77, 77, 0.5);
+        transform: rotate(90deg);
+    }
+
+    .ai-recommendations-body {
+        padding: 20px 24px;
+    }
+
+    .ai-recommendations-image-preview {
+        margin-bottom: 20px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: rgba(0, 0, 0, 0.3);
+    }
+
+    .ai-recommendations-image-preview img {
+        width: 100%;
+        height: auto;
+        max-height: 300px;
+        object-fit: contain;
+        display: block;
+    }
+
+    .ai-recommendations-analysis {
+        margin-bottom: 20px;
+        padding: 16px;
+        background: rgba(76, 126, 255, 0.08);
+        border: 1px solid rgba(76, 126, 255, 0.2);
+        border-radius: 12px;
+        color: var(--text-primary);
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    .ai-recommendations-loading {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .ai-skeleton {
+        height: 12px;
+        background: linear-gradient(90deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 75%);
+        background-size: 200% 100%;
+        border-radius: 6px;
+        animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+
+    .ai-recommendations-models {
+        margin-bottom: 20px;
+    }
+
+    .ai-recommendations-models-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--accent-neon);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .ai-model-recommendations {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .ai-model-chip {
+        padding: 10px 16px;
+        background: rgba(76, 126, 255, 0.15);
+        border: 1px solid rgba(76, 126, 255, 0.3);
+        border-radius: 10px;
+        color: var(--text-primary);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .ai-model-chip.recommended {
+        background: rgba(76, 126, 255, 0.25);
+        border-color: var(--accent-neon);
+        box-shadow: 0 0 15px rgba(76, 126, 255, 0.3);
+    }
+
+    .ai-model-chip:hover {
+        background: rgba(76, 126, 255, 0.3);
+        border-color: var(--accent-neon);
+        transform: translateY(-2px);
+    }
+
+    .ai-model-chip i {
+        color: var(--accent-neon);
+        font-size: 14px;
+    }
+
+    .ai-recommendations-suggestions {
+        margin-bottom: 20px;
+    }
+
+    .ai-recommendations-suggestions-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--accent-neon);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .ai-suggestion-item {
+        padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        margin-bottom: 8px;
+        color: var(--text-primary);
+        font-size: 13px;
+        line-height: 1.5;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .ai-suggestion-item i {
+        color: var(--accent-neon);
+        font-size: 14px;
+        margin-top: 2px;
+        flex-shrink: 0;
+    }
+
+    .ai-recommendations-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .ai-recommendations-actions-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--accent-neon);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .ai-quick-action-btn {
+        padding: 12px 16px;
+        background: linear-gradient(135deg, rgba(76, 126, 255, 0.2) 0%, rgba(93, 95, 239, 0.2) 100%);
+        border: 1px solid rgba(76, 126, 255, 0.4);
+        border-radius: 10px;
+        color: var(--text-primary);
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .ai-quick-action-btn:hover {
+        background: linear-gradient(135deg, rgba(76, 126, 255, 0.3) 0%, rgba(93, 95, 239, 0.3) 100%);
+        border-color: var(--accent-neon);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(76, 126, 255, 0.3);
+    }
+
+    .ai-quick-action-btn .action-info {
+        flex: 1;
+    }
+
+    .ai-quick-action-btn .action-label {
+        font-weight: 600;
+        color: var(--accent-neon);
+        margin-bottom: 4px;
+    }
+
+    .ai-quick-action-btn .action-prompt {
+        font-size: 12px;
+        color: var(--text-secondary);
+        opacity: 0.8;
+    }
+
+    .ai-quick-action-btn .action-icon {
+        font-size: 18px;
+        color: var(--accent-neon);
+    }
+
+    @media (max-width: 768px) {
+        .ai-recommendations-content {
+            max-width: 95vw;
+            margin: 10px;
+            max-height: 95vh;
+        }
+
+        .ai-recommendations-header,
+        .ai-recommendations-body {
+            padding: 16px;
+        }
+
+        .ai-model-chip,
+        .ai-quick-action-btn {
+            font-size: 12px;
+            padding: 10px 14px;
+        }
     }
 
     /* Premium Loading Skeleton */
@@ -2777,6 +3108,33 @@
     </div>
 </div>
 
+<!-- AI Recommendations Modal -->
+<div class="ai-recommendations-modal" id="recommendationsModal">
+    <div class="ai-recommendations-content">
+        <div class="ai-recommendations-header">
+            <h3><i class="bi bi-magic"></i> Rekomendasi AI</h3>
+            <button class="ai-recommendations-close" id="recommendationsClose">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="ai-recommendations-body">
+            <div class="ai-recommendations-image-preview">
+                <img id="recommendationsImage" src="" alt="Preview">
+            </div>
+            <div class="ai-recommendations-analysis" id="recommendationsAnalysis">
+                <div class="ai-recommendations-loading">
+                    <div class="ai-skeleton"></div>
+                    <div class="ai-skeleton"></div>
+                    <div class="ai-skeleton"></div>
+                </div>
+            </div>
+            <div class="ai-recommendations-models" id="recommendationsModels"></div>
+            <div class="ai-recommendations-suggestions" id="recommendationsSuggestions"></div>
+            <div class="ai-recommendations-actions" id="recommendationsActions"></div>
+        </div>
+    </div>
+</div>
+
 <!-- Premium Toast Container -->
 <div class="ai-toast-container" id="toastContainer"></div>
 
@@ -3888,6 +4246,261 @@
         // Make openLightbox globally available
         window.openLightbox = openLightbox;
 
+        // AI Recommendations Modal
+        const recommendationsModal = document.getElementById('recommendationsModal');
+        const recommendationsClose = document.getElementById('recommendationsClose');
+        const recommendationsImage = document.getElementById('recommendationsImage');
+        const recommendationsAnalysis = document.getElementById('recommendationsAnalysis');
+        const recommendationsModels = document.getElementById('recommendationsModels');
+        const recommendationsSuggestions = document.getElementById('recommendationsSuggestions');
+        const recommendationsActions = document.getElementById('recommendationsActions');
+
+        async function showAIRecommendations(imageSrc) {
+            if (!recommendationsModal || !recommendationsImage) return;
+            
+            // Show modal dengan loading state
+            recommendationsImage.src = imageSrc;
+            recommendationsModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Show loading
+            recommendationsAnalysis.innerHTML = `
+                <div class="ai-recommendations-loading">
+                    <div class="ai-skeleton" style="width: 100%"></div>
+                    <div class="ai-skeleton" style="width: 80%"></div>
+                    <div class="ai-skeleton" style="width: 90%"></div>
+                </div>
+            `;
+            recommendationsModels.innerHTML = '';
+            recommendationsSuggestions.innerHTML = '';
+            recommendationsActions.innerHTML = '';
+            
+            try {
+                // Call API untuk analyze image
+                const res = await fetch('/api/ai_generate/analyze-image', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        image_url: imageSrc
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success) {
+                    // Show analysis
+                    if (data.analysis) {
+                        recommendationsAnalysis.innerHTML = `
+                            <div style="display: flex; align-items: flex-start; gap: 10px;">
+                                <i class="bi bi-eye" style="color: var(--accent-neon); font-size: 16px; margin-top: 2px;"></i>
+                                <div style="flex: 1;">
+                                    <strong style="color: var(--accent-neon); display: block; margin-bottom: 6px;">Analisis Gambar:</strong>
+                                    <div>${data.analysis}</div>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        recommendationsAnalysis.innerHTML = '';
+                    }
+                    
+                    // Show recommended models
+                    if (data.recommended_models && data.recommended_models.length > 0) {
+                        const modelNames = {
+                            'imagen4-ultra': { name: 'Imagen 4 Ultra', icon: 'bi-stars' },
+                            'gpt-image-1': { name: 'GPT Image 1', icon: 'bi-image' },
+                            'nano-banana': { name: 'Nano Banana', icon: 'bi-palette' }
+                        };
+                        
+                        recommendationsModels.innerHTML = `
+                            <div class="ai-recommendations-models-title">
+                                <i class="bi bi-cpu"></i> Model yang Direkomendasikan
+                            </div>
+                            <div class="ai-model-recommendations">
+                                ${data.recommended_models.map((model, idx) => {
+                                    const modelInfo = modelNames[model] || { name: model, icon: 'bi-circle' };
+                                    return `
+                                        <div class="ai-model-chip ${idx === 0 ? 'recommended' : ''}" onclick="
+                                            const modeSelect = document.getElementById('mode');
+                                            if (modeSelect) modeSelect.value = 'image_generate';
+                                            const modeChips = document.querySelectorAll('.ai-mode-chip');
+                                            modeChips.forEach(c => c.classList.toggle('active', c.dataset.mode === 'image_generate'));
+                                            if (window.showToast) window.showToast('Model ${modelInfo.name} dipilih', 'success');
+                                            closeRecommendations();
+                                        ">
+                                            <i class="bi ${modelInfo.icon}"></i>
+                                            <span>${modelInfo.name}</span>
+                                            ${idx === 0 ? '<i class="bi bi-star-fill" style="color: #FBBF24; font-size: 12px;"></i>' : ''}
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        `;
+                    }
+                    
+                    // Show suggestions
+                    if (data.suggestions && data.suggestions.length > 0) {
+                        recommendationsSuggestions.innerHTML = `
+                            <div class="ai-recommendations-suggestions-title">
+                                <i class="bi bi-lightbulb"></i> Saran
+                            </div>
+                            ${data.suggestions.map(suggestion => `
+                                <div class="ai-suggestion-item">
+                                    <i class="bi bi-check-circle"></i>
+                                    <span>${suggestion}</span>
+                                </div>
+                            `).join('')}
+                        `;
+                    }
+                    
+                    // Show quick actions
+                    if (data.quick_actions && data.quick_actions.length > 0) {
+                        recommendationsActions.innerHTML = `
+                            <div class="ai-recommendations-actions-title">
+                                <i class="bi bi-lightning"></i> Quick Actions
+                            </div>
+                            ${data.quick_actions.map((action, idx) => {
+                                const actionIcons = {
+                                    'edit': 'bi-pencil',
+                                    'generate': 'bi-magic',
+                                    'video': 'bi-play-circle',
+                                    'enhance': 'bi-stars',
+                                    'style_transfer': 'bi-palette'
+                                };
+                                const actionLabel = action.label || (action.action === 'edit' ? 'Edit' : action.action === 'generate' ? 'Generate' : action.action === 'style_transfer' ? 'Style Transfer' : 'Action');
+                                return `
+                                    <button class="ai-quick-action-btn" onclick="
+                                        const promptInput = document.getElementById('aiPrompt');
+                                        const modeSelect = document.getElementById('mode');
+                                        const attachInput = document.getElementById('fileInput');
+                                        
+                                        // Set prompt and mode
+                                        if (promptInput) promptInput.value = '${action.prompt.replace(/'/g, "\\'")}';
+                                        if (modeSelect) modeSelect.value = '${action.mode}';
+                                        
+                                        // Update mode chips
+                                        const modeChips = document.querySelectorAll('.ai-mode-chip');
+                                        modeChips.forEach(c => c.classList.toggle('active', c.dataset.mode === '${action.mode}'));
+                                        
+                                        // For edit mode, set image if available
+                                        if ('${action.mode}' === 'image_edit' && attachInput) {
+                                            // User perlu upload image untuk edit
+                                            if (window.showToast) window.showToast('Upload gambar untuk edit', 'info');
+                                        }
+                                        
+                                        if (promptInput) {
+                                            promptInput.focus();
+                                            if (typeof autoResizeTextarea === 'function') autoResizeTextarea();
+                                            if (typeof analyzePromptQuality === 'function') analyzePromptQuality();
+                                        }
+                                        closeRecommendations();
+                                        if (window.showToast) window.showToast('Quick action: ${actionLabel}', 'success');
+                                    ">
+                                        <div class="action-info">
+                                            <div class="action-label">${actionLabel}</div>
+                                            <div class="action-prompt">${action.prompt}</div>
+                                        </div>
+                                        <i class="bi ${actionIcons[action.action] || 'bi-arrow-right'} action-icon"></i>
+                                    </button>
+                                `;
+                            }).join('')}
+                        `;
+                    }
+                    
+                    // Show style transfer options if available
+                    if (data.style_transfer && data.style_transfer.length > 0) {
+                        const styleTransferHTML = `
+                            <div class="ai-recommendations-actions-title" style="margin-top: 20px;">
+                                <i class="bi bi-palette"></i> Style Transfer
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-top: 12px;">
+                                ${data.style_transfer.map(style => `
+                                    <button class="ai-model-chip" onclick="
+                                        const promptInput = document.getElementById('aiPrompt');
+                                        const modeSelect = document.getElementById('mode');
+                                        if (promptInput) promptInput.value = '${style.prompt.replace(/'/g, "\\'")}';
+                                        if (modeSelect) modeSelect.value = '${style.mode}';
+                                        const modeChips = document.querySelectorAll('.ai-mode-chip');
+                                        modeChips.forEach(c => c.classList.toggle('active', c.dataset.mode === '${style.mode}'));
+                                        if (promptInput) {
+                                            promptInput.focus();
+                                            if (typeof autoResizeTextarea === 'function') autoResizeTextarea();
+                                            if (typeof analyzePromptQuality === 'function') analyzePromptQuality();
+                                        }
+                                        closeRecommendations();
+                                        if (window.showToast) window.showToast('Style: ${style.name}', 'success');
+                                    ">
+                                        <i class="bi bi-palette"></i>
+                                        <span>${style.name}</span>
+                                    </button>
+                                `).join('')}
+                            </div>
+                        `;
+                        recommendationsActions.innerHTML += styleTransferHTML;
+                    }
+                    
+                    // Show batch suggestions if available
+                    if (data.batch_suggestions && data.batch_suggestions.length > 0) {
+                        const batchHTML = `
+                            <div class="ai-recommendations-suggestions-title" style="margin-top: 20px;">
+                                <i class="bi bi-layers"></i> Batch Processing
+                            </div>
+                            ${data.batch_suggestions.map(suggestion => `
+                                <div class="ai-suggestion-item">
+                                    <i class="bi bi-stack"></i>
+                                    <span>${suggestion}</span>
+                                </div>
+                            `).join('')}
+                        `;
+                        recommendationsSuggestions.innerHTML += batchHTML;
+                    }
+                } else {
+                    recommendationsAnalysis.innerHTML = `
+                        <div style="color: #ff6b6b;">
+                            <i class="bi bi-exclamation-triangle"></i> Gagal menganalisis gambar: ${data.message || 'Unknown error'}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error analyzing image:', error);
+                recommendationsAnalysis.innerHTML = `
+                    <div style="color: #ff6b6b;">
+                        <i class="bi bi-exclamation-triangle"></i> Error: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function closeRecommendations() {
+            if (recommendationsModal) {
+                recommendationsModal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+
+        if (recommendationsClose) {
+            recommendationsClose.addEventListener('click', closeRecommendations);
+        }
+
+        if (recommendationsModal) {
+            recommendationsModal.addEventListener('click', (e) => {
+                if (e.target === recommendationsModal) {
+                    closeRecommendations();
+                }
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && recommendationsModal.classList.contains('active')) {
+                    closeRecommendations();
+                }
+            });
+        }
+
+        // Make showAIRecommendations globally available
+        window.showAIRecommendations = showAIRecommendations;
+
         function closeLightbox() {
             if (lightbox) {
                 lightbox.classList.remove('active');
@@ -4021,12 +4634,35 @@
                 variations.forEach((imgUrl, index) => {
                     gridItems += `
                         <div class="ai-image-variation" data-index="${index}">
-                            <img src="${imgUrl}" alt="AI ${actionLabel} Variasi ${index + 1}" onclick="window.openLightbox('${imgUrl}')" />
+                            <img src="${imgUrl}" alt="AI ${actionLabel} Variasi ${index + 1}" onclick="
+                                // Show AI recommendations on click
+                                if (window.showAIRecommendations) {
+                                    window.showAIRecommendations('${imgUrl}');
+                                } else {
+                                    window.openLightbox('${imgUrl}');
+                                }
+                            " style="cursor: pointer;" />
                             <div class="ai-variation-number">Variasi ${index + 1}</div>
+                            <a href="${imgUrl}" download class="ai-variation-download" title="Download">
+                                <i class="bi bi-download"></i>
+                            </a>
                             <div class="ai-variation-actions">
-                                <button onclick="window.openLightbox('${imgUrl}')" title="Preview"><i class="bi bi-eye"></i></button>
-                                <button onclick="navigator.clipboard.writeText('${imgUrl}')" title="Copy URL"><i class="bi bi-clipboard"></i></button>
-                                <a href="${imgUrl}" download title="Download"><i class="bi bi-download"></i></a>
+                                <button onclick="
+                                    // Show AI recommendations
+                                    if (window.showAIRecommendations) {
+                                        window.showAIRecommendations('${imgUrl}');
+                                    } else {
+                                        window.openLightbox('${imgUrl}');
+                                    }
+                                " title="Analisa dengan AI">
+                                    <i class="bi bi-magic"></i>
+                                </button>
+                                <button onclick="
+                                    navigator.clipboard.writeText('${imgUrl}');
+                                    if (window.showToast) window.showToast('URL disalin!', 'success');
+                                " title="Salin URL">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
                             </div>
                         </div>
                     `;
