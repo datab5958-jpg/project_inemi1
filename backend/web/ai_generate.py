@@ -828,12 +828,12 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
             if not user:
                 return jsonify({'success': False, 'message': 'User tidak ditemukan'}), 404
             
-            # Check credits (nano-banana edit costs 15 credits in fusigaya)
-            required_credits = 15
+            # Check credits (nano-banana edit: 3 variations = 3x credits)
+            required_credits = 45  # 3 images × 15 credits each
             if user.kredit < required_credits:
                 return jsonify({
                     'success': False,
-                    'message': f'Kredit Anda tidak cukup untuk edit gambar (minimal {required_credits} kredit)'
+                    'message': f'Kredit Anda tidak cukup untuk edit 3 variasi gambar (minimal {required_credits} kredit)'
                 }), 403
             
             # Get API key
@@ -872,7 +872,8 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                 "enable_sync_mode": False,
                 "images": validated_images,
                 "output_format": "jpeg",
-                "prompt": prompt
+                "prompt": prompt,
+                "num_images": 3  # Generate 3 variations
             }
             
             print(f'[AI Generate] Nano-banana edit request')
@@ -926,6 +927,7 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                 return jsonify({'success': False, 'message': error_message}), 500
             
             # Polling for results
+            all_image_urls = []  # Initialize before polling
             if 'request_id' in locals():
                 poll_url = f"https://api.wavespeed.ai/api/v3/predictions/{request_id}/result"
                 poll_headers = {"Authorization": f"Bearer {API_KEY}"}
@@ -950,9 +952,22 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                             if status == "completed":
                                 outputs = poll_data.get("outputs", [])
                                 if outputs and len(outputs) > 0:
-                                    image_url_result = outputs[0]
-                                    print(f'[AI Generate] Edit completed: {image_url_result}')
-                                    break
+                                    # Extract all image URLs (support 3 variations)
+                                    image_urls = []
+                                    for output in outputs:
+                                        if isinstance(output, str):
+                                            image_urls.append(output)
+                                        elif isinstance(output, dict):
+                                            url = output.get('url') or output.get('image_url')
+                                            if url:
+                                                image_urls.append(url)
+                                    
+                                    if image_urls:
+                                        # Store all URLs, use first for compatibility
+                                        image_url_result = image_urls[0] if image_urls else None
+                                        all_image_urls = image_urls  # Store all variations
+                                        print(f'[AI Generate] Edit completed: {len(image_urls)} variations')
+                                        break
                                 else:
                                     error_message = 'Tidak ada output gambar yang dihasilkan'
                                     raise Exception(error_message)
@@ -983,7 +998,7 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                     time.sleep(0.1)
                 
                 # If failed, rollback credits and return error
-                if not image_url_result:
+                if not image_url_result or not all_image_urls:
                     try:
                         user.kredit += required_credits
                         db.session.commit()
@@ -999,6 +1014,14 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                 # Success - deduct credits and save to database
                 try:
                     user.kredit -= required_credits
+                    
+                    # Get all variations from outputs (should be 3 images)
+                    # all_image_urls should already be set from polling, but fallback if not
+                    if not all_image_urls or len(all_image_urls) == 0:
+                        # Fallback: if only one image URL, use it (but API should return 3)
+                        all_image_urls = [image_url_result] if image_url_result else []
+                    
+                    # Save first image (primary)
                     image = Image(user_id=user_id, image_url=image_url_result, caption=f"Edit: {prompt}")
                     db.session.add(image)
                     db.session.commit()
@@ -1009,9 +1032,12 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                         'action': 'edit',
                         'url': image_url_result,
                         'data': {
-                            'photo_url': image_url_result,
-                            'message': 'Gambar berhasil diedit menggunakan nano-banana',
-                            'credits_used': required_credits
+                            'photo_url': image_url_result,  # Primary image for backward compatibility
+                            'images': all_image_urls if len(all_image_urls) > 1 else [image_url_result],  # All variations
+                            'variations': all_image_urls if len(all_image_urls) > 1 else [image_url_result],  # Explicit variations array
+                            'message': f'3 variasi gambar berhasil diedit menggunakan nano-banana',
+                            'credits_used': required_credits,
+                            'count': len(all_image_urls) if len(all_image_urls) > 1 else 1
                         }
                     })
                 except Exception as e:
