@@ -190,6 +190,210 @@ def api_predict_errors():
         }), 500
 
 
+def analyze_image_for_recommendations(image_url: str) -> dict:
+    """
+    Analyze image using Gemini Vision dan generate model recommendations
+    Returns: {
+        'analysis': str,
+        'recommended_models': list,
+        'suggestions': list,
+        'quick_actions': list
+    }
+    """
+    try:
+        if not text_model:
+            return {
+                'analysis': '',
+                'recommended_models': [],
+                'suggestions': [],
+                'quick_actions': []
+            }
+        
+        # Use Gemini Vision untuk analyze image
+        from google.generativeai.types import HarmCategory, HarmBlockThreshold
+        import google.generativeai as genai
+        
+        # Try to load image from URL
+        try:
+            import requests
+            from PIL import Image as PILImage
+            from io import BytesIO
+            
+            # Download image
+            response_img = requests.get(image_url, timeout=10)
+            if response_img.status_code == 200:
+                img_data = BytesIO(response_img.content)
+                img = PILImage.open(img_data)
+                
+                # Analyze with Gemini Vision
+                analysis_prompt = """Analisis gambar ini secara detail dan berikan:
+
+1. Deskripsi: Objek utama, style, mood, colors, composition (maksimal 100 kata)
+2. Recommended Models: Model AI yang paling cocok untuk generate/edit gambar seperti ini (dari: imagen4-ultra, gpt-image-1, nano-banana)
+3. Suggestions: 3-5 saran untuk edit/generate yang relevan dengan gambar ini
+4. Quick Actions: Action cepat yang bisa dilakukan (contoh: "Edit dengan style cyberpunk", "Ubah jadi video cinematic", dll)
+
+Format JSON:
+{
+    "description": "...",
+    "recommended_models": ["model1", "model2"],
+    "suggestions": ["suggestion1", "suggestion2"],
+    "quick_actions": [
+        {"action": "edit", "prompt": "prompt suggestion", "mode": "image_edit"},
+        {"action": "generate", "prompt": "prompt suggestion", "mode": "image_generate"}
+    ]
+}"""
+                
+                response = text_model.generate_content(
+                    [analysis_prompt, img],
+                    safety_settings={
+                        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+                        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+                    }
+                )
+                
+                # Parse JSON from response
+                import json
+                import re
+                response_text = response.text.strip()
+                json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', response_text, re.DOTALL)
+                
+                if json_match:
+                    result = json.loads(json_match.group())
+                    return {
+                        'analysis': result.get('description', ''),
+                        'recommended_models': result.get('recommended_models', ['imagen4-ultra']),
+                        'suggestions': result.get('suggestions', []),
+                        'quick_actions': result.get('quick_actions', [])
+                    }
+        except Exception as e:
+            print(f"[Image Analysis] Error processing image: {e}")
+            pass
+        
+        # Fallback: Simple text-based analysis
+        fallback_prompt = f"""Berdasarkan URL gambar ini, berikan rekomendasi model AI yang cocok.
+
+URL: {image_url[:100]}
+
+Rekomendasi model (pilih dari: imagen4-ultra, gpt-image-1, nano-banana):
+Format JSON:
+{{
+    "recommended_models": ["imagen4-ultra"],
+    "suggestions": ["Gunakan model imagen4-ultra untuk hasil yang detail"],
+    "quick_actions": []
+}}"""
+        
+        response = text_model.generate_content(fallback_prompt)
+        response_text = response.text.strip()
+        json_match = re.search(r'\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}', response_text, re.DOTALL)
+        
+        if json_match:
+            result = json.loads(json_match.group())
+            return {
+                'analysis': '',
+                'recommended_models': result.get('recommended_models', ['imagen4-ultra']),
+                'suggestions': result.get('suggestions', []),
+                'quick_actions': result.get('quick_actions', [])
+            }
+        
+    except Exception as e:
+        print(f"[Image Analysis] Error: {e}")
+        pass
+    
+    # Default fallback
+    return {
+        'analysis': '',
+        'recommended_models': ['imagen4-ultra'],
+        'suggestions': [],
+        'quick_actions': []
+    }
+
+
+@ai_generate_bp.route('/api/ai_generate/analyze-image', methods=['POST'])
+def api_analyze_image():
+    """API endpoint untuk analyze image dan get recommendations"""
+    try:
+        data = request.get_json(silent=True) or {}
+        image_url = data.get('image_url', '').strip()
+        
+        if not image_url:
+            return jsonify({
+                'success': False,
+                'message': 'Image URL diperlukan'
+            }), 400
+        
+        # Analyze image
+        recommendations = analyze_image_for_recommendations(image_url)
+        
+        # Enhance with additional smart features
+        enhanced_recommendations = enhance_recommendations_with_context(recommendations, image_url)
+        
+        return jsonify({
+            'success': True,
+            'analysis': enhanced_recommendations.get('analysis', ''),
+            'recommended_models': enhanced_recommendations.get('recommended_models', []),
+            'suggestions': enhanced_recommendations.get('suggestions', []),
+            'quick_actions': enhanced_recommendations.get('quick_actions', []),
+            'style_transfer': enhanced_recommendations.get('style_transfer', []),
+            'batch_suggestions': enhanced_recommendations.get('batch_suggestions', [])
+        })
+    except Exception as e:
+        print(f"[Analyze Image API] Error: {e}")
+        return jsonify({
+            'success': False,
+            'message': str(e)
+        }), 500
+
+
+def enhance_recommendations_with_context(recommendations: dict, image_url: str) -> dict:
+    """
+    Enhance recommendations dengan context-aware suggestions
+    """
+    try:
+        # Add style transfer suggestions
+        style_transfer_options = [
+            {'name': 'Cyberpunk', 'prompt': 'cyberpunk style, neon lights, futuristic', 'mode': 'image_edit'},
+            {'name': 'Oil Painting', 'prompt': 'oil painting style, classical art, renaissance', 'mode': 'image_edit'},
+            {'name': 'Watercolor', 'prompt': 'watercolor painting, soft colors, artistic', 'mode': 'image_edit'},
+            {'name': 'Anime', 'prompt': 'anime style, vibrant colors, manga art', 'mode': 'image_edit'},
+            {'name': 'Photorealistic', 'prompt': 'photorealistic, high detail, professional photography', 'mode': 'image_edit'},
+        ]
+        
+        # Add batch processing suggestions
+        batch_suggestions = [
+            'Generate 3 variations dengan style berbeda',
+            'Buat series dengan theme yang sama',
+            'Edit dengan multiple style secara batch',
+        ]
+        
+        # Add to quick actions if not already present
+        existing_actions = recommendations.get('quick_actions', [])
+        style_transfer_actions = [
+            {
+                'action': 'style_transfer',
+                'prompt': f"{style['prompt']}",
+                'mode': style['mode'],
+                'label': style['name']
+            }
+            for style in style_transfer_options[:3]  # Top 3 styles
+        ]
+        
+        # Combine actions
+        all_actions = existing_actions + style_transfer_actions
+        
+        return {
+            **recommendations,
+            'style_transfer': style_transfer_options,
+            'batch_suggestions': batch_suggestions,
+            'quick_actions': all_actions[:8]  # Limit to 8 actions
+        }
+    except Exception as e:
+        print(f"[Enhance Recommendations] Error: {e}")
+        return recommendations
+
+
 @ai_generate_bp.route('/api/ai_generate/contextual-suggestions', methods=['POST'])
 def api_contextual_suggestions():
     """API endpoint untuk mendapatkan contextual suggestions"""
