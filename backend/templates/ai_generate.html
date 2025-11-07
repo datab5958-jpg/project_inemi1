@@ -79,6 +79,7 @@
         body {
             background-color: #0E0B2C !important;
             background-image: linear-gradient(180deg, #0E0B2C 0%, #1B1F46 50%, #0E0B2C 100%) !important;
+            background-size: 100% 100% !important;
             -webkit-background-size: 100% 100% !important;
         }
     }
@@ -2026,7 +2027,7 @@
         width: 60%;
     }
 
-    /* Premium Toast Notification */
+    /* Premium Toast Notification - Enhanced */
     .ai-toast-container {
         position: fixed;
         top: 20px;
@@ -2034,29 +2035,42 @@
         z-index: 10001;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 16px;
         pointer-events: none;
     }
 
     .ai-toast {
         pointer-events: auto;
-        min-width: 320px;
-        max-width: 400px;
-        padding: 16px 20px;
-        border-radius: 14px;
-        background: linear-gradient(135deg, rgba(29, 27, 63, 0.95) 0%, rgba(21, 18, 58, 0.95) 100%);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(76, 126, 255, 0.3);
+        min-width: 360px;
+        max-width: 450px;
+        padding: 0;
+        border-radius: 16px;
+        background: linear-gradient(135deg, rgba(29, 27, 63, 0.98) 0%, rgba(21, 18, 58, 0.98) 100%);
+        backdrop-filter: blur(30px) saturate(180%);
+        -webkit-backdrop-filter: blur(30px) saturate(180%);
+        border: 1px solid rgba(76, 126, 255, 0.4);
         box-shadow: 
-            0 8px 32px rgba(0, 0, 0, 0.5),
-            0 0 20px rgba(76, 126, 255, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            0 20px 60px rgba(0, 0, 0, 0.6),
+            0 0 40px rgba(76, 126, 255, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15),
+            inset 0 -1px 0 rgba(0, 0, 0, 0.2);
         display: flex;
         align-items: center;
-        gap: 12px;
-        animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        gap: 16px;
+        padding: 18px 20px;
+        animation: toastSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
         position: relative;
         overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .ai-toast:hover {
+        transform: translateX(-4px) scale(1.02);
+        box-shadow: 
+            0 25px 70px rgba(0, 0, 0, 0.7),
+            0 0 50px rgba(76, 126, 255, 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.2);
     }
 
     .ai-toast::before {
@@ -2065,117 +2079,309 @@
         left: 0;
         top: 0;
         bottom: 0;
-        width: 4px;
+        width: 5px;
         background: var(--accent-neon);
+        box-shadow: 0 0 20px rgba(76, 126, 255, 0.6);
+    }
+
+    .ai-toast::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    .ai-toast.success {
+        border-color: rgba(76, 255, 126, 0.5);
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.6),
+            0 0 40px rgba(76, 255, 126, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
 
     .ai-toast.success::before {
-        background: linear-gradient(180deg, #4CFF7E 0%, #22C55E 100%);
+        background: linear-gradient(180deg, #4CFF7E 0%, #22C55E 50%, #16A34A 100%);
+        box-shadow: 0 0 20px rgba(76, 255, 126, 0.6);
+    }
+
+    .ai-toast.error {
+        border-color: rgba(255, 77, 77, 0.5);
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.6),
+            0 0 40px rgba(255, 77, 77, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
 
     .ai-toast.error::before {
-        background: linear-gradient(180deg, #FF4D4D 0%, #EF4444 100%);
+        background: linear-gradient(180deg, #FF6B6B 0%, #FF4D4D 50%, #EF4444 100%);
+        box-shadow: 0 0 20px rgba(255, 77, 77, 0.6);
+    }
+
+    .ai-toast.warning {
+        border-color: rgba(251, 191, 36, 0.5);
+        box-shadow: 
+            0 20px 60px rgba(0, 0, 0, 0.6),
+            0 0 40px rgba(251, 191, 36, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
 
     .ai-toast.warning::before {
-        background: linear-gradient(180deg, #FBBF24 0%, #F59E0B 100%);
+        background: linear-gradient(180deg, #FCD34D 0%, #FBBF24 50%, #F59E0B 100%);
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
     }
 
-    @keyframes slideInRight {
-        from {
-            transform: translateX(120%);
+    .ai-toast.info {
+        border-color: rgba(76, 126, 255, 0.5);
+    }
+
+    .ai-toast.info::before {
+        background: linear-gradient(180deg, #60A5FA 0%, #4C7EFF 50%, #3B82F6 100%);
+        box-shadow: 0 0 20px rgba(76, 126, 255, 0.6);
+    }
+
+    @keyframes toastSlideIn {
+        0% {
+            transform: translateX(120%) scale(0.8);
             opacity: 0;
         }
-        to {
-            transform: translateX(0);
+        60% {
+            transform: translateX(-8px) scale(1.05);
+        }
+        100% {
+            transform: translateX(0) scale(1);
             opacity: 1;
         }
     }
 
     @keyframes slideOutRight {
         from {
-            transform: translateX(0);
+            transform: translateX(0) scale(1);
             opacity: 1;
         }
         to {
-            transform: translateX(120%);
+            transform: translateX(120%) scale(0.8);
             opacity: 0;
         }
     }
 
+    @keyframes shimmer {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(100%);
+        }
+    }
+
+    @keyframes iconPulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.1);
+        }
+    }
+
     .ai-toast-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
         display: grid;
         place-items: center;
-        font-size: 20px;
+        font-size: 24px;
         flex-shrink: 0;
-        background: rgba(76, 126, 255, 0.15);
-        border: 1px solid rgba(76, 126, 255, 0.3);
+        background: rgba(76, 126, 255, 0.2);
+        border: 2px solid rgba(76, 126, 255, 0.4);
+        position: relative;
+        animation: iconPulse 2s ease-in-out infinite;
+        box-shadow: 
+            0 4px 12px rgba(76, 126, 255, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .ai-toast-icon::before {
+        content: '';
+        position: absolute;
+        inset: -2px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(76, 126, 255, 0.3), transparent);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .ai-toast:hover .ai-toast-icon::before {
+        opacity: 1;
     }
 
     .ai-toast.success .ai-toast-icon {
-        background: rgba(76, 255, 126, 0.15);
-        border-color: rgba(76, 255, 126, 0.3);
+        background: linear-gradient(135deg, rgba(76, 255, 126, 0.2), rgba(34, 197, 94, 0.15));
+        border-color: rgba(76, 255, 126, 0.5);
         color: #4CFF7E;
+        box-shadow: 
+            0 4px 12px rgba(76, 255, 126, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
 
     .ai-toast.error .ai-toast-icon {
-        background: rgba(255, 77, 77, 0.15);
-        border-color: rgba(255, 77, 77, 0.3);
-        color: #FF4D4D;
+        background: linear-gradient(135deg, rgba(255, 77, 77, 0.2), rgba(239, 68, 68, 0.15));
+        border-color: rgba(255, 77, 77, 0.5);
+        color: #FF6B6B;
+        box-shadow: 
+            0 4px 12px rgba(255, 77, 77, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
 
     .ai-toast.warning .ai-toast-icon {
-        background: rgba(251, 191, 36, 0.15);
-        border-color: rgba(251, 191, 36, 0.3);
-        color: #FBBF24;
+        background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.15));
+        border-color: rgba(251, 191, 36, 0.5);
+        color: #FCD34D;
+        box-shadow: 
+            0 4px 12px rgba(251, 191, 36, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .ai-toast.info .ai-toast-icon {
+        background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(59, 130, 246, 0.15));
+        border-color: rgba(76, 126, 255, 0.5);
+        color: #60A5FA;
+        box-shadow: 
+            0 4px 12px rgba(76, 126, 255, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
     }
 
     .ai-toast-content {
         flex: 1;
         min-width: 0;
+        padding-right: 8px;
     }
 
     .ai-toast-title {
-        font-weight: 600;
-        font-size: 14px;
+        font-weight: 700;
+        font-size: 15px;
         color: var(--text-primary);
-        margin-bottom: 4px;
+        margin-bottom: 6px;
+        letter-spacing: 0.3px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+
+    .ai-toast.success .ai-toast-title {
+        color: #4CFF7E;
+    }
+
+    .ai-toast.error .ai-toast-title {
+        color: #FF6B6B;
+    }
+
+    .ai-toast.warning .ai-toast-title {
+        color: #FCD34D;
+    }
+
+    .ai-toast.info .ai-toast-title {
+        color: #60A5FA;
     }
 
     .ai-toast-message {
-        font-size: 13px;
+        font-size: 13.5px;
         color: var(--text-secondary);
-        line-height: 1.4;
+        line-height: 1.5;
+        font-weight: 400;
     }
 
     .ai-toast-close {
-        width: 24px;
-        height: 24px;
-        border-radius: 6px;
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
         border: none;
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.08);
         color: var(--text-secondary);
         cursor: pointer;
         display: grid;
         place-items: center;
-        font-size: 14px;
-        transition: all 0.2s ease;
+        font-size: 16px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         flex-shrink: 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ai-toast-close::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+        opacity: 0;
+        transition: opacity 0.3s;
     }
 
     .ai-toast-close:hover {
+        background: rgba(255, 77, 77, 0.2);
+        color: #FF6B6B;
+        transform: rotate(90deg) scale(1.1);
+        box-shadow: 0 4px 12px rgba(255, 77, 77, 0.3);
+    }
+
+    .ai-toast-close:hover::before {
+        opacity: 1;
+    }
+
+    .ai-toast-progress {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
         background: rgba(255, 255, 255, 0.1);
-        color: var(--text-primary);
-        transform: rotate(90deg);
+        overflow: hidden;
+    }
+
+    .ai-toast-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent-neon), var(--accent-neon-glow));
+        width: 100%;
+    }
+
+    .ai-toast.success .ai-toast-progress-bar {
+        background: linear-gradient(90deg, #4CFF7E, #22C55E);
+    }
+
+    .ai-toast.error .ai-toast-progress-bar {
+        background: linear-gradient(90deg, #FF6B6B, #EF4444);
+    }
+
+    .ai-toast.warning .ai-toast-progress-bar {
+        background: linear-gradient(90deg, #FCD34D, #F59E0B);
+    }
+
+    @keyframes progressShrink {
+        from {
+            width: 100%;
+        }
+        to {
+            width: 0%;
+        }
     }
 
     @media (max-width: 768px) {
+        .ai-toast-container {
+            top: 16px;
+            right: 16px;
+            left: 16px;
+        }
+
         .ai-toast {
-            min-width: 280px;
-            max-width: calc(100vw - 40px);
+            min-width: auto;
+            max-width: 100%;
+            padding: 16px 18px;
+        }
+
+        .ai-toast-icon {
+            width: 44px;
+            height: 44px;
+            font-size: 22px;
         }
     }
 
@@ -4609,6 +4815,9 @@
                 info: 'Info'
             };
 
+            // Auto remove time (longer for errors)
+            const autoRemoveTime = type === 'error' ? 6000 : type === 'warning' ? 5500 : 5000;
+
             toast.innerHTML = `
                 <div class="ai-toast-icon">
                     <i class="bi ${icons[type] || icons.info}"></i>
@@ -4617,22 +4826,39 @@
                     ${title ? `<div class="ai-toast-title">${title || titles[type]}</div>` : ''}
                     <div class="ai-toast-message">${message}</div>
                 </div>
-                <button class="ai-toast-close" onclick="this.parentElement.remove()">
+                <button class="ai-toast-close" onclick="this.removeToast()">
                     <i class="bi bi-x"></i>
                 </button>
+                <div class="ai-toast-progress">
+                    <div class="ai-toast-progress-bar" style="animation: progressShrink ${autoRemoveTime}ms linear forwards;"></div>
+                </div>
             `;
+
+            // Add remove method to toast element
+            toast.removeToast = function() {
+                this.style.animation = 'slideOutRight 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                setTimeout(() => {
+                    if (this.parentElement) {
+                        this.remove();
+                    }
+                }, 400);
+            };
+
+            // Add click to dismiss (except close button)
+            toast.addEventListener('click', function(e) {
+                if (!e.target.closest('.ai-toast-close')) {
+                    toast.removeToast();
+                }
+            });
 
             toastContainer.appendChild(toast);
 
-            // Auto remove after 5 seconds
+            // Auto remove after specified time
             setTimeout(() => {
-                toast.style.animation = 'slideOutRight 0.3s ease';
-                setTimeout(() => {
-                    if (toast.parentElement) {
-                        toast.remove();
-                    }
-                }, 300);
-            }, 5000);
+                if (toast.parentElement) {
+                    toast.removeToast();
+                }
+            }, autoRemoveTime);
         };
 
         // Add click handler to media images for lightbox

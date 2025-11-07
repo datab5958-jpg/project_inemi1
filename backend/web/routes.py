@@ -615,6 +615,7 @@ def login():
         session['username'] = user.username
         session['role'] = user.role
         session['avatar_url'] = user.avatar_url or '/static/assets/image/default.jpg'
+        session['kredit'] = user.kredit if user.kredit is not None else 0  # Simpan kredit di session juga
         return redirect(url_for('web_pages.profil'))
     
     return render_template('login.html')

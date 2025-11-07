@@ -83,6 +83,31 @@ def create_app():
     app.jinja_env.filters['utc_to_wib'] = utc_to_wib
     app.jinja_env.filters['format_tanggal_id'] = format_tanggal_indonesia
     
+    # Context processor untuk membuat current_user tersedia di semua template
+    @app.context_processor
+    def inject_current_user():
+        """Inject current_user ke semua template dengan data terbaru dari database"""
+        from flask import session
+        current_user = None
+        if 'user_id' in session:
+            try:
+                user_id = session['user_id']
+                # Query langsung dari database untuk mendapatkan data terbaru
+                current_user = User.query.get(user_id)
+                if current_user:
+                    # Pastikan kredit selalu diambil dari database (bukan dari cache)
+                    db.session.expire(current_user)
+                    db.session.refresh(current_user)
+                    # Update session kredit juga untuk fallback
+                    if current_user.kredit is not None:
+                        session['kredit'] = current_user.kredit
+            except Exception as e:
+                print(f"Error loading current_user in context processor: {e}")
+                import traceback
+                traceback.print_exc()
+                current_user = None
+        return dict(current_user=current_user)
+    
     # Register all blueprints
     print("Registering blueprints...")
     
