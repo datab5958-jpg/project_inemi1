@@ -33510,16 +33510,415 @@ _**Agent (model default, mode Agent)**_
 ---
 
 
+Di production, redirect URI menggunakan `http://` padahal seharusnya `https://`. Memperbaiki logika agar menggunakan `https://` untuk domain production:
+
 
 ---
 
-<tool-use data-tool-type="unknown" data-tool-name="read_file">
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: backend/web/routes.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: backend/config.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="grep" data-tool-name="grep">
 <details>
-<summary>Tool use: **read_file**</summary>
+<summary>Tool use: **grep** • Grep for "DOMAIN_PUBLIC|domain|inemi\.id" in "backend/config.py" • 1 match</summary>
 
-Status: **loading**
+Output mode: content
 
 
+| File | Content | Line |
+|------|------|------|
+| `backend/config.py` | `CALLBACK_DOMAIN = os.environ.get('CALLBACK_DOMAIN') or 'http://localhost:5000'` | L33 |
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="search" data-tool-name="codebase_search">
+<details>
+                <summary>Tool use: **codebase_search** • Searched codebase "How is DOMAIN_PUBLIC or production domain configured in the application?" • **15** results</summary>
+            
+| File | Lines |
+|------|-------|
+| `backend/env_example.txt` | L23 |
+| `backend/web/ai_generate.py` | L25-60 |
+| `backend/app.py` | L39-319 |
+| `backend/app_db.py` | L103 |
+| `backend/config.py` | L47 |
+| `backend/app_mysql.py` | L133 |
+| `backend/app_integrated.py` | L113 |
+| `backend/web/image_video.py` | L13-250 |
+| `backend/Generate_video_avatar.py` | L892-1126 |
+| `backend/web/ai_generate.py` | L927-2457 |
+| `backend/k8s-deployment.yaml` | L71 |
+| `backend/config.py` | L54-65 |
+| `backend/Dockerfile` | L22 |
+| `backend/app_mysql.py` | L11-160 |
+| `backend/app_simple.py` | L4-65 |
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Memperbaiki logika agar di production domain menggunakan `https://`:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **code_edit** • Edit file: backend/web/routes.py</summary>
+
+**Chunk 1**
+Lines added: 12, lines removed: 3
+
+```diff
+@@ -671,12 +671,21 @@
+      
+      # Build redirect URI based on current request
+-     # Use request.host_url to get the current domain
+-     redirect_uri = url_for(&#39;web_pages.google_callback&#39;, _external=True)
++     # For production domain (inemi.id), force HTTPS
++     host = request.host
++     scheme = request.scheme
++     
++     # Force HTTPS for production domains
++     if &#39;inemi.id&#39; in host or &#39;inemi.com&#39; in host:
++         scheme = &#39;https&#39;
++     
++     # Build redirect URI manually to ensure correct scheme
++     redirect_uri = f&quot;{scheme}://{host}/auth/google/callback&quot;
+      
+      # Log for debugging
+      print(f&quot;[Google OAuth] Redirect URI: {redirect_uri}&quot;)
+      print(f&quot;[Google OAuth] Request URL: {request.url}&quot;)
+-     print(f&quot;[Google OAuth] Request Host: {request.host}&quot;)
++     print(f&quot;[Google OAuth] Request Host: {host}&quot;)
+      print(f&quot;[Google OAuth] Request Scheme: {request.scheme}&quot;)
++     print(f&quot;[Google OAuth] Using Scheme: {scheme}&quot;)
+      
+      # Build Google OAuth URL with proper encoding
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **code_edit** • Edit file: backend/web/routes.py</summary>
+
+**Chunk 1**
+Lines added: 13, lines removed: 1
+
+```diff
+@@ -759,9 +759,21 @@
+      try:
+          # Build redirect URI based on current request (must match the one used in google_login)
+-         redirect_uri = url_for(&#39;web_pages.google_callback&#39;, _external=True)
++         # For production domain (inemi.id), force HTTPS
++         host = request.host
++         scheme = request.scheme
++         
++         # Force HTTPS for production domains
++         if &#39;inemi.id&#39; in host or &#39;inemi.com&#39; in host:
++             scheme = &#39;https&#39;
++         
++         # Build redirect URI manually to ensure correct scheme
++         redirect_uri = f&quot;{scheme}://{host}/auth/google/callback&quot;
+          
+          # Log for debugging
+          print(f&quot;[Google OAuth Callback] Redirect URI: {redirect_uri}&quot;)
+          print(f&quot;[Google OAuth Callback] Request URL: {request.url}&quot;)
++         print(f&quot;[Google OAuth Callback] Request Host: {host}&quot;)
++         print(f&quot;[Google OAuth Callback] Request Scheme: {request.scheme}&quot;)
++         print(f&quot;[Google OAuth Callback] Using Scheme: {scheme}&quot;)
+          print(f&quot;[Google OAuth Callback] Code received: {code[:20]}...&quot;)
+          
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `backend/web/routes.py`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Sudah memperbaiki logika agar di production domain menggunakan `https://`. Ringkasan:
+
+## Perbaikan: Force HTTPS untuk production domain
+
+### Yang sudah diperbaiki
+1. Auto-detect production domain: jika host mengandung `inemi.id` atau `inemi.com`, otomatis menggunakan `https://`
+2. Redirect URI konsisten: `google_login` dan `google_callback` menggunakan logika yang sama
+3. Logging: menampilkan scheme yang digunakan untuk debugging
+
+### Redirect URI yang digunakan sekarang
+- Development: `http://127.0.0.1:5000/auth/google/callback`
+- Production: `https://www.inemi.id/auth/google/callback` (otomatis HTTPS)
+
+### Yang perlu dilakukan di Google Cloud Console
+Pastikan redirect URI dengan `https://` sudah ditambahkan:
+
+1. Buka Google Cloud Console: https://console.cloud.google.com/apis/credentials
+2. Klik OAuth 2.0 Client ID Anda
+3. Di "Authorized redirect URIs", pastikan ada:
+   ```
+   https://www.inemi.id/auth/google/callback
+   https://inemi.id/auth/google/callback
+   ```
+   (Tambahkan keduanya jika menggunakan www dan non-www)
+4. Klik "SAVE"
+5. Tunggu 1-2 menit, lalu coba login lagi
+
+### Catatan
+- Untuk development (localhost/127.0.0.1): tetap menggunakan `http://`
+- Untuk production (inemi.id): otomatis menggunakan `https://`
+- Pastikan redirect URI di Google Cloud Console sesuai dengan yang digunakan aplikasi
+
+Setelah menambahkan redirect URI dengan `https://` di Google Cloud Console, login Google di production domain seharusnya berfungsi.
+
+---
+
+_**User (2025-11-05 06:23Z)**_
+
+[Google OAuth] Redirect URI: http://127.0.0.1:5000/auth/google/callback
+[Google OAuth] Request URL: http://127.0.0.1:5000/auth/google
+[Google OAuth] Request Host: 127.0.0.1:5000
+[Google OAuth] Request Scheme: http
+[Google OAuth] Using Scheme: http
+[Google OAuth] Google Auth URL: https://accounts.google.com/o/oauth2/v2/auth?client_id=8186651599-d1f2d9pdjs5c6psuj1rqataipjv5536t.apps.googleusercontent.com&redirect_uri=http%3A%2F%2F127.0.0.1%3A5000%2Fauth%2Fgoogle%2Fcallback&response_type=code&scope=openid+email+profile&access_type=online
+INFO:werkzeug:127.0.0.1 - - [07/Nov/2025 14:14:28] "GET /auth/google HTTP/1.1" 302 -
+
+malahan error lagi
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Memeriksa error yang terjadi dan memperbaiki error handling:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: backend/web/routes.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **code_edit** • Edit file: backend/web/routes.py</summary>
+
+**Chunk 1**
+Lines added: 98, lines removed: 29
+
+```diff
+@@ -716,35 +716,104 @@
+      # Handle OAuth errors
+      if error:
+-         error_msg = f&#39;Error dari Google: {error}&#39;
++         # Build redirect URI for error message (must match the one used in google_login)
++         host = request.host
++         scheme = request.scheme
++         if &#39;inemi.id&#39; in host or &#39;inemi.com&#39; in host:
++             scheme = &#39;https&#39;
++         redirect_uri = f&quot;{scheme}://{host}/auth/google/callback&quot;
++         
+          if error == &#39;redirect_uri_mismatch&#39;:
+-             redirect_uri = url_for(&#39;web_pages.google_callback&#39;, _external=True)
+              error_msg = f&#39;&#39;&#39;
+-             &lt;div style=&quot;max-width: 600px; margin: 50px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);&quot;&gt;
+-                 &lt;h2 style=&quot;color: #d32f2f;&quot;&gt;❌ Redirect URI Mismatch&lt;/h2&gt;
+-                 &lt;p&gt;Redirect URI yang digunakan tidak terdaftar di Google Cloud Console.&lt;/p&gt;
+-                 &lt;p&gt;&lt;strong&gt;Redirect URI yang digunakan:&lt;/strong&gt;&lt;/p&gt;
+-                 &lt;div style=&quot;background: #f5f5f5; padding: 10px; border-radius: 4px; margin: 10px 0;&quot;&gt;
+-                     &lt;code style=&quot;word-break: break-all;&quot;&gt;{redirect_uri}&lt;/code&gt;
+-                 &lt;/div&gt;
+-                 &lt;h3&gt;Langkah perbaikan:&lt;/h3&gt;
+-                 &lt;ol style=&quot;text-align: left;&quot;&gt;
+-                     &lt;li&gt;Buka &lt;a href=&quot;https://console.cloud.google.com/apis/credentials&quot; target=&quot;_blank&quot;&gt;Google Cloud Console - Credentials&lt;/a&gt;&lt;/li&gt;
+-                     &lt;li&gt;Klik OAuth 2.0 Client ID Anda&lt;/li&gt;
+-                     &lt;li&gt;Scroll ke bagian &lt;strong&gt;&quot;Authorized redirect URIs&quot;&lt;/strong&gt;&lt;/li&gt;
+-                     &lt;li&gt;Klik &lt;strong&gt;&quot;ADD URI&quot;&lt;/strong&gt;&lt;/li&gt;
+-                     &lt;li&gt;Copy dan paste redirect URI di atas&lt;/li&gt;
+-                     &lt;li&gt;Klik &lt;strong&gt;&quot;SAVE&quot;&lt;/strong&gt;&lt;/li&gt;
+-                     &lt;li&gt;Tunggu 1-2 menit, lalu coba login lagi&lt;/li&gt;
+-                 &lt;/ol&gt;
+-                 &lt;p&gt;&lt;strong&gt;Atau tambahkan semua kemungkinan URI:&lt;/strong&gt;&lt;/p&gt;
+-                 &lt;ul style=&quot;text-align: left;&quot;&gt;
+-                     &lt;li&gt;&lt;code&gt;http://127.0.0.1:5000/auth/google/callback&lt;/code&gt;&lt;/li&gt;
+-                     &lt;li&gt;&lt;code&gt;http://localhost:5000/auth/google/callback&lt;/code&gt;&lt;/li&gt;
+-                     &lt;li&gt;&lt;code&gt;http://172.20.10.11:5000/auth/google/callback&lt;/code&gt;&lt;/li&gt;
+-                 &lt;/ul&gt;
+-                 &lt;p style=&quot;margin-top: 20px;&quot;&gt;
+-                     &lt;a href=&quot;/login&quot; style=&quot;display: inline-block; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 4px;&quot;&gt;← Kembali ke Login&lt;/a&gt;
+-                 &lt;/p&gt;
+-             &lt;/div&gt;
++             &lt;!DOCTYPE html&gt;
++             &lt;html&gt;
++             &lt;head&gt;
++                 &lt;meta charset=&quot;UTF-8&quot;&gt;
++                 &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot;&gt;
++                 &lt;title&gt;Google OAuth Error - Redirect URI Mismatch&lt;/title&gt;
++                 &lt;style&gt;
++                     body {{
++                         font-family: -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, sans-serif;
++                         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
++                         min-height: 100vh;
++                         display: flex;
++                         align-items: center;
++                         justify-content: center;
++                         padding: 20px;
++                         margin: 0;
++                     }}
++                     .error-container {{
++                         max-width: 700px;
++                         background: white;
++                         border-radius: 16px;
++                         padding: 40px;
++                         box-shadow: 0 20px 60px rgba(0,0,0,0.3);
++                     }}
++                     h1 {{
++                         color: #d32f2f;
++                         margin-bottom: 20px;
++                         font-size: 28px;
++                     }}
++                     .redirect-uri-box {{
++                         background: #f5f5f5;
++                         padding: 15px;
++                         border-radius: 8px;
++                         margin: 20px 0;
++                         border-left: 4px solid #667eea;
++                     }}
++                     code {{
++                         word-break: break-all;
++                         font-family: &#39;Courier New&#39;, monospace;
++                         font-size: 14px;
++                         color: #333;
++                     }}
++                     ol, ul {{
++                         text-align: left;
++                         line-height: 1.8;
++                     }}
++                     .btn {{
++                         display: inline-block;
++                         padding: 12px 24px;
++                         background: #667eea;
++                         color: white;
++                         text-decoration: none;
++                         border-radius: 8px;
++                         margin-top: 20px;
++                         font-weight: 600;
++                         transition: transform 0.2s;
++                     }}
++                     .btn:hover {{
++                         transform: translateY(-2px);
++                     }}
++                 &lt;/style&gt;
++             &lt;/head&gt;
++             &lt;body&gt;
++                 &lt;div class=&quot;error-container&quot;&gt;
++                     &lt;h1&gt;❌ Redirect URI Mismatch&lt;/h1&gt;
++                     &lt;p&gt;Redirect URI yang digunakan tidak terdaftar di Google Cloud Console.&lt;/p&gt;
++                     &lt;p&gt;&lt;strong&gt;Redirect URI yang digunakan:&lt;/strong&gt;&lt;/p&gt;
++                     &lt;div class=&quot;redirect-uri-box&quot;&gt;
++                         &lt;code&gt;{redirect_uri}&lt;/code&gt;
++                     &lt;/div&gt;
++                     &lt;h3&gt;Langkah perbaikan:&lt;/h3&gt;
++                     &lt;ol&gt;
++                         &lt;li&gt;Buka &lt;a href=&quot;https://console.cloud.google.com/apis/credentials&quot; target=&quot;_blank&quot;&gt;Google Cloud Console - Credentials&lt;/a&gt;&lt;/li&gt;
++                         &lt;li&gt;Klik OAuth 2.0 Client ID Anda&lt;/li&gt;
++                         &lt;li&gt;Scroll ke bagian &lt;strong&gt;&quot;Authorized redirect URIs&quot;&lt;/strong&gt;&lt;/li&gt;
++                         &lt;li&gt;Klik &lt;strong&gt;&quot;ADD URI&quot;&lt;/strong&gt;&lt;/li&gt;
++                         &lt;li&gt;Copy dan paste redirect URI di atas: &lt;code&gt;{redirect_uri}&lt;/code&gt;&lt;/li&gt;
++                         &lt;li&gt;Klik &lt;strong&gt;&quot;SAVE&quot;&lt;/strong&gt;&lt;/li&gt;
++                         &lt;li&gt;Tunggu 1-2 menit, lalu coba login lagi&lt;/li&gt;
++                     &lt;/ol&gt;
++                     &lt;p&gt;&lt;strong&gt;Atau tambahkan semua kemungkinan URI:&lt;/strong&gt;&lt;/p&gt;
++                     &lt;ul&gt;
++                         &lt;li&gt;&lt;code&gt;http://127.0.0.1:5000/auth/google/callback&lt;/code&gt;&lt;/li&gt;
++                         &lt;li&gt;&lt;code&gt;http://localhost:5000/auth/google/callback&lt;/code&gt;&lt;/li&gt;
++                         &lt;li&gt;&lt;code&gt;https://www.inemi.id/auth/google/callback&lt;/code&gt;&lt;/li&gt;
++                         &lt;li&gt;&lt;code&gt;https://inemi.id/auth/google/callback&lt;/code&gt;&lt;/li&gt;
++                     &lt;/ul&gt;
++                     &lt;a href=&quot;/login&quot; class=&quot;btn&quot;&gt;← Kembali ke Login&lt;/a&gt;
++                 &lt;/div&gt;
++             &lt;/body&gt;
++             &lt;/html&gt;
+              &#39;&#39;&#39;
+              return error_msg
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `backend/web/routes.py`
+
+Lint results
+
+
+**No lint errors found**
 </details>
 </tool-use>
 
@@ -33534,23 +33933,28 @@ Status: **loading**
 ---
 
 
+Memperbaiki error handling agar menampilkan redirect URI yang benar. Dari log, aplikasi menggunakan `http://127.0.0.1:5000/auth/google/callback` (benar untuk localhost).
 
----
-
-
-
----
-
+Pastikan redirect URI ini sudah ditambahkan di Google Cloud Console:
 
 
 ---
 
-<tool-use data-tool-type="unknown" data-tool-name="search_replace">
-<details>
-<summary>Tool use: **search_replace**</summary>
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: backend/web/routes.py</summary>
 
-Status: **loading**
+</details>
+</tool-use>
 
+---
+
+<tool-use data-tool-type="generic" data-tool-name="todo_write">
+<details><summary>Tool use: **todo_write** • Todo List</summary>
+
+- [x] Redesign tampilan login dengan UI modern
+- [x] Tambahkan Google OAuth button di template
+- [x] Setup Google OAuth di backend (routes dan config)
+- [x] Update requirements.txt dengan library OAuth
 
 </details>
 </tool-use>
@@ -33562,14 +33966,28 @@ Status: **loading**
 ---
 
 
+Dari log, aplikasi menggunakan `http://127.0.0.1:5000/auth/google/callback` (benar untuk localhost). Jika masih error, kemungkinan redirect URI belum terdaftar di Google Cloud Console.
 
----
+## Yang perlu dilakukan
 
+### 1. Tambahkan redirect URI di Google Cloud Console
+1. Buka: https://console.cloud.google.com/apis/credentials
+2. Klik OAuth 2.0 Client ID Anda
+3. Di bagian "Authorized redirect URIs", klik "ADD URI"
+4. Tambahkan URI berikut (satu per satu):
+   - `http://127.0.0.1:5000/auth/google/callback`
+   - `http://localhost:5000/auth/google/callback`
+   - `https://www.inemi.id/auth/google/callback`
+   - `https://inemi.id/auth/google/callback`
+5. Klik "SAVE"
+6. Tunggu 1-2 menit, lalu coba login lagi
 
+### 2. Cek error yang muncul
+Setelah perubahan, jika masih error, akan muncul halaman error yang menampilkan redirect URI yang digunakan. Pastikan URI tersebut sudah ditambahkan di Google Cloud Console.
 
----
-
-
+### 3. Verifikasi
+- Development (localhost): menggunakan `http://127.0.0.1:5000/auth/google/callback`
+- Production (inemi.id): otomatis menggunakan `https://www.inemi.id/auth/go
 
 ---
 

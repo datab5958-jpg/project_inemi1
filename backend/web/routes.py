@@ -715,37 +715,106 @@ def google_callback():
     
     # Handle OAuth errors
     if error:
-        error_msg = f'Error dari Google: {error}'
+        # Build redirect URI for error message (must match the one used in google_login)
+        host = request.host
+        scheme = request.scheme
+        if 'inemi.id' in host or 'inemi.com' in host:
+            scheme = 'https'
+        redirect_uri = f"{scheme}://{host}/auth/google/callback"
+        
         if error == 'redirect_uri_mismatch':
-            redirect_uri = url_for('web_pages.google_callback', _external=True)
             error_msg = f'''
-            <div style="max-width: 600px; margin: 50px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                <h2 style="color: #d32f2f;">❌ Redirect URI Mismatch</h2>
-                <p>Redirect URI yang digunakan tidak terdaftar di Google Cloud Console.</p>
-                <p><strong>Redirect URI yang digunakan:</strong></p>
-                <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; margin: 10px 0;">
-                    <code style="word-break: break-all;">{redirect_uri}</code>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Google OAuth Error - Redirect URI Mismatch</title>
+                <style>
+                    body {{
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        min-height: 100vh;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        padding: 20px;
+                        margin: 0;
+                    }}
+                    .error-container {{
+                        max-width: 700px;
+                        background: white;
+                        border-radius: 16px;
+                        padding: 40px;
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                    }}
+                    h1 {{
+                        color: #d32f2f;
+                        margin-bottom: 20px;
+                        font-size: 28px;
+                    }}
+                    .redirect-uri-box {{
+                        background: #f5f5f5;
+                        padding: 15px;
+                        border-radius: 8px;
+                        margin: 20px 0;
+                        border-left: 4px solid #667eea;
+                    }}
+                    code {{
+                        word-break: break-all;
+                        font-family: 'Courier New', monospace;
+                        font-size: 14px;
+                        color: #333;
+                    }}
+                    ol, ul {{
+                        text-align: left;
+                        line-height: 1.8;
+                    }}
+                    .btn {{
+                        display: inline-block;
+                        padding: 12px 24px;
+                        background: #667eea;
+                        color: white;
+                        text-decoration: none;
+                        border-radius: 8px;
+                        margin-top: 20px;
+                        font-weight: 600;
+                        transition: transform 0.2s;
+                    }}
+                    .btn:hover {{
+                        transform: translateY(-2px);
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="error-container">
+                    <h1>❌ Redirect URI Mismatch</h1>
+                    <p>Redirect URI yang digunakan tidak terdaftar di Google Cloud Console.</p>
+                    <p><strong>Redirect URI yang digunakan:</strong></p>
+                    <div class="redirect-uri-box">
+                        <code>{redirect_uri}</code>
+                    </div>
+                    <h3>Langkah perbaikan:</h3>
+                    <ol>
+                        <li>Buka <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console - Credentials</a></li>
+                        <li>Klik OAuth 2.0 Client ID Anda</li>
+                        <li>Scroll ke bagian <strong>"Authorized redirect URIs"</strong></li>
+                        <li>Klik <strong>"ADD URI"</strong></li>
+                        <li>Copy dan paste redirect URI di atas: <code>{redirect_uri}</code></li>
+                        <li>Klik <strong>"SAVE"</strong></li>
+                        <li>Tunggu 1-2 menit, lalu coba login lagi</li>
+                    </ol>
+                    <p><strong>Atau tambahkan semua kemungkinan URI:</strong></p>
+                    <ul>
+                        <li><code>http://127.0.0.1:5000/auth/google/callback</code></li>
+                        <li><code>http://localhost:5000/auth/google/callback</code></li>
+                        <li><code>https://www.inemi.id/auth/google/callback</code></li>
+                        <li><code>https://inemi.id/auth/google/callback</code></li>
+                    </ul>
+                    <a href="/login" class="btn">← Kembali ke Login</a>
                 </div>
-                <h3>Langkah perbaikan:</h3>
-                <ol style="text-align: left;">
-                    <li>Buka <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console - Credentials</a></li>
-                    <li>Klik OAuth 2.0 Client ID Anda</li>
-                    <li>Scroll ke bagian <strong>"Authorized redirect URIs"</strong></li>
-                    <li>Klik <strong>"ADD URI"</strong></li>
-                    <li>Copy dan paste redirect URI di atas</li>
-                    <li>Klik <strong>"SAVE"</strong></li>
-                    <li>Tunggu 1-2 menit, lalu coba login lagi</li>
-                </ol>
-                <p><strong>Atau tambahkan semua kemungkinan URI:</strong></p>
-                <ul style="text-align: left;">
-                    <li><code>http://127.0.0.1:5000/auth/google/callback</code></li>
-                    <li><code>http://localhost:5000/auth/google/callback</code></li>
-                    <li><code>http://172.20.10.11:5000/auth/google/callback</code></li>
-                </ul>
-                <p style="margin-top: 20px;">
-                    <a href="/login" style="display: inline-block; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 4px;">← Kembali ke Login</a>
-                </p>
-            </div>
+            </body>
+            </html>
             '''
             return error_msg
         else:
