@@ -143,6 +143,10 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     role = db.Column(db.Enum('free', 'premium', 'premier', 'admin'), default='free')  # Changed to Enum
     kredit = db.Column(db.Integer, nullable=False)  # Removed default, made nullable=False
+    # Trial flags untuk fitur video (hanya untuk akun free)
+    video_trial_used = db.Column(db.Boolean, default=False, nullable=False)
+    image_to_video_trial_used = db.Column(db.Boolean, default=False, nullable=False)
+    face_swap_trial_used = db.Column(db.Boolean, default=False, nullable=False)
     
     def to_dict(self):
         return {
