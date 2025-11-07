@@ -1299,7 +1299,7 @@
     @media (max-width: 768px) {
         .ai-attachment-list {
             grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 10px;
+        gap: 10px;
         }
     }
 
@@ -3215,7 +3215,7 @@
 <div class="ai-container">
     <!-- Sidebar Left - Desktop Only -->
     <div class="ai-sidebar">
-        <div class="ai-sidebar-logo">AI<br>Generate</div>
+        <div class="ai-sidebar-logo">Smart AI<br>Generate</div>
         <div class="ai-sidebar-item active" title="Chat" data-mode="">
             <i class="bi bi-chat-dots"></i>
         </div>
@@ -3525,7 +3525,7 @@
 
     window.addEventListener('resize', scheduleAISidebarUpdate);
     window.addEventListener('scroll', scheduleAISidebarUpdate, { passive: true });
-
+    
     // Wait for DOM to be ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
@@ -3547,7 +3547,7 @@
             }
             
             updateAISidebarPosition();
-
+            
             // Initialize all components
             initializeComponents();
         } catch (e) {
@@ -4265,22 +4265,22 @@
             const validFiles = [];
             
             // Validate files first
-            for (const file of files) {
-                const isImage = file.type.startsWith('image/');
-                const isVideo = file.type.startsWith('video/');
-                
-                if (!isImage && !isVideo) {
+                for (const file of files) {
+                        const isImage = file.type.startsWith('image/');
+                        const isVideo = file.type.startsWith('video/');
+                        
+                        if (!isImage && !isVideo) {
                     errors.push(`File ${file.name} tidak didukung. Gunakan gambar atau video.`);
-                    continue;
-                }
+                            continue;
+                        }
 
-                const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
-                if (file.size > maxSize) {
-                    const maxSizeMB = isVideo ? 50 : 10;
+                        const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+                        if (file.size > maxSize) {
+                            const maxSizeMB = isVideo ? 50 : 10;
                     errors.push(`File ${file.name} terlalu besar (maksimal ${maxSizeMB}MB)`);
-                    continue;
-                }
-                
+                            continue;
+                        }
+
                 validFiles.push(file);
             }
             
@@ -4316,8 +4316,8 @@
                 }
 
                 try {
-                    const formData = new FormData();
-                    formData.append('file', file);
+                        const formData = new FormData();
+                        formData.append('file', file);
 
                     const xhr = new XMLHttpRequest();
                     
@@ -4370,16 +4370,16 @@
                     
                     uploadingFiles.delete(file.name);
                     
-                    if (data.success) {
-                        addAttachment({
-                            url: data.url,
-                            type: data.type,
-                            filename: data.filename,
-                            size: data.size
-                        });
-                    }
-                } catch (error) {
-                    console.error('Upload error:', error);
+                        if (data.success) {
+                            addAttachment({
+                                url: data.url,
+                                type: data.type,
+                                filename: data.filename,
+                                size: data.size
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Upload error:', error);
                     errors.push(`Gagal upload ${file.name}: ${error.message}`);
                     
                     // Remove preview item on error
@@ -5181,21 +5181,21 @@
                     }
                     // Priority 2: Image edit or image to video (if has image only)
                     else if (hasImage) {
-                        // Only auto-detect if prompt contains explicit action keywords
-                        const hasActionKeyword = promptLower.includes('edit') || promptLower.includes('ubah') || 
-                                                promptLower.includes('video') || promptLower.includes('i2v') || 
-                                                promptLower.includes('gambar jadi video');
-                        
+                    // Only auto-detect if prompt contains explicit action keywords
+                    const hasActionKeyword = promptLower.includes('edit') || promptLower.includes('ubah') || 
+                                            promptLower.includes('video') || promptLower.includes('i2v') || 
+                                            promptLower.includes('gambar jadi video');
+                    
                         if (hasActionKeyword) {
                             if (promptLower.includes('edit') || promptLower.includes('ubah')) {
-                                if (modeSelect) {
-                                    modeSelect.value = 'image_edit';
-                                    mode = 'image_edit';
-                                }
+                            if (modeSelect) {
+                                modeSelect.value = 'image_edit';
+                                mode = 'image_edit';
+                            }
                             } else if (promptLower.includes('video') || promptLower.includes('i2v') || promptLower.includes('gambar jadi video')) {
-                                if (modeSelect) {
-                                    modeSelect.value = 'image_to_video';
-                                    mode = 'image_to_video';
+                            if (modeSelect) {
+                                modeSelect.value = 'image_to_video';
+                                mode = 'image_to_video';
                                 }
                             }
                         }
@@ -5524,9 +5524,9 @@
             if (!lastAssistantMsg) {
                 // If no image found, try to get last user message
                 const userMessages = Array.from(document.querySelectorAll('.ai-message.user'));
-                const lastUser = userMessages[userMessages.length - 1];
+            const lastUser = userMessages[userMessages.length - 1];
                 if (lastUser && runBtn) {
-                    runBtn.click();
+            runBtn.click();
                     return;
                 }
                 return;

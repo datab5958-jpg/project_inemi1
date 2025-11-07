@@ -959,6 +959,11 @@
             font-weight: 600;
         }
 
+        .ai-tool-badge.hot {
+            background: linear-gradient(135deg, #ff4d4d, #ff0000);
+            box-shadow: 0 0 12px rgba(255, 77, 77, 0.35);
+        }
+
         .ai-tool-badge.new {
             background: var(--success-gradient);
         }
@@ -1996,6 +2001,11 @@
             background: var(--success-gradient) !important;
         }
 
+        .mobile-badge.hot {
+            background: linear-gradient(135deg, #ff4d4d, #ff0000) !important;
+            box-shadow: 0 0 12px rgba(255, 77, 77, 0.4) !important;
+        }
+
         .mobile-badge.admin-badge {
             background: linear-gradient(135deg, #ff6b6b, #ee5a24) !important;
             color: white !important;
@@ -2663,6 +2673,12 @@
             margin-left: auto;
         }
 
+        .badge-modern.hot {
+            background: linear-gradient(135deg, #ff4d4d, #ff0000);
+            color: #fff;
+            box-shadow: 0 0 12px rgba(255, 77, 77, 0.35);
+        }
+
         /* Responsive Design */
         @media (max-width: 1024px) {
             .sidebar {
@@ -3193,8 +3209,8 @@
             <div class="ai-tools-menu">
                 <a href="/ai_generate" class="ai-tool-item" {% if request.path == '/ai_generate' %}style="background: rgba(76, 126, 255, 0.15); border-color: var(--accent-neon);"{% endif %}>
                     <i class="bi bi-cpu-fill"></i>
-                    <span class="ai-tool-text">AI Generate</span>
-                    <span class="ai-tool-badge new">New</span>
+                            <span class="ai-tool-text">Smart AI Generate</span>
+                    <span class="ai-tool-badge hot">HOT</span>
                 </a>
 
                 <a href="/generate_music" class="ai-tool-item" {% if session.get('role') == 'notfree' and session.get('music_trial', 0) >= 2 %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
@@ -3362,8 +3378,8 @@
                 <div class="modal-body">
                     <a href="/ai_generate" class="modal-btn btn-ai">
                         <i class="bi bi-cpu-fill"></i>
-                        <span>AI Generate</span>
-                        <span class="badge-modern">New</span>
+                        <span>Smart AI Generate</span>
+                        <span class="badge-modern hot">HOT</span>
                     </a>
                     <a href="/generate_music" class="modal-btn btn-music ai-tool-mobile-hidden" {% if session.get('role') == 'notfree' and session.get('music_trial', 0) >= 2 %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
                         <i class="bi bi-music-note-beamed"></i>
@@ -3471,8 +3487,8 @@
                         <div class="mobile-nav-links">
                             <a href="/ai_generate" class="mobile-nav-link{% if request.path == '/ai_generate' %} active{% endif %}">
                                 <i class="bi bi-cpu-fill"></i>
-                                <span>AI Generate</span>
-                                <span class="mobile-badge new">New</span>
+                                <span>Smart AI Generate</span>
+                                <span class="mobile-badge hot">HOT</span>
                             </a>
                             <a href="/generate_music" class="mobile-nav-link" {% if session.get('role') == 'notfree' and session.get('music_trial', 0) >= 2 %}style="opacity: 0.5; pointer-events: none;"{% endif %}>
                                 <i class="bi bi-music-note-beamed"></i>
