@@ -1348,15 +1348,12 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
             # Check role and trial for free users
             user_role = user.role if hasattr(user, 'role') else session.get('role', 'free')
             if user_role == 'free':
-                # Check if free user has already used trial
-                image_to_video_trial = session.get('image_to_video_trial', 0)
-                if image_to_video_trial >= 1:
+                # Check if free user has already used trial (from database, not session)
+                if hasattr(user, 'image_to_video_trial_used') and user.image_to_video_trial_used:
                     return jsonify({
                         'success': False,
                         'message': 'Fitur Image to Video hanya bisa digunakan sekali untuk akun free. Upgrade ke premium untuk penggunaan tanpa batas.'
                     }), 403
-                # Set trial flag
-                session['image_to_video_trial'] = 1
             
             # Check credits (Image to Video with Sora-2 costs 30 credits, same as text-to-video)
             required_credits = 30
@@ -1525,6 +1522,10 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                 
                 # Success - save to database (credits already deducted)
                 try:
+                    # Set trial flag for free users (only on success)
+                    if user_role == 'free' and hasattr(user, 'image_to_video_trial_used'):
+                        user.image_to_video_trial_used = True
+                    
                     video = Video(
                         user_id=user_id,
                         video_url=video_url,
@@ -1592,15 +1593,12 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
             # Check role and trial for free users
             user_role = user.role if hasattr(user, 'role') else session.get('role', 'free')
             if user_role == 'free':
-                # Check if free user has already used trial
-                video_trial = session.get('video_trial', 0)
-                if video_trial >= 1:
+                # Check if free user has already used trial (from database, not session)
+                if hasattr(user, 'video_trial_used') and user.video_trial_used:
                     return jsonify({
                         'success': False,
                         'message': 'Fitur Generate Video hanya bisa digunakan sekali untuk akun free. Upgrade ke premium untuk penggunaan tanpa batas.'
                     }), 403
-                # Set trial flag
-                session['video_trial'] = 1
             
             # Check credits (Sora-2 costs more, let's use 30 credits as default)
             required_credits = 30
@@ -1746,6 +1744,10 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                 
                 # Success - deduct credits and save to database
                 try:
+                    # Set trial flag for free users (only on success)
+                    if user_role == 'free' and hasattr(user, 'video_trial_used'):
+                        user.video_trial_used = True
+                    
                     user.kredit -= required_credits
                     video = Video(
                         user_id=user_id,
@@ -1796,15 +1798,12 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
             # Check role and trial for free users
             user_role = user.role if hasattr(user, 'role') else session.get('role', 'free')
             if user_role == 'free':
-                # Check if free user has already used trial
-                face_swap_trial = session.get('face_swap_trial', 0)
-                if face_swap_trial >= 1:
+                # Check if free user has already used trial (from database, not session)
+                if hasattr(user, 'face_swap_trial_used') and user.face_swap_trial_used:
                     return jsonify({
                         'success': False,
                         'message': 'Fitur Video Face Swap hanya bisa digunakan sekali untuk akun free. Upgrade ke premium untuk penggunaan tanpa batas.'
                     }), 403
-                # Set trial flag
-                session['face_swap_trial'] = 1
             
             # Check API key
             API_KEY = current_app.config.get('WAVESPEED_API_KEY')
@@ -2025,6 +2024,10 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                 
                 # Success - save to database
                 try:
+                    # Set trial flag for free users (only on success)
+                    if user_role == 'free' and hasattr(user, 'face_swap_trial_used'):
+                        user.face_swap_trial_used = True
+                    
                     video = Video(
                         user_id=user_id,
                         video_url=output_video_url,
