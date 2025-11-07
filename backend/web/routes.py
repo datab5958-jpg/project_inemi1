@@ -670,14 +670,23 @@ def google_login():
         return redirect(url_for('web_pages.login'))
     
     # Build redirect URI based on current request
-    # Use request.host_url to get the current domain
-    redirect_uri = url_for('web_pages.google_callback', _external=True)
+    # For production domain (inemi.id), force HTTPS
+    host = request.host
+    scheme = request.scheme
+    
+    # Force HTTPS for production domains
+    if 'inemi.id' in host or 'inemi.com' in host:
+        scheme = 'https'
+    
+    # Build redirect URI manually to ensure correct scheme
+    redirect_uri = f"{scheme}://{host}/auth/google/callback"
     
     # Log for debugging
     print(f"[Google OAuth] Redirect URI: {redirect_uri}")
     print(f"[Google OAuth] Request URL: {request.url}")
-    print(f"[Google OAuth] Request Host: {request.host}")
+    print(f"[Google OAuth] Request Host: {host}")
     print(f"[Google OAuth] Request Scheme: {request.scheme}")
+    print(f"[Google OAuth] Using Scheme: {scheme}")
     
     # Build Google OAuth URL with proper encoding
     params = {
@@ -749,11 +758,23 @@ def google_callback():
     
     try:
         # Build redirect URI based on current request (must match the one used in google_login)
-        redirect_uri = url_for('web_pages.google_callback', _external=True)
+        # For production domain (inemi.id), force HTTPS
+        host = request.host
+        scheme = request.scheme
+        
+        # Force HTTPS for production domains
+        if 'inemi.id' in host or 'inemi.com' in host:
+            scheme = 'https'
+        
+        # Build redirect URI manually to ensure correct scheme
+        redirect_uri = f"{scheme}://{host}/auth/google/callback"
         
         # Log for debugging
         print(f"[Google OAuth Callback] Redirect URI: {redirect_uri}")
         print(f"[Google OAuth Callback] Request URL: {request.url}")
+        print(f"[Google OAuth Callback] Request Host: {host}")
+        print(f"[Google OAuth Callback] Request Scheme: {request.scheme}")
+        print(f"[Google OAuth Callback] Using Scheme: {scheme}")
         print(f"[Google OAuth Callback] Code received: {code[:20]}...")
         
         # Exchange code for access token
