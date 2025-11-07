@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Register - Music Platform</title>
+    <title>Register - INEMI</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -13,55 +14,33 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            --dark-bg: #0E0B2C;
+            --dark-card: #1D1B3F;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B8B8D9;
+            --border-neon: rgba(76, 126, 255, 0.3);
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%);
-            background: -webkit-linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%);
-            background: -moz-linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--dark-bg);
+            background-image: 
+                linear-gradient(180deg, #0E0B2C 0%, #1B1F46 50%, #0E0B2C 100%),
+                radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.15) 0%, transparent 50%);
+            background-attachment: fixed;
             min-height: 100vh;
             overflow-x: hidden;
             position: relative;
-            /* Safari/iPhone specific fixes */
-            -webkit-background-size: cover;
-            -moz-background-size: cover;
-            background-size: cover;
-            -webkit-background-attachment: fixed;
-            -moz-background-attachment: fixed;
-            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Animated Background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-            background: 
-                -webkit-radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
-                -webkit-radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
-                -webkit-radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
-            -webkit-animation: backgroundShift 20s ease-in-out infinite;
-            animation: backgroundShift 20s ease-in-out infinite;
-            z-index: -1;
-        }
-
-        @-webkit-keyframes backgroundShift {
-            0%, 100% { -webkit-transform: scale(1) rotate(0deg); transform: scale(1) rotate(0deg); }
-            50% { -webkit-transform: scale(1.1) rotate(1deg); transform: scale(1.1) rotate(1deg); }
-        }
-
-        @keyframes backgroundShift {
-            0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.1) rotate(1deg); }
-        }
-
-        /* Floating Particles */
+        /* Animated Background Particles */
         .particles {
             position: fixed;
             top: 0;
@@ -69,41 +48,24 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            z-index: -1;
+            z-index: 0;
+            pointer-events: none;
         }
 
         .particle {
             position: absolute;
-            width: 2px;
-            height: 2px;
-            background: rgba(255, 255, 255, 0.5);
+            width: 3px;
+            height: 3px;
+            background: rgba(102, 126, 234, 0.6);
             border-radius: 50%;
-            -webkit-animation: float 6s ease-in-out infinite;
-            animation: float 6s ease-in-out infinite;
-        }
-
-        .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
-        .particle:nth-child(2) { left: 20%; animation-delay: 1s; }
-        .particle:nth-child(3) { left: 30%; animation-delay: 2s; }
-        .particle:nth-child(4) { left: 40%; animation-delay: 3s; }
-        .particle:nth-child(5) { left: 50%; animation-delay: 4s; }
-        .particle:nth-child(6) { left: 60%; animation-delay: 5s; }
-        .particle:nth-child(7) { left: 70%; animation-delay: 0s; }
-        .particle:nth-child(8) { left: 80%; animation-delay: 1s; }
-        .particle:nth-child(9) { left: 90%; animation-delay: 2s; }
-
-        @-webkit-keyframes float {
-            0%, 100% { -webkit-transform: translateY(100vh) scale(0); transform: translateY(100vh) scale(0); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { -webkit-transform: translateY(-100px) scale(1); transform: translateY(-100px) scale(1); opacity: 0; }
+            animation: float 8s ease-in-out infinite;
         }
 
         @keyframes float {
-            0%, 100% { transform: translateY(100vh) scale(0); opacity: 0; }
+            0%, 100% { transform: translateY(100vh) translateX(0) scale(0); opacity: 0; }
             10% { opacity: 1; }
             90% { opacity: 1; }
-            100% { transform: translateY(-100px) scale(1); opacity: 0; }
+            100% { transform: translateY(-100px) translateX(50px) scale(1); opacity: 0; }
         }
 
         /* Main Container */
@@ -119,22 +81,21 @@
 
         /* Register Card */
         .register-card {
-            background: rgba(255, 255, 255, 0.1);
-            background: rgba(26, 26, 46, 0.9);
-            -webkit-backdrop-filter: blur(20px);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(29, 27, 63, 0.95);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border: 1px solid var(--border-neon);
             border-radius: 24px;
             padding: 3rem 2.5rem;
             width: 100%;
-            max-width: 500px;
+            max-width: 520px;
             box-shadow: 
-                0 25px 50px rgba(0, 0, 0, 0.3),
-                0 0 0 1px rgba(255, 255, 255, 0.1);
+                0 25px 60px rgba(0, 0, 0, 0.5),
+                0 0 40px rgba(102, 126, 234, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
             position: relative;
             overflow: hidden;
-            -webkit-animation: cardEntrance 1s ease-out;
-            animation: cardEntrance 1s ease-out;
+            animation: cardEntrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .register-card::before {
@@ -144,25 +105,12 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            transition: left 0.5s ease;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+            transition: left 0.6s ease;
         }
 
         .register-card:hover::before {
             left: 100%;
-        }
-
-        @-webkit-keyframes cardEntrance {
-            from {
-                opacity: 0;
-                -webkit-transform: translateY(30px) scale(0.95);
-                transform: translateY(30px) scale(0.95);
-            }
-            to {
-                opacity: 1;
-                -webkit-transform: translateY(0) scale(1);
-                transform: translateY(0) scale(1);
-            }
         }
 
         @keyframes cardEntrance {
@@ -183,27 +131,37 @@
         }
 
         .logo-container {
-            width: 80px;
-            height: 80px;
-            background: rgba(255, 255, 255, 0.1);
-            background: rgba(26, 26, 46, 0.8);
-            -webkit-backdrop-filter: blur(10px);
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 20px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 1.5rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            -webkit-animation: logoPulse 2s ease-in-out infinite;
-            animation: logoPulse 2s ease-in-out infinite;
+            box-shadow: 
+                0 10px 30px rgba(102, 126, 234, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            animation: logoPulse 3s ease-in-out infinite;
+            position: relative;
             overflow: hidden;
         }
 
-        @-webkit-keyframes logoPulse {
-            0%, 100% { -webkit-transform: scale(1); transform: scale(1); }
-            50% { -webkit-transform: scale(1.05); transform: scale(1.05); }
+        .logo-container::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 22px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: -1;
+        }
+
+        .register-card:hover .logo-container::before {
+            opacity: 0.3;
         }
 
         @keyframes logoPulse {
@@ -212,31 +170,53 @@
         }
 
         .logo-image {
-            width: 85%;
-            height: 85%;
+            width: 80%;
+            height: 80%;
             object-fit: contain;
             border-radius: 12px;
         }
 
         .register-title {
-            font-size: 2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #6c63ff, #ff4ecd);
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
             margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
         }
 
         .register-subtitle {
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--text-secondary);
             font-size: 1rem;
             font-weight: 400;
         }
 
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 2rem 0;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-neon), transparent);
+        }
+
+        .divider span {
+            padding: 0 1rem;
+        }
+
         /* Form */
         .register-form {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .form-group {
@@ -245,54 +225,54 @@
         }
 
         .form-label {
-            color: rgba(255, 255, 255, 0.9);
-            font-weight: 500;
+            color: var(--text-primary);
+            font-weight: 600;
             margin-bottom: 0.5rem;
             display: block;
             font-size: 0.9rem;
+            letter-spacing: 0.3px;
         }
 
         .form-input {
             width: 100%;
-            padding: 1rem 1.2rem;
-            background: rgba(255, 255, 255, 0.1);
-            background: rgba(26, 26, 46, 0.7);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            color: white;
+            padding: 1rem 1.2rem 1rem 3rem;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            color: var(--text-primary);
             font-size: 1rem;
-            -webkit-transition: all 0.3s ease;
-            transition: all 0.3s ease;
-            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             backdrop-filter: blur(10px);
+            font-family: inherit;
         }
 
         .form-input::placeholder {
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.4);
         }
 
         .form-input:focus {
             outline: none;
-            border-color: #6c63ff;
-            box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.2);
-            background: rgba(255, 255, 255, 0.15);
-            background: rgba(26, 26, 46, 0.9);
+            border-color: #667eea;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 
+                0 0 0 4px rgba(102, 126, 234, 0.15),
+                0 8px 24px rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
         }
 
         .input-icon {
             position: absolute;
-            right: 1rem;
+            left: 1rem;
             top: 50%;
-            -webkit-transform: translateY(-50%);
             transform: translateY(-50%);
             color: rgba(255, 255, 255, 0.5);
-            font-size: 1.1rem;
-            -webkit-transition: color 0.3s ease;
+            font-size: 1.2rem;
             transition: color 0.3s ease;
+            pointer-events: none;
         }
 
-        .form-input:focus + .input-icon {
-            color: #6c63ff;
+        .form-input:focus ~ .input-icon {
+            color: #667eea;
         }
 
         /* Password Strength Indicator */
@@ -316,7 +296,7 @@
 
         .strength-text {
             font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--text-secondary);
             margin-top: 0.25rem;
         }
 
@@ -325,47 +305,13 @@
             margin-bottom: 1.5rem;
             cursor: pointer;
             padding: 0.5rem;
-            border-radius: 8px;
+            border-radius: 12px;
             transition: background-color 0.3s ease;
             position: relative;
         }
 
         .terms-group:hover {
             background: rgba(255, 255, 255, 0.05);
-        }
-
-        .terms-group:active {
-            background: rgba(255, 255, 255, 0.1);
-            transform: scale(0.98);
-        }
-
-        .terms-group:focus {
-            outline: 2px solid #6c63ff;
-            outline-offset: 2px;
-        }
-
-        .terms-group {
-            position: relative;
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .terms-group::before {
-            content: '';
-            position: absolute;
-            top: -8px;
-            left: -8px;
-            right: -8px;
-            bottom: -8px;
-            border-radius: 12px;
-            background: transparent;
-            transition: background-color 0.2s ease;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        .terms-group:active::before {
-            background-color: rgba(108, 99, 255, 0.2);
         }
 
         .terms-checkbox {
@@ -381,11 +327,7 @@
         }
 
         .terms-checkbox:hover {
-            background-color: rgba(108, 99, 255, 0.1);
-        }
-
-        .terms-checkbox:active {
-            background-color: rgba(108, 99, 255, 0.2);
+            background-color: rgba(102, 126, 234, 0.1);
         }
 
         .custom-checkbox {
@@ -393,12 +335,10 @@
             height: 24px;
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            background: rgba(26, 26, 46, 0.7);
+            background: rgba(255, 255, 255, 0.08);
             display: flex;
             align-items: center;
             justify-content: center;
-            -webkit-transition: all 0.3s ease;
             transition: all 0.3s ease;
             flex-shrink: 0;
             margin-top: 0.1rem;
@@ -410,27 +350,21 @@
         }
 
         .custom-checkbox.checked {
-            background: #6c63ff;
-            border-color: #6c63ff;
-            box-shadow: 0 0 10px rgba(108, 99, 255, 0.3);
+            background: #667eea;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
         }
 
         .custom-checkbox:hover {
-            border-color: #6c63ff;
-            background: rgba(108, 99, 255, 0.1);
-            -webkit-transform: scale(1.1);
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
             transform: scale(1.1);
-        }
-
-        .terms-text:hover {
-            color: rgba(255, 255, 255, 1);
         }
 
         .custom-checkbox i {
             color: white;
             font-size: 0.8rem;
             opacity: 0;
-            -webkit-transition: opacity 0.3s ease;
             transition: opacity 0.3s ease;
         }
 
@@ -439,41 +373,41 @@
         }
 
         .terms-text {
-            color: rgba(255, 255, 255, 0.8);
+            color: var(--text-secondary);
             font-size: 0.9rem;
             line-height: 1.4;
             cursor: pointer;
             flex: 1;
         }
 
-        .terms-text a, .sign-in-text {
-            color: #6c63ff;
+        .terms-text a {
+            color: #667eea;
             text-decoration: none;
             transition: color 0.3s ease;
         }
 
         .terms-text a:hover {
-            color: #ff4ecd;
+            color: #f093fb;
         }
 
         /* Submit Button */
         .submit-btn {
             width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, #6c63ff, #ff4ecd);
-            background: -webkit-linear-gradient(135deg, #6c63ff, #ff4ecd);
-            background: -moz-linear-gradient(135deg, #6c63ff, #ff4ecd);
+            padding: 1.1rem;
+            background: var(--primary-gradient);
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             color: white;
             font-size: 1.1rem;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            -webkit-transition: all 0.3s ease;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
-            margin-top: 1rem;
+            margin-top: 0.5rem;
+            box-shadow: 
+                0 8px 24px rgba(102, 126, 234, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .submit-btn::before {
@@ -492,19 +426,60 @@
         }
 
         .submit-btn:hover {
-            -webkit-transform: translateY(-2px);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(108, 99, 255, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 12px 32px rgba(102, 126, 234, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
         }
 
         .submit-btn:active {
-            transform: translateY(0);
+            transform: translateY(-1px);
         }
 
         .submit-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+        }
+
+        /* Google Login Button */
+        .google-btn {
+            width: 100%;
+            padding: 1rem;
+            background: white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
+            color: #4285F4;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 
+                0 4px 16px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+        }
+
+        .google-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 8px 24px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 1);
+            background: #f8f9fa;
+        }
+
+        .google-btn:active {
+            transform: translateY(0);
+        }
+
+        .google-icon {
+            width: 20px;
+            height: 20px;
         }
 
         /* Links */
@@ -518,93 +493,227 @@
         }
 
         .link-item a {
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--text-secondary);
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             transition: all 0.3s ease;
             position: relative;
+            font-weight: 500;
         }
 
         .link-item a::after {
             content: '';
             position: absolute;
-            bottom: -2px;
+            bottom: -3px;
             left: 0;
             width: 0;
-            height: 1px;
-            background: linear-gradient(135deg, #6c63ff, #ff4ecd);
+            height: 2px;
+            background: var(--primary-gradient);
             transition: width 0.3s ease;
+            border-radius: 2px;
         }
 
         .link-item a:hover {
-            color: white;
+            color: var(--text-primary);
         }
 
         .link-item a:hover::after {
             width: 100%;
         }
 
-        /* Error Messages */
-        .error-message {
-            background: rgba(220, 53, 69, 0.2);
-            border: 1px solid rgba(220, 53, 69, 0.3);
-            color: #ff6b6b;
-            padding: 0.8rem 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-            animation: errorShake 0.5s ease-in-out;
+        .sign-in-text {
+            color: #667eea;
+            font-weight: 600;
         }
 
-        @-webkit-keyframes errorShake {
-            0%, 100% { -webkit-transform: translateX(0); transform: translateX(0); }
-            25% { -webkit-transform: translateX(-5px); transform: translateX(-5px); }
-            75% { -webkit-transform: translateX(5px); transform: translateX(5px); }
+        /* Error Messages */
+        .error-message {
+            background: rgba(220, 53, 69, 0.15);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #ff6b6b;
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            animation: errorShake 0.5s ease-in-out;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         @keyframes errorShake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
         }
 
+        /* Toast Notification Container */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            pointer-events: none;
+        }
 
+        /* Toast Notification */
+        .toast {
+            background: rgba(29, 27, 63, 0.95);
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            min-width: 320px;
+            max-width: 400px;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(102, 126, 234, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            animation: toastSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            pointer-events: auto;
+            position: relative;
+            overflow: hidden;
+        }
 
-        /* Safari/iPhone specific fixes */
-        @supports (-webkit-appearance: none) {
-            body {
-                background-attachment: scroll;
-                -webkit-background-size: 100% 100%;
-                background-size: 100% 100%;
+        .toast.success {
+            border-color: rgba(81, 207, 102, 0.4);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(81, 207, 102, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .toast.danger {
+            border-color: rgba(220, 53, 69, 0.4);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.5),
+                0 0 30px rgba(220, 53, 69, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes toastSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(400px) scale(0.8);
             }
-            
-            .register-card {
-                background: rgba(26, 26, 46, 0.95);
-                -webkit-backdrop-filter: none;
-                backdrop-filter: none;
-            }
-            
-            .logo-container {
-                background: rgba(26, 26, 46, 0.95);
-                -webkit-backdrop-filter: none;
-                backdrop-filter: none;
-            }
-            
-            .form-input {
-                background: rgba(26, 26, 46, 0.8);
-                -webkit-backdrop-filter: none;
-                backdrop-filter: none;
-            }
-            
-            .custom-checkbox {
-                background: rgba(26, 26, 46, 0.8);
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
             }
         }
 
-        /* iOS Safari specific fixes */
-        @media screen and (-webkit-min-device-pixel-ratio: 0) {
-            body {
-                background-attachment: scroll;
+        .toast-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 1.5rem;
+            animation: iconPulse 2s ease-in-out infinite;
+        }
+
+        .toast.success .toast-icon {
+            background: linear-gradient(135deg, rgba(81, 207, 102, 0.2), rgba(81, 207, 102, 0.1));
+            color: #51cf66;
+        }
+
+        .toast.danger .toast-icon {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.2), rgba(220, 53, 69, 0.1));
+            color: #ff6b6b;
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .toast-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .toast-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .toast-message {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 0;
+            line-height: 1.4;
+        }
+
+        .toast-close {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toast-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            transform: rotate(90deg);
+        }
+
+        /* Toast Progress Bar */
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 0 0 16px 16px;
+            animation: toastProgress 5s linear forwards;
+        }
+
+        .toast.success .toast-progress {
+            background: linear-gradient(90deg, #51cf66, #40c057);
+        }
+
+        .toast.danger .toast-progress {
+            background: linear-gradient(90deg, #ff6b6b, #fa5252);
+        }
+
+        @keyframes toastProgress {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        @media (max-width: 480px) {
+            .toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+            }
+
+            .toast {
+                min-width: auto;
+                max-width: 100%;
             }
         }
 
@@ -615,40 +724,42 @@
             }
 
             .register-card {
-                padding: 2rem 1.5rem;
+                padding: 2.5rem 2rem;
                 border-radius: 20px;
             }
 
             .register-title {
-                font-size: 1.8rem;
+                font-size: 1.9rem;
+            }
+
+            .logo-container {
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .register-card {
+                padding: 2rem 1.5rem;
+                border-radius: 18px;
+            }
+
+            .register-title {
+                font-size: 1.7rem;
             }
 
             .logo-container {
                 width: 70px;
                 height: 70px;
-                border-radius: 18px;
-            }
-
-            .logo-image {
-                width: 85%;
-                height: 85%;
-                border-radius: 12px;
             }
 
             .form-input {
-                padding: 0.9rem 1rem;
-                font-size: 0.95rem;
+                padding: 0.9rem 1rem 0.9rem 2.8rem;
             }
 
-            .submit-btn {
-                padding: 0.9rem;
-                font-size: 1rem;
-            }
-
-            /* Mobile improvements for checkbox */
-            .terms-checkbox {
-                padding: 12px;
-                gap: 1rem;
+            .submit-btn,
+            .google-btn {
+                padding: 1rem;
             }
 
             .custom-checkbox {
@@ -656,78 +767,6 @@
                 height: 28px;
                 min-width: 28px;
                 min-height: 28px;
-                border-width: 3px;
-            }
-
-            .custom-checkbox i {
-                font-size: 1rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            body {
-                background-attachment: scroll;
-                -webkit-background-size: cover;
-                background-size: cover;
-            }
-            
-            .register-card {
-                padding: 1.5rem 1rem;
-                border-radius: 16px;
-                background: rgba(26, 26, 46, 0.95);
-                -webkit-backdrop-filter: none;
-                backdrop-filter: none;
-            }
-
-            .register-title {
-                font-size: 1.6rem;
-            }
-
-            .logo-container {
-                width: 60px;
-                height: 60px;
-                border-radius: 16px;
-            }
-
-            .logo-image {
-                width: 85%;
-                height: 85%;
-                border-radius: 10px;
-            }
-
-            .form-input {
-                padding: 0.8rem 0.9rem;
-                font-size: 0.9rem;
-            }
-
-            .submit-btn {
-                padding: 0.8rem;
-                font-size: 0.95rem;
-            }
-
-            /* Small mobile improvements for checkbox */
-            .terms-checkbox {
-                padding: 16px;
-                gap: 1.2rem;
-                margin: 8px 0;
-            }
-
-            .custom-checkbox {
-                width: 32px;
-                height: 32px;
-                min-width: 32px;
-                min-height: 32px;
-                border-width: 3px;
-                border-radius: 8px;
-            }
-
-            .custom-checkbox i {
-                font-size: 1.2rem;
-            }
-
-            .terms-text {
-                font-size: 1rem;
-                line-height: 1.5;
             }
         }
 
@@ -751,79 +790,15 @@
             animation: spin 1s linear infinite;
         }
 
-        @-webkit-keyframes spin {
-            0% { -webkit-transform: rotate(0deg); transform: rotate(0deg); }
-            100% { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
-        }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        /* Floating Elements */
-        .floating-element {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.1);
-            background: rgba(26, 26, 46, 0.6);
-            border-radius: 50%;
-            -webkit-animation: floatElement 6s ease-in-out infinite;
-            animation: floatElement 6s ease-in-out infinite;
-        }
-
-        .floating-element:nth-child(1) {
-            width: 100px;
-            height: 100px;
-            top: 10%;
-            left: 10%;
-            animation-delay: 0s;
-        }
-
-        .floating-element:nth-child(2) {
-            width: 60px;
-            height: 60px;
-            top: 20%;
-            right: 15%;
-            animation-delay: 2s;
-        }
-
-        .floating-element:nth-child(3) {
-            width: 80px;
-            height: 80px;
-            bottom: 20%;
-            left: 15%;
-            animation-delay: 4s;
-        }
-
-        @-webkit-keyframes floatElement {
-            0%, 100% { -webkit-transform: translateY(0px) rotate(0deg); transform: translateY(0px) rotate(0deg); }
-            50% { -webkit-transform: translateY(-20px) rotate(180deg); transform: translateY(-20px) rotate(180deg); }
-        }
-
-        @keyframes floatElement {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-20px) rotate(180deg); }
-        }
     </style>
 </head>
 <body>
-    <!-- Animated Background -->
-    <div class="particles">
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-        <div class="particle"></div>
-    </div>
-
-    <!-- Floating Elements -->
-    <div class="floating-element"></div>
-    <div class="floating-element"></div>
-    <div class="floating-element"></div>
+    <!-- Animated Background Particles -->
+    <div class="particles" id="particles"></div>
 
     <!-- Main Container -->
     <div class="register-container">
@@ -831,10 +806,10 @@
             <!-- Header -->
             <div class="register-header">
                 <div class="logo-container">
-                    <img src="{{ url_for('static', filename='assets/image/logo.PNG') }}" alt="Logo" class="logo-image">
+                    <img src="{{ url_for('static', filename='assets/image/logo.PNG') }}" alt="INEMI Logo" class="logo-image">
                 </div>
                 <h1 class="register-title">Create Account</h1>
-                <p class="register-subtitle">Join our music community</p>
+                <p class="register-subtitle">Join our community and start your journey</p>
             </div>
 
             <!-- Messages -->
@@ -844,30 +819,46 @@
                         {% if category == 'danger' %}
                         <div class="error-message">
                             <i class="bi bi-exclamation-triangle"></i>
-                            {{ message }}
+                            <span>{{ message }}</span>
                         </div>
                         {% endif %}
                     {% endfor %}
                 {% endif %}
             {% endwith %}
 
+            <!-- Google Login Button -->
+            <a href="{{ url_for('web_pages.google_login') }}" class="google-btn">
+                <svg class="google-icon" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                <span>Continue with Google</span>
+            </a>
+
+            <!-- Divider -->
+            <div class="divider">
+                <span>or</span>
+            </div>
+
             <!-- Register Form -->
             <form class="register-form" method="POST" action="{{ url_for('web_pages.register') }}">
                 <div class="form-group">
                     <label for="username" class="form-label">Username</label>
-                    <input type="text" id="username" name="username" class="form-input" placeholder="Choose a username" required value="{{ request.form.get('username', '') }}">
+                    <input type="text" id="username" name="username" class="form-input" placeholder="Choose a username" required value="{{ request.form.get('username', '') }}" autocomplete="username">
                     <i class="bi bi-person input-icon"></i>
                 </div>
 
                 <div class="form-group">
                     <label for="email" class="form-label">Email</label>
-                    <input type="email" id="email" name="email" class="form-input" placeholder="Enter your email" required value="{{ request.form.get('email', '') }}">
+                    <input type="email" id="email" name="email" class="form-input" placeholder="Enter your email" required value="{{ request.form.get('email', '') }}" autocomplete="email">
                     <i class="bi bi-envelope input-icon"></i>
                 </div>
 
                 <div class="form-group">
                     <label for="password" class="form-label">Password</label>
-                    <input type="password" id="password" name="password" class="form-input" placeholder="Create a strong password" required>
+                    <input type="password" id="password" name="password" class="form-input" placeholder="Create a strong password" required autocomplete="new-password">
                     <i class="bi bi-lock input-icon"></i>
                     <div class="password-strength">
                         <div class="strength-bar"></div>
@@ -880,7 +871,7 @@
 
                 <div class="form-group">
                     <label for="confirm_password" class="form-label">Confirm Password</label>
-                    <input type="password" id="confirm_password" name="confirm_password" class="form-input" placeholder="Confirm your password" required>
+                    <input type="password" id="confirm_password" name="confirm_password" class="form-input" placeholder="Confirm your password" required autocomplete="new-password">
                     <i class="bi bi-shield-check input-icon"></i>
                 </div>
 
@@ -907,7 +898,7 @@
                     <a href="{{ url_for('web_pages.login') }}">Already have an account? <span class="sign-in-text">Sign in</span></a>
                 </div>
                 <div class="link-item">
-                    <a href="{{ url_for('web_pages.index') }}">Back to Home</a>
+                    <a href="{{ url_for('web_pages.index') }}">← Back to Home</a>
                 </div>
             </div>
         </div>
@@ -915,6 +906,17 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Create animated particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 15; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 8 + 's';
+            particle.style.animationDuration = (6 + Math.random() * 4) + 's';
+            particlesContainer.appendChild(particle);
+        }
+
         // Password strength checker
         const passwordInput = document.getElementById('password');
         const strengthBars = document.querySelectorAll('.strength-bar');
@@ -988,38 +990,15 @@
         const termsInput = document.getElementById('terms');
         const termsGroup = document.querySelector('.terms-group');
 
-        console.log('Checkbox element:', checkbox);
-        console.log('Terms input element:', termsInput);
-        console.log('Terms group element:', termsGroup);
-
         function toggleTerms() {
             termsInput.checked = !termsInput.checked;
             checkbox.classList.toggle('checked', termsInput.checked);
             termsGroup.setAttribute('aria-checked', termsInput.checked.toString());
             checkPasswordMatch();
-            console.log('Terms toggled:', termsInput.checked);
         }
 
         // Single event listener for the entire terms group
         termsGroup.addEventListener('click', function(e) {
-            console.log('Terms group clicked, target:', e.target);
-            console.log('Current terms checked:', termsInput.checked);
-            e.preventDefault();
-            e.stopPropagation();
-            toggleTerms();
-        });
-
-        // Also add click listener to checkbox specifically
-        checkbox.addEventListener('click', function(e) {
-            console.log('Checkbox clicked directly');
-            e.preventDefault();
-            e.stopPropagation();
-            toggleTerms();
-        });
-
-        // Add click listener to terms text as well
-        document.querySelector('.terms-text').addEventListener('click', function(e) {
-            console.log('Terms text clicked');
             e.preventDefault();
             e.stopPropagation();
             toggleTerms();
@@ -1030,268 +1009,6 @@
             checkbox.classList.toggle('checked', this.checked);
             termsGroup.setAttribute('aria-checked', this.checked.toString());
             checkPasswordMatch();
-            console.log('Input change event:', this.checked);
-        });
-
-        // Add mousedown event for better responsiveness
-        termsGroup.addEventListener('mousedown', function(e) {
-            console.log('Terms group mousedown');
-            e.preventDefault();
-        });
-
-        // Add touchstart event for mobile devices
-        termsGroup.addEventListener('touchstart', function(e) {
-            console.log('Terms group touchstart');
-            e.preventDefault();
-        });
-
-        // Add touchend event for better mobile interaction
-        termsGroup.addEventListener('touchend', function(e) {
-            console.log('Terms group touchend');
-            e.preventDefault();
-            toggleTerms();
-        });
-
-        // Add touch events to checkbox specifically for mobile
-        checkbox.addEventListener('touchend', function(e) {
-            console.log('Checkbox touchend');
-            e.preventDefault();
-            e.stopPropagation();
-            toggleTerms();
-        });
-
-        // Add keyboard support for accessibility
-        termsGroup.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                console.log('Terms group keyboard event:', e.key);
-                e.preventDefault();
-                toggleTerms();
-            }
-        });
-
-        // Add double-click prevention
-        termsGroup.addEventListener('dblclick', function(e) {
-            e.preventDefault();
-        });
-
-        // Add context menu prevention
-        termsGroup.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
-
-        // Add select prevention
-        termsGroup.addEventListener('selectstart', function(e) {
-            e.preventDefault();
-        });
-
-        // Add drag prevention
-        termsGroup.addEventListener('dragstart', function(e) {
-            e.preventDefault();
-        });
-
-        // Add copy prevention
-        termsGroup.addEventListener('copy', function(e) {
-            e.preventDefault();
-        });
-
-        // Add cut prevention
-        termsGroup.addEventListener('cut', function(e) {
-            e.preventDefault();
-        });
-
-        // Add paste prevention
-        termsGroup.addEventListener('paste', function(e) {
-            e.preventDefault();
-        });
-
-        // Add drop prevention
-        termsGroup.addEventListener('drop', function(e) {
-            e.preventDefault();
-        });
-
-        // Add dragover prevention
-        termsGroup.addEventListener('dragover', function(e) {
-            e.preventDefault();
-        });
-
-        // Add dragenter prevention
-        termsGroup.addEventListener('dragenter', function(e) {
-            e.preventDefault();
-        });
-
-        // Add dragleave prevention
-        termsGroup.addEventListener('dragleave', function(e) {
-            e.preventDefault();
-        });
-
-        // Add dragend prevention
-        termsGroup.addEventListener('dragend', function(e) {
-            e.preventDefault();
-        });
-
-        // Add beforeunload prevention
-        termsGroup.addEventListener('beforeunload', function(e) {
-            e.preventDefault();
-        });
-
-        // Add unload prevention
-        termsGroup.addEventListener('unload', function(e) {
-            e.preventDefault();
-        });
-
-        // Add load prevention
-        termsGroup.addEventListener('load', function(e) {
-            e.preventDefault();
-        });
-
-        // Add error prevention
-        termsGroup.addEventListener('error', function(e) {
-            e.preventDefault();
-        });
-
-        // Add abort prevention
-        termsGroup.addEventListener('abort', function(e) {
-            e.preventDefault();
-        });
-
-        // Add canplay prevention
-        termsGroup.addEventListener('canplay', function(e) {
-            e.preventDefault();
-        });
-
-        // Add canplaythrough prevention
-        termsGroup.addEventListener('canplaythrough', function(e) {
-            e.preventDefault();
-        });
-
-        // Add durationchange prevention
-        termsGroup.addEventListener('durationchange', function(e) {
-            e.preventDefault();
-        });
-
-        // Add emptied prevention
-        termsGroup.addEventListener('emptied', function(e) {
-            e.preventDefault();
-        });
-
-        // Add ended prevention
-        termsGroup.addEventListener('ended', function(e) {
-            e.preventDefault();
-        });
-
-        // Add loadeddata prevention
-        termsGroup.addEventListener('loadeddata', function(e) {
-            e.preventDefault();
-        });
-
-        // Add loadedmetadata prevention
-        termsGroup.addEventListener('loadedmetadata', function(e) {
-            e.preventDefault();
-        });
-
-        // Add loadstart prevention
-        termsGroup.addEventListener('loadstart', function(e) {
-            e.preventDefault();
-        });
-
-        // Add pause prevention
-        termsGroup.addEventListener('pause', function(e) {
-            e.preventDefault();
-        });
-
-        // Add play prevention
-        termsGroup.addEventListener('play', function(e) {
-            e.preventDefault();
-        });
-
-        // Add playing prevention
-        termsGroup.addEventListener('playing', function(e) {
-            e.preventDefault();
-        });
-
-        // Add progress prevention
-        termsGroup.addEventListener('progress', function(e) {
-            e.preventDefault();
-        });
-
-        // Add ratechange prevention
-        termsGroup.addEventListener('ratechange', function(e) {
-            e.preventDefault();
-        });
-
-        // Add seeked prevention
-        termsGroup.addEventListener('seeked', function(e) {
-            e.preventDefault();
-        });
-
-        // Add seeking prevention
-        termsGroup.addEventListener('seeking', function(e) {
-            e.preventDefault();
-        });
-
-        // Add stalled prevention
-        termsGroup.addEventListener('stalled', function(e) {
-            e.preventDefault();
-        });
-
-        // Add suspend prevention
-        termsGroup.addEventListener('suspend', function(e) {
-            e.preventDefault();
-        });
-
-        // Add timeupdate prevention
-        termsGroup.addEventListener('timeupdate', function(e) {
-            e.preventDefault();
-        });
-
-        // Add volumechange prevention
-        termsGroup.addEventListener('volumechange', function(e) {
-            e.preventDefault();
-        });
-
-        // Add waiting prevention
-        termsGroup.addEventListener('waiting', function(e) {
-            e.preventDefault();
-        });
-
-        // Add wheel prevention
-        termsGroup.addEventListener('wheel', function(e) {
-            e.preventDefault();
-        });
-
-        // Add scroll prevention
-        termsGroup.addEventListener('scroll', function(e) {
-            e.preventDefault();
-        });
-
-        // Add resize prevention
-        termsGroup.addEventListener('resize', function(e) {
-            e.preventDefault();
-        });
-
-        // Add orientationchange prevention
-        termsGroup.addEventListener('orientationchange', function(e) {
-            e.preventDefault();
-        });
-
-        // Add fullscreenchange prevention
-        termsGroup.addEventListener('fullscreenchange', function(e) {
-            e.preventDefault();
-        });
-
-        // Add fullscreenerror prevention
-        termsGroup.addEventListener('fullscreenerror', function(e) {
-            e.preventDefault();
-        });
-
-        // Add webkitfullscreenchange prevention
-        termsGroup.addEventListener('webkitfullscreenchange', function(e) {
-            e.preventDefault();
-        });
-
-        // Add webkitfullscreenerror prevention
-        termsGroup.addEventListener('webkitfullscreenerror', function(e) {
-            e.preventDefault();
         });
 
         // Make terms group focusable
@@ -1379,31 +1096,9 @@
         document.querySelector('.register-form').addEventListener('submit', function(e) {
             const btnText = submitBtn.querySelector('.btn-text');
             
-            // Validate form before submission
-            const username = document.getElementById('username').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm_password').value;
-            const termsChecked = document.getElementById('terms').checked;
-            
-            console.log('Form submission validation:', {
-                username: username,
-                email: email,
-                password: password ? '***' : 'empty',
-                confirmPassword: confirmPassword ? '***' : 'empty',
-                termsChecked: termsChecked,
-                passwordStrength: checkPasswordStrength(password)
-            });
-            
             // Add loading state
             submitBtn.classList.add('loading');
             btnText.textContent = 'Creating Account...';
-            
-            // Remove loading state after form submission
-            setTimeout(() => {
-                submitBtn.classList.remove('loading');
-                btnText.textContent = 'Create Account';
-            }, 2000);
         });
 
         // Input focus effects
@@ -1416,82 +1111,56 @@
                 this.parentElement.style.transform = 'scale(1)';
             });
         });
+    </script>
 
-        // Add floating animation to particles
-        function createParticle() {
-            const particle = document.createElement('div');
-            particle.className = 'particle';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.animationDelay = Math.random() * 6 + 's';
-            document.querySelector('.particles').appendChild(particle);
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // Toast Notification Function
+        function showToast(message, type = 'success', title = null) {
+            const toastContainer = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
             
+            const icon = type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill';
+            const defaultTitle = type === 'success' ? 'Berhasil!' : 'Error';
+            
+            toast.innerHTML = `
+                <div class="toast-icon">
+                    <i class="bi ${icon}"></i>
+                </div>
+                <div class="toast-content">
+                    <div class="toast-title">${title || defaultTitle}</div>
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">
+                    <i class="bi bi-x"></i>
+                </button>
+                <div class="toast-progress"></div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after 5 seconds
             setTimeout(() => {
-                particle.remove();
-            }, 6000);
+                toast.style.animation = 'toastSlideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
         }
 
-        // Create particles periodically
-        setInterval(createParticle, 2000);
-
-        // Add entrance animation to form elements
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, observerOptions);
-
-        // Observe form elements
-        document.querySelectorAll('.form-group, .submit-btn, .register-links').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(20px)';
-            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-            observer.observe(el);
-        });
-
-        // Debug: Check if all elements are properly loaded
-        setTimeout(() => {
-            console.log('=== DEBUG INFO ===');
-            console.log('Checkbox element:', checkbox);
-            console.log('Terms input element:', termsInput);
-            console.log('Terms group element:', termsGroup);
-            console.log('Terms text element:', document.querySelector('.terms-text'));
-            console.log('All elements found:', !!checkbox && !!termsInput && !!termsGroup);
-            
-            // Test click functionality
-            if (checkbox && termsInput && termsGroup) {
-                console.log('All elements found, testing click functionality...');
-                console.log('Initial checkbox state:', termsInput.checked);
-                console.log('Initial checkbox class:', checkbox.classList.contains('checked'));
-                console.log('Terms group attributes:', {
-                    tabindex: termsGroup.getAttribute('tabindex'),
-                    role: termsGroup.getAttribute('role'),
-                    'aria-checked': termsGroup.getAttribute('aria-checked'),
-                    'aria-label': termsGroup.getAttribute('aria-label')
-                });
-                
-                // Test click simulation
-                console.log('Testing click simulation...');
-                // Don't actually click, just log the current state
-                console.log('Current state before any clicks:', termsInput.checked);
-                console.log('Checkbox is ready for interaction!');
-                console.log('Form field names:', {
-                    username: document.getElementById('username').name,
-                    email: document.getElementById('email').name,
-                    password: document.getElementById('password').name,
-                    confirm_password: document.getElementById('confirm_password').name,
-                    terms: termsInput.name
-                });
-                console.log('Form validation ready!');
-            }
-        }, 1000);
+        // Check for flash messages and show toast
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category == 'success' %}
+                    showToast('{{ message }}', 'success', 'Berhasil!');
+                    {% elif category == 'danger' %}
+                    showToast('{{ message }}', 'danger', 'Error');
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
     </script>
 </body>
 </html>
