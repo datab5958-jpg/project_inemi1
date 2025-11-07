@@ -36,6 +36,11 @@ class Config:
     OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY') or 'your-openai-api-key'
     WAVESPEED_API_KEY = os.environ.get('WAVESPEED_API_KEY') or 'your-wavespeed-api-key'
     ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY') or 'your-elevenlabs-api-key'
+    
+    # Google OAuth Configuration
+    GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID') or ''
+    GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET') or ''
+    GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI') or 'http://localhost:5000/auth/google/callback'
 
 class DevelopmentConfig(Config):
     """Development configuration"""
