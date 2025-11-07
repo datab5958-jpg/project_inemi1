@@ -620,6 +620,231 @@ def login():
     
     return render_template('login.html')
 
+@web_pages.route('/auth/google/debug')
+def google_oauth_debug():
+    """Debug page to show redirect URI that needs to be added to Google Cloud Console"""
+    redirect_uri = url_for('web_pages.google_callback', _external=True)
+    return f"""
+    <html>
+    <head><title>Google OAuth Debug</title></head>
+    <body style="font-family: Arial; padding: 20px; background: #f5f5f5;">
+        <div style="background: white; padding: 20px; border-radius: 8px; max-width: 800px; margin: 0 auto;">
+            <h1>Google OAuth Configuration</h1>
+            <p><strong>Redirect URI yang perlu ditambahkan di Google Cloud Console:</strong></p>
+            <div style="background: #f0f0f0; padding: 15px; border-radius: 4px; margin: 10px 0;">
+                <code style="font-size: 14px; word-break: break-all;">{redirect_uri}</code>
+            </div>
+            <h2>Instruksi:</h2>
+            <ol>
+                <li>Buka <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></li>
+                <li>Pilih project Anda</li>
+                <li>Buka <strong>APIs & Services</strong> → <strong>Credentials</strong></li>
+                <li>Klik OAuth 2.0 Client ID Anda</li>
+                <li>Di bagian <strong>Authorized redirect URIs</strong>, klik <strong>ADD URI</strong></li>
+                <li>Copy dan paste redirect URI di atas</li>
+                <li>Klik <strong>SAVE</strong></li>
+                <li>Tunggu beberapa detik, lalu coba login lagi</li>
+            </ol>
+            <p><strong>Catatan:</strong> Jika Anda mengakses dari IP/domain berbeda, tambahkan semua kemungkinan redirect URI:</p>
+            <ul>
+                <li><code>http://127.0.0.1:5000/auth/google/callback</code></li>
+                <li><code>http://localhost:5000/auth/google/callback</code></li>
+                <li><code>http://172.20.10.11:5000/auth/google/callback</code></li>
+                <li>Dan redirect URI yang ditampilkan di atas</li>
+            </ul>
+            <p><a href="/login">← Kembali ke Login</a></p>
+        </div>
+    </body>
+    </html>
+    """
+
+@web_pages.route('/auth/google')
+def google_login():
+    """Initiate Google OAuth login"""
+    from config import Config
+    from urllib.parse import quote, urlencode
+    
+    # Check if Google OAuth is configured
+    if not Config.GOOGLE_CLIENT_ID or Config.GOOGLE_CLIENT_ID == '':
+        flash('Google login belum dikonfigurasi. Silakan hubungi administrator.', 'danger')
+        return redirect(url_for('web_pages.login'))
+    
+    # Build redirect URI based on current request
+    # Use request.host_url to get the current domain
+    redirect_uri = url_for('web_pages.google_callback', _external=True)
+    
+    # Log for debugging
+    print(f"[Google OAuth] Redirect URI: {redirect_uri}")
+    print(f"[Google OAuth] Request URL: {request.url}")
+    print(f"[Google OAuth] Request Host: {request.host}")
+    print(f"[Google OAuth] Request Scheme: {request.scheme}")
+    
+    # Build Google OAuth URL with proper encoding
+    params = {
+        'client_id': Config.GOOGLE_CLIENT_ID,
+        'redirect_uri': redirect_uri,
+        'response_type': 'code',
+        'scope': 'openid email profile',
+        'access_type': 'online'
+    }
+    
+    google_auth_url = 'https://accounts.google.com/o/oauth2/v2/auth?' + urlencode(params)
+    
+    print(f"[Google OAuth] Google Auth URL: {google_auth_url}")
+    
+    return redirect(google_auth_url)
+
+@web_pages.route('/auth/google/callback')
+def google_callback():
+    """Handle Google OAuth callback"""
+    from config import Config
+    import base64
+    
+    code = request.args.get('code')
+    error = request.args.get('error')
+    error_description = request.args.get('error_description', '')
+    
+    # Handle OAuth errors
+    if error:
+        error_msg = f'Error dari Google: {error}'
+        if error == 'redirect_uri_mismatch':
+            redirect_uri = url_for('web_pages.google_callback', _external=True)
+            error_msg = f'''
+            <div style="max-width: 600px; margin: 50px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <h2 style="color: #d32f2f;">❌ Redirect URI Mismatch</h2>
+                <p>Redirect URI yang digunakan tidak terdaftar di Google Cloud Console.</p>
+                <p><strong>Redirect URI yang digunakan:</strong></p>
+                <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; margin: 10px 0;">
+                    <code style="word-break: break-all;">{redirect_uri}</code>
+                </div>
+                <h3>Langkah perbaikan:</h3>
+                <ol style="text-align: left;">
+                    <li>Buka <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console - Credentials</a></li>
+                    <li>Klik OAuth 2.0 Client ID Anda</li>
+                    <li>Scroll ke bagian <strong>"Authorized redirect URIs"</strong></li>
+                    <li>Klik <strong>"ADD URI"</strong></li>
+                    <li>Copy dan paste redirect URI di atas</li>
+                    <li>Klik <strong>"SAVE"</strong></li>
+                    <li>Tunggu 1-2 menit, lalu coba login lagi</li>
+                </ol>
+                <p><strong>Atau tambahkan semua kemungkinan URI:</strong></p>
+                <ul style="text-align: left;">
+                    <li><code>http://127.0.0.1:5000/auth/google/callback</code></li>
+                    <li><code>http://localhost:5000/auth/google/callback</code></li>
+                    <li><code>http://172.20.10.11:5000/auth/google/callback</code></li>
+                </ul>
+                <p style="margin-top: 20px;">
+                    <a href="/login" style="display: inline-block; padding: 10px 20px; background: #667eea; color: white; text-decoration: none; border-radius: 4px;">← Kembali ke Login</a>
+                </p>
+            </div>
+            '''
+            return error_msg
+        else:
+            flash(f'Error dari Google: {error_description or error}', 'danger')
+            return redirect(url_for('web_pages.login'))
+    
+    if not code:
+        flash('Gagal login dengan Google. Silakan coba lagi.', 'danger')
+        return redirect(url_for('web_pages.login'))
+    
+    try:
+        # Build redirect URI based on current request (must match the one used in google_login)
+        redirect_uri = url_for('web_pages.google_callback', _external=True)
+        
+        # Log for debugging
+        print(f"[Google OAuth Callback] Redirect URI: {redirect_uri}")
+        print(f"[Google OAuth Callback] Request URL: {request.url}")
+        print(f"[Google OAuth Callback] Code received: {code[:20]}...")
+        
+        # Exchange code for access token
+        token_url = 'https://oauth2.googleapis.com/token'
+        token_data = {
+            'code': code,
+            'client_id': Config.GOOGLE_CLIENT_ID,
+            'client_secret': Config.GOOGLE_CLIENT_SECRET,
+            'redirect_uri': redirect_uri,
+            'grant_type': 'authorization_code'
+        }
+        
+        print(f"[Google OAuth Callback] Token request data: {token_data}")
+        
+        token_response = requests.post(token_url, data=token_data)
+        token_json = token_response.json()
+        
+        print(f"[Google OAuth Callback] Token response: {token_json}")
+        
+        if 'access_token' not in token_json:
+            flash('Gagal mendapatkan token dari Google. Silakan coba lagi.', 'danger')
+            return redirect(url_for('web_pages.login'))
+        
+        access_token = token_json['access_token']
+        
+        # Get user info from Google
+        user_info_url = 'https://www.googleapis.com/oauth2/v2/userinfo'
+        headers = {'Authorization': f'Bearer {access_token}'}
+        user_info_response = requests.get(user_info_url, headers=headers)
+        user_info = user_info_response.json()
+        
+        if 'email' not in user_info:
+            flash('Gagal mendapatkan informasi dari Google. Silakan coba lagi.', 'danger')
+            return redirect(url_for('web_pages.login'))
+        
+        email = user_info.get('email')
+        name = user_info.get('name', '')
+        picture = user_info.get('picture', '')
+        google_id = user_info.get('id', '')
+        
+        # Check if user exists by email
+        user = User.query.filter_by(email=email).first()
+        
+        if not user:
+            # Create new user with Google account
+            # Generate username from email or name
+            username_base = name.lower().replace(' ', '_') if name else email.split('@')[0]
+            username = username_base
+            counter = 1
+            
+            # Ensure unique username
+            while User.query.filter_by(username=username).first():
+                username = f"{username_base}_{counter}"
+                counter += 1
+            
+            # Create new user
+            user = User(
+                username=username,
+                email=email,
+                password='',  # No password for Google users
+                avatar_url=picture or '/static/assets/image/default.jpg',
+                role='free',
+                kredit=100  # Give 100 credits for new Google users
+            )
+            db.session.add(user)
+            db.session.commit()
+            
+            flash('Akun berhasil dibuat dengan Google!', 'success')
+        else:
+            # Update avatar if available
+            if picture and (not user.avatar_url or user.avatar_url == '/static/assets/image/default.jpg'):
+                user.avatar_url = picture
+                db.session.commit()
+        
+        # Set session
+        session.permanent = True
+        session['user_id'] = user.id
+        session['username'] = user.username
+        session['role'] = user.role
+        session['avatar_url'] = user.avatar_url or '/static/assets/image/default.jpg'
+        session['kredit'] = user.kredit if user.kredit is not None else 0
+        
+        return redirect(url_for('web_pages.profil'))
+        
+    except Exception as e:
+        print(f"Google OAuth error: {e}")
+        import traceback
+        traceback.print_exc()
+        flash('Terjadi kesalahan saat login dengan Google. Silakan coba lagi.', 'danger')
+        return redirect(url_for('web_pages.login'))
+
 @web_pages.route('/lokal')
 def lokal():
     return render_template('lokal.html')
