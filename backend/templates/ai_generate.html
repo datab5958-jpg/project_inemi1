@@ -3160,6 +3160,56 @@
             min-width: 120px;
         }
     }
+
+    /* Floating Sidebar Behaviour - Mobile & Tablet */
+    @media (max-width: 1023px) {
+        .ai-container {
+            padding-top: 140px;
+        }
+
+        .ai-main {
+            margin-top: 0;
+        }
+
+        .ai-sidebar {
+            position: fixed;
+            top: 60px;
+            left: var(--ai-sidebar-left, 16px);
+            right: auto;
+            bottom: auto;
+            transform: none;
+            width: var(--ai-sidebar-width, calc(100% - 32px));
+            max-width: 520px;
+            border-radius: 24px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 25px rgba(76, 126, 255, 0.2);
+            z-index: 2000;
+        }
+    }
+
+    /* Floating Sidebar Behaviour - Desktop */
+    @media (min-width: 1024px) {
+        .ai-container {
+            padding-left: 120px;
+        }
+
+        .ai-sidebar {
+            position: fixed;
+            top: 50%;
+            left: var(--ai-sidebar-left, 240px);
+            right: auto;
+            bottom: auto;
+            transform: translateY(-50%);
+            height: auto;
+            width: 80px;
+            border-radius: 20px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 25px rgba(76, 126, 255, 0.2);
+            z-index: 2000;
+        }
+
+        .ai-main {
+            margin-left: 0;
+        }
+    }
 </style>
 
 <div class="ai-container">
@@ -3440,7 +3490,42 @@
     
     // Apply immediately
     fixIOSBackground();
-    
+
+    const rootElement = document.documentElement;
+    let sidebarUpdateRaf = null;
+
+    function updateAISidebarPosition() {
+        const sidebar = document.querySelector('.ai-sidebar');
+        const container = document.querySelector('.ai-container');
+        if (!sidebar || !container) {
+            return;
+        }
+
+        const rect = container.getBoundingClientRect();
+        const left = rect.left + window.scrollX + 12;
+        rootElement.style.setProperty('--ai-sidebar-left', `${left}px`);
+
+        if (window.innerWidth <= 1023) {
+            const computedWidth = Math.max(rect.width - 24, 260);
+            rootElement.style.setProperty('--ai-sidebar-width', `${computedWidth}px`);
+        } else {
+            rootElement.style.removeProperty('--ai-sidebar-width');
+        }
+    }
+
+    function scheduleAISidebarUpdate() {
+        if (sidebarUpdateRaf) {
+            return;
+        }
+        sidebarUpdateRaf = requestAnimationFrame(() => {
+            sidebarUpdateRaf = null;
+            updateAISidebarPosition();
+        });
+    }
+
+    window.addEventListener('resize', scheduleAISidebarUpdate);
+    window.addEventListener('scroll', scheduleAISidebarUpdate, { passive: true });
+
     // Wait for DOM to be ready
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
@@ -3461,6 +3546,8 @@
                 container.style.display = 'flex';
             }
             
+            updateAISidebarPosition();
+
             // Initialize all components
             initializeComponents();
         } catch (e) {
