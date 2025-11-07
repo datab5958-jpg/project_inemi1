@@ -616,6 +616,7 @@ def login():
         session['role'] = user.role
         session['avatar_url'] = user.avatar_url or '/static/assets/image/default.jpg'
         session['kredit'] = user.kredit if user.kredit is not None else 0  # Simpan kredit di session juga
+        flash('Login berhasil! Selamat datang kembali, ' + user.username + '!', 'success')
         return redirect(url_for('web_pages.profil'))
     
     return render_template('login.html')
@@ -1163,6 +1164,7 @@ def register():
         user.set_password(password)
         db.session.add(user)
         db.session.commit()
+        flash('Registrasi berhasil! Akun Anda telah dibuat. Silakan login untuk melanjutkan.', 'success')
         return redirect(url_for('web_pages.login'))
     return render_template('register.html')
 

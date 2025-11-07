@@ -33987,7 +33987,2325 @@ Setelah perubahan, jika masih error, akan muncul halaman error yang menampilkan 
 
 ### 3. Verifikasi
 - Development (localhost): menggunakan `http://127.0.0.1:5000/auth/google/callback`
-- Production (inemi.id): otomatis menggunakan `https://www.inemi.id/auth/go
+- Production (inemi.id): otomatis menggunakan `https://www.inemi.id/auth/google/callback`
+
+Error handling sudah diperbaiki untuk menampilkan redirect URI yang benar. Pastikan semua URI di atas sudah ditambahkan di Google Cloud Console.
+
+Jika masih error, kirimkan pesan error yang muncul agar bisa ditindaklanjuti.
+
+---
+
+_**User (2025-11-05 06:23Z)**_
+
+@http://127.0.0.1:5000/register 
+
+halaman registrasi juga di redesign seperti halaman login 
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Membaca `login.html` dan `register.html` untuk menerapkan desain yang sama ke halaman registrasi:
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: backend/templates/login.html</summary>
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: backend/templates/register.html</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Menerapkan desain yang sama seperti halaman login ke halaman registrasi:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="write">
+
+<details><summary>Tool use: **code_edit** • Edit file: backend/templates/register.html</summary>
+
+**Chunk 1**
+Lines added: 2, lines removed: 1
+
+```diff
+@@ -4,7 +4,8 @@
+      &lt;meta charset=&quot;UTF-8&quot;&gt;
+      &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover&quot;&gt;
+-     &lt;title&gt;Register - Music Platform&lt;/title&gt;
++     &lt;title&gt;Register - INEMI&lt;/title&gt;
+      &lt;link href=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css&quot; rel=&quot;stylesheet&quot;&gt;
+      &lt;link href=&quot;https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css&quot; rel=&quot;stylesheet&quot;&gt;
++     &lt;link href=&quot;https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap&quot; rel=&quot;stylesheet&quot;&gt;
+      &lt;style&gt;
+          * {
+```
+
+**Chunk 2**
+Lines added: 23, lines removed: 45
+
+```diff
+@@ -13,54 +14,32 @@
+              box-sizing: border-box;
+          }
++ 
++         :root {
++             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
++             --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
++             --accent-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
++             --dark-bg: #0E0B2C;
++             --dark-card: #1D1B3F;
++             --text-primary: #FFFFFF;
++             --text-secondary: #B8B8D9;
++             --border-neon: rgba(76, 126, 255, 0.3);
++         }
+  
+          body {
+-             font-family: &#39;Segoe UI&#39;, Tahoma, Geneva, Verdana, sans-serif;
+-             background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%);
+-             background: -webkit-linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%);
+-             background: -moz-linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #533483 100%);
++             font-family: &#39;Inter&#39;, -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, sans-serif;
++             background: var(--dark-bg);
++             background-image: 
++                 linear-gradient(180deg, #0E0B2C 0%, #1B1F46 50%, #0E0B2C 100%),
++                 radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
++                 radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.15) 0%, transparent 50%);
++             background-attachment: fixed;
+              min-height: 100vh;
+              overflow-x: hidden;
+              position: relative;
+-             /* Safari/iPhone specific fixes */
+-             -webkit-background-size: cover;
+-             -moz-background-size: cover;
+-             background-size: cover;
+-             -webkit-background-attachment: fixed;
+-             -moz-background-attachment: fixed;
+-             background-attachment: fixed;
+-         }
+- 
+-         /* Animated Background */
+-         body::before {
+-             content: &#39;&#39;;
+-             position: fixed;
+-             top: 0;
+-             left: 0;
+-             width: 100%;
+-             height: 100%;
+-             background: 
+-                 radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+-                 radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+-                 radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+-             background: 
+-                 -webkit-radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+-                 -webkit-radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+-                 -webkit-radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+-             -webkit-animation: backgroundShift 20s ease-in-out infinite;
+-             animation: backgroundShift 20s ease-in-out infinite;
+-             z-index: -1;
+-         }
+- 
+-         @-webkit-keyframes backgroundShift {
+-             0%, 100% { -webkit-transform: scale(1) rotate(0deg); transform: scale(1) rotate(0deg); }
+-             50% { -webkit-transform: scale(1.1) rotate(1deg); transform: scale(1.1) rotate(1deg); }
+-         }
+- 
+-         @keyframes backgroundShift {
+-             0%, 100% { transform: scale(1) rotate(0deg); }
+-             50% { transform: scale(1.1) rotate(1deg); }
+-         }
+- 
+-         /* Floating Particles */
++             -webkit-font-smoothing: antialiased;
++             -moz-osx-font-smoothing: grayscale;
++         }
++ 
++         /* Animated Background Particles */
+          .particles {
+              position: fixed;
+```
+
+**Chunk 3**
+Lines added: 8, lines removed: 25
+
+```diff
+@@ -70,39 +49,22 @@
+              height: 100%;
+              overflow: hidden;
+-             z-index: -1;
++             z-index: 0;
++             pointer-events: none;
+          }
+  
+          .particle {
+              position: absolute;
+-             width: 2px;
+-             height: 2px;
+-             background: rgba(255, 255, 255, 0.5);
++             width: 3px;
++             height: 3px;
++             background: rgba(102, 126, 234, 0.6);
+              border-radius: 50%;
+-             -webkit-animation: float 6s ease-in-out infinite;
+-             animation: float 6s ease-in-out infinite;
+-         }
+- 
+-         .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+-         .particle:nth-child(2) { left: 20%; animation-delay: 1s; }
+-         .particle:nth-child(3) { left: 30%; animation-delay: 2s; }
+-         .particle:nth-child(4) { left: 40%; animation-delay: 3s; }
+-         .particle:nth-child(5) { left: 50%; animation-delay: 4s; }
+-         .particle:nth-child(6) { left: 60%; animation-delay: 5s; }
+-         .particle:nth-child(7) { left: 70%; animation-delay: 0s; }
+-         .particle:nth-child(8) { left: 80%; animation-delay: 1s; }
+-         .particle:nth-child(9) { left: 90%; animation-delay: 2s; }
+- 
+-         @-webkit-keyframes float {
+-             0%, 100% { -webkit-transform: translateY(100vh) scale(0); transform: translateY(100vh) scale(0); opacity: 0; }
+-             10% { opacity: 1; }
+-             90% { opacity: 1; }
+-             100% { -webkit-transform: translateY(-100px) scale(1); transform: translateY(-100px) scale(1); opacity: 0; }
++             animation: float 8s ease-in-out infinite;
+          }
+  
+          @keyframes float {
+-             0%, 100% { transform: translateY(100vh) scale(0); opacity: 0; }
++             0%, 100% { transform: translateY(100vh) translateX(0) scale(0); opacity: 0; }
+              10% { opacity: 1; }
+              90% { opacity: 1; }
+-             100% { transform: translateY(-100px) scale(1); opacity: 0; }
++             100% { transform: translateY(-100px) translateX(50px) scale(1); opacity: 0; }
+          }
+  
+```
+
+**Chunk 4**
+Lines added: 9, lines removed: 10
+
+```diff
+@@ -120,20 +82,19 @@
+          /* Register Card */
+          .register-card {
+-             background: rgba(255, 255, 255, 0.1);
+-             background: rgba(26, 26, 46, 0.9);
+-             -webkit-backdrop-filter: blur(20px);
+-             backdrop-filter: blur(20px);
+-             border: 1px solid rgba(255, 255, 255, 0.2);
++             background: rgba(29, 27, 63, 0.95);
++             backdrop-filter: blur(30px) saturate(180%);
++             -webkit-backdrop-filter: blur(30px) saturate(180%);
++             border: 1px solid var(--border-neon);
+              border-radius: 24px;
+              padding: 3rem 2.5rem;
+              width: 100%;
+-             max-width: 500px;
++             max-width: 520px;
+              box-shadow: 
+-                 0 25px 50px rgba(0, 0, 0, 0.3),
+-                 0 0 0 1px rgba(255, 255, 255, 0.1);
++                 0 25px 60px rgba(0, 0, 0, 0.5),
++                 0 0 40px rgba(102, 126, 234, 0.2),
++                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
+              position: relative;
+              overflow: hidden;
+-             -webkit-animation: cardEntrance 1s ease-out;
+-             animation: cardEntrance 1s ease-out;
++             animation: cardEntrance 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+          }
+  
+```
+
+**Chunk 5**
+Lines added: 2, lines removed: 15
+
+```diff
+@@ -145,24 +106,11 @@
+              width: 100%;
+              height: 100%;
+-             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+-             transition: left 0.5s ease;
++             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
++             transition: left 0.6s ease;
+          }
+  
+          .register-card:hover::before {
+              left: 100%;
+          }
+- 
+-         @-webkit-keyframes cardEntrance {
+-             from {
+-                 opacity: 0;
+-                 -webkit-transform: translateY(30px) scale(0.95);
+-                 transform: translateY(30px) scale(0.95);
+-             }
+-             to {
+-                 opacity: 1;
+-                 -webkit-transform: translateY(0) scale(1);
+-                 transform: translateY(0) scale(1);
+-             }
+-         }
+  
+          @keyframes cardEntrance {
+```
+
+**Chunk 6**
+Lines added: 23, lines removed: 13
+
+```diff
+@@ -184,25 +132,35 @@
+  
+          .logo-container {
+-             width: 80px;
+-             height: 80px;
+-             background: rgba(255, 255, 255, 0.1);
+-             background: rgba(26, 26, 46, 0.8);
+-             -webkit-backdrop-filter: blur(10px);
++             width: 90px;
++             height: 90px;
++             background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+              backdrop-filter: blur(10px);
+-             border: 1px solid rgba(255, 255, 255, 0.2);
+-             border-radius: 20px;
++             border: 2px solid rgba(102, 126, 234, 0.3);
++             border-radius: 22px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 0 auto 1.5rem;
+-             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+-             -webkit-animation: logoPulse 2s ease-in-out infinite;
+-             animation: logoPulse 2s ease-in-out infinite;
++             box-shadow: 
++                 0 10px 30px rgba(102, 126, 234, 0.3),
++                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
++             animation: logoPulse 3s ease-in-out infinite;
++             position: relative;
+              overflow: hidden;
+          }
+  
+-         @-webkit-keyframes logoPulse {
+-             0%, 100% { -webkit-transform: scale(1); transform: scale(1); }
+-             50% { -webkit-transform: scale(1.05); transform: scale(1.05); }
++         .logo-container::before {
++             content: &#39;&#39;;
++             position: absolute;
++             inset: -2px;
++             background: linear-gradient(135deg, #667eea, #764ba2);
++             border-radius: 22px;
++             opacity: 0;
++             transition: opacity 0.3s;
++             z-index: -1;
++         }
++ 
++         .register-card:hover .logo-container::before {
++             opacity: 0.3;
+          }
+  
+```
+
+**Chunk 7**
+Lines added: 29, lines removed: 7
+
+```diff
+@@ -213,29 +171,51 @@
+  
+          .logo-image {
+-             width: 85%;
+-             height: 85%;
++             width: 80%;
++             height: 80%;
+              object-fit: contain;
+              border-radius: 12px;
+          }
+  
+          .register-title {
+-             font-size: 2rem;
+-             font-weight: 700;
+-             background: linear-gradient(135deg, #6c63ff, #ff4ecd);
++             font-size: 2.2rem;
++             font-weight: 800;
++             background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+              background-clip: text;
+              margin-bottom: 0.5rem;
++             letter-spacing: -0.5px;
+          }
+  
+          .register-subtitle {
+-             color: rgba(255, 255, 255, 0.7);
++             color: var(--text-secondary);
+              font-size: 1rem;
+              font-weight: 400;
+          }
++ 
++         /* Divider */
++         .divider {
++             display: flex;
++             align-items: center;
++             margin: 2rem 0;
++             color: var(--text-secondary);
++             font-size: 0.9rem;
++         }
++ 
++         .divider::before,
++         .divider::after {
++             content: &#39;&#39;;
++             flex: 1;
++             height: 1px;
++             background: linear-gradient(90deg, transparent, var(--border-neon), transparent);
++         }
++ 
++         .divider span {
++             padding: 0 1rem;
++         }
+  
+          /* Form */
+          .register-form {
+-             margin-bottom: 2rem;
++             margin-bottom: 1.5rem;
+          }
+  
+```
+
+**Chunk 8**
+Lines added: 22, lines removed: 22
+
+```diff
+@@ -246,52 +226,52 @@
+  
+          .form-label {
+-             color: rgba(255, 255, 255, 0.9);
+-             font-weight: 500;
++             color: var(--text-primary);
++             font-weight: 600;
+              margin-bottom: 0.5rem;
+              display: block;
+              font-size: 0.9rem;
++             letter-spacing: 0.3px;
+          }
+  
+          .form-input {
+              width: 100%;
+-             padding: 1rem 1.2rem;
+-             background: rgba(255, 255, 255, 0.1);
+-             background: rgba(26, 26, 46, 0.7);
+-             border: 2px solid rgba(255, 255, 255, 0.2);
+-             border-radius: 12px;
+-             color: white;
++             padding: 1rem 1.2rem 1rem 3rem;
++             background: rgba(255, 255, 255, 0.08);
++             border: 2px solid rgba(255, 255, 255, 0.1);
++             border-radius: 14px;
++             color: var(--text-primary);
+              font-size: 1rem;
+-             -webkit-transition: all 0.3s ease;
+-             transition: all 0.3s ease;
+-             -webkit-backdrop-filter: blur(10px);
++             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+              backdrop-filter: blur(10px);
++             font-family: inherit;
+          }
+  
+          .form-input::placeholder {
+-             color: rgba(255, 255, 255, 0.5);
++             color: rgba(255, 255, 255, 0.4);
+          }
+  
+          .form-input:focus {
+              outline: none;
+-             border-color: #6c63ff;
+-             box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.2);
+-             background: rgba(255, 255, 255, 0.15);
+-             background: rgba(26, 26, 46, 0.9);
++             border-color: #667eea;
++             background: rgba(255, 255, 255, 0.12);
++             box-shadow: 
++                 0 0 0 4px rgba(102, 126, 234, 0.15),
++                 0 8px 24px rgba(102, 126, 234, 0.2);
++             transform: translateY(-2px);
+          }
+  
+          .input-icon {
+              position: absolute;
+-             right: 1rem;
++             left: 1rem;
+              top: 50%;
+-             -webkit-transform: translateY(-50%);
+              transform: translateY(-50%);
+              color: rgba(255, 255, 255, 0.5);
+-             font-size: 1.1rem;
+-             -webkit-transition: color 0.3s ease;
++             font-size: 1.2rem;
+              transition: color 0.3s ease;
++             pointer-events: none;
+          }
+  
+-         .form-input:focus + .input-icon {
+-             color: #6c63ff;
++         .form-input:focus ~ .input-icon {
++             color: #667eea;
+          }
+  
+```
+
+**Chunk 9**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -317,5 +297,5 @@
+          .strength-text {
+              font-size: 0.8rem;
+-             color: rgba(255, 255, 255, 0.6);
++             color: var(--text-secondary);
+              margin-top: 0.25rem;
+          }
+```
+
+**Chunk 10**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -326,5 +306,5 @@
+              cursor: pointer;
+              padding: 0.5rem;
+-             border-radius: 8px;
++             border-radius: 12px;
+              transition: background-color 0.3s ease;
+              position: relative;
+```
+
+**Chunk 11**
+Lines added: undefined, lines removed: 34
+
+```diff
+@@ -334,38 +314,4 @@
+              background: rgba(255, 255, 255, 0.05);
+          }
+- 
+-         .terms-group:active {
+-             background: rgba(255, 255, 255, 0.1);
+-             transform: scale(0.98);
+-         }
+- 
+-         .terms-group:focus {
+-             outline: 2px solid #6c63ff;
+-             outline-offset: 2px;
+-         }
+- 
+-         .terms-group {
+-             position: relative;
+-             cursor: pointer;
+-             -webkit-tap-highlight-color: transparent;
+-         }
+- 
+-         .terms-group::before {
+-             content: &#39;&#39;;
+-             position: absolute;
+-             top: -8px;
+-             left: -8px;
+-             right: -8px;
+-             bottom: -8px;
+-             border-radius: 12px;
+-             background: transparent;
+-             transition: background-color 0.2s ease;
+-             pointer-events: none;
+-             z-index: 0;
+-         }
+- 
+-         .terms-group:active::before {
+-             background-color: rgba(108, 99, 255, 0.2);
+-         }
+  
+          .terms-checkbox {
+```
+
+**Chunk 12**
+Lines added: 1, lines removed: 5
+
+```diff
+@@ -382,9 +328,5 @@
+  
+          .terms-checkbox:hover {
+-             background-color: rgba(108, 99, 255, 0.1);
+-         }
+- 
+-         .terms-checkbox:active {
+-             background-color: rgba(108, 99, 255, 0.2);
++             background-color: rgba(102, 126, 234, 0.1);
+          }
+  
+```
+
+**Chunk 13**
+Lines added: 1, lines removed: 3
+
+```diff
+@@ -394,10 +336,8 @@
+              border: 2px solid rgba(255, 255, 255, 0.3);
+              border-radius: 6px;
+-             background: rgba(255, 255, 255, 0.1);
+-             background: rgba(26, 26, 46, 0.7);
++             background: rgba(255, 255, 255, 0.08);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+-             -webkit-transition: all 0.3s ease;
+              transition: all 0.3s ease;
+              flex-shrink: 0;
+```
+
+**Chunk 14**
+Lines added: 5, lines removed: 11
+
+```diff
+@@ -411,25 +351,19 @@
+  
+          .custom-checkbox.checked {
+-             background: #6c63ff;
+-             border-color: #6c63ff;
+-             box-shadow: 0 0 10px rgba(108, 99, 255, 0.3);
++             background: #667eea;
++             border-color: #667eea;
++             box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+          }
+  
+          .custom-checkbox:hover {
+-             border-color: #6c63ff;
+-             background: rgba(108, 99, 255, 0.1);
+-             -webkit-transform: scale(1.1);
++             border-color: #667eea;
++             background: rgba(102, 126, 234, 0.1);
+              transform: scale(1.1);
+          }
+- 
+-         .terms-text:hover {
+-             color: rgba(255, 255, 255, 1);
+-         }
+  
+          .custom-checkbox i {
+              color: white;
+              font-size: 0.8rem;
+              opacity: 0;
+-             -webkit-transition: opacity 0.3s ease;
+              transition: opacity 0.3s ease;
+          }
+```
+
+**Chunk 15**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -440,5 +374,5 @@
+  
+          .terms-text {
+-             color: rgba(255, 255, 255, 0.8);
++             color: var(--text-secondary);
+              font-size: 0.9rem;
+              line-height: 1.4;
+```
+
+**Chunk 16**
+Lines added: 12, lines removed: 12
+
+```diff
+@@ -447,32 +381,32 @@
+          }
+  
+-         .terms-text a, .sign-in-text {
+-             color: #6c63ff;
++         .terms-text a {
++             color: #667eea;
+              text-decoration: none;
+              transition: color 0.3s ease;
+          }
+  
+          .terms-text a:hover {
+-             color: #ff4ecd;
++             color: #f093fb;
+          }
+  
+          /* Submit Button */
+          .submit-btn {
+              width: 100%;
+-             padding: 1rem;
+-             background: linear-gradient(135deg, #6c63ff, #ff4ecd);
+-             background: -webkit-linear-gradient(135deg, #6c63ff, #ff4ecd);
+-             background: -moz-linear-gradient(135deg, #6c63ff, #ff4ecd);
++             padding: 1.1rem;
++             background: var(--primary-gradient);
+              border: none;
+-             border-radius: 12px;
++             border-radius: 14px;
+              color: white;
+              font-size: 1.1rem;
+-             font-weight: 600;
++             font-weight: 700;
+              cursor: pointer;
+-             -webkit-transition: all 0.3s ease;
+-             transition: all 0.3s ease;
++             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+              position: relative;
+              overflow: hidden;
+-             margin-top: 1rem;
++             margin-top: 0.5rem;
++             box-shadow: 
++                 0 8px 24px rgba(102, 126, 234, 0.3),
++                 inset 0 1px 0 rgba(255, 255, 255, 0.2);
+          }
+  
+```
+
+**Chunk 17**
+Lines added: 5, lines removed: 4
+
+```diff
+@@ -493,11 +427,12 @@
+  
+          .submit-btn:hover {
+-             -webkit-transform: translateY(-2px);
+-             transform: translateY(-2px);
+-             box-shadow: 0 10px 30px rgba(108, 99, 255, 0.4);
++             transform: translateY(-3px);
++             box-shadow: 
++                 0 12px 32px rgba(102, 126, 234, 0.4),
++                 inset 0 1px 0 rgba(255, 255, 255, 0.3);
+          }
+  
+          .submit-btn:active {
+-             transform: translateY(0);
++             transform: translateY(-1px);
+          }
+  
+```
+
+**Chunk 18**
+Lines added: 40, lines removed: undefined
+
+```diff
+@@ -507,4 +442,44 @@
+              transform: none;
+          }
++ 
++         /* Google Login Button */
++         .google-btn {
++             width: 100%;
++             padding: 1rem;
++             background: white;
++             border: 2px solid rgba(255, 255, 255, 0.2);
++             border-radius: 14px;
++             color: #4285F4;
++             font-size: 1rem;
++             font-weight: 600;
++             cursor: pointer;
++             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
++             display: flex;
++             align-items: center;
++             justify-content: center;
++             gap: 0.75rem;
++             margin-bottom: 1.5rem;
++             box-shadow: 
++                 0 4px 16px rgba(0, 0, 0, 0.1),
++                 inset 0 1px 0 rgba(255, 255, 255, 0.9);
++             text-decoration: none;
++         }
++ 
++         .google-btn:hover {
++             transform: translateY(-2px);
++             box-shadow: 
++                 0 8px 24px rgba(0, 0, 0, 0.15),
++                 inset 0 1px 0 rgba(255, 255, 255, 1);
++             background: #f8f9fa;
++         }
++ 
++         .google-btn:active {
++             transform: translateY(0);
++         }
++ 
++         .google-icon {
++             width: 20px;
++             height: 20px;
++         }
+  
+          /* Links */
+```
+
+**Chunk 19**
+Lines added: 22, lines removed: 58
+
+```diff
+@@ -519,92 +494,56 @@
+  
+          .link-item a {
+-             color: rgba(255, 255, 255, 0.7);
++             color: var(--text-secondary);
+              text-decoration: none;
+-             font-size: 0.9rem;
++             font-size: 0.95rem;
+              transition: all 0.3s ease;
+              position: relative;
++             font-weight: 500;
+          }
+  
+          .link-item a::after {
+              content: &#39;&#39;;
+              position: absolute;
+-             bottom: -2px;
++             bottom: -3px;
+              left: 0;
+              width: 0;
+-             height: 1px;
+-             background: linear-gradient(135deg, #6c63ff, #ff4ecd);
++             height: 2px;
++             background: var(--primary-gradient);
+              transition: width 0.3s ease;
++             border-radius: 2px;
+          }
+  
+          .link-item a:hover {
+-             color: white;
++             color: var(--text-primary);
+          }
+  
+          .link-item a:hover::after {
+              width: 100%;
+          }
++ 
++         .sign-in-text {
++             color: #667eea;
++             font-weight: 600;
++         }
+  
+          /* Error Messages */
+          .error-message {
+-             background: rgba(220, 53, 69, 0.2);
++             background: rgba(220, 53, 69, 0.15);
+              border: 1px solid rgba(220, 53, 69, 0.3);
+              color: #ff6b6b;
+-             padding: 0.8rem 1rem;
+-             border-radius: 8px;
+-             margin-bottom: 1rem;
++             padding: 1rem 1.2rem;
++             border-radius: 12px;
++             margin-bottom: 1.5rem;
+              font-size: 0.9rem;
+              animation: errorShake 0.5s ease-in-out;
+-         }
+- 
+-         @-webkit-keyframes errorShake {
+-             0%, 100% { -webkit-transform: translateX(0); transform: translateX(0); }
+-             25% { -webkit-transform: translateX(-5px); transform: translateX(-5px); }
+-             75% { -webkit-transform: translateX(5px); transform: translateX(5px); }
++             display: flex;
++             align-items: center;
++             gap: 0.5rem;
+          }
+  
+          @keyframes errorShake {
+              0%, 100% { transform: translateX(0); }
+-             25% { transform: translateX(-5px); }
+-             75% { transform: translateX(5px); }
+-         }
+- 
+- 
+- 
+-         /* Safari/iPhone specific fixes */
+-         @supports (-webkit-appearance: none) {
+-             body {
+-                 background-attachment: scroll;
+-                 -webkit-background-size: 100% 100%;
+-                 background-size: 100% 100%;
+-             }
+-             
+-             .register-card {
+-                 background: rgba(26, 26, 46, 0.95);
+-                 -webkit-backdrop-filter: none;
+-                 backdrop-filter: none;
+-             }
+-             
+-             .logo-container {
+-                 background: rgba(26, 26, 46, 0.95);
+-                 -webkit-backdrop-filter: none;
+-                 backdrop-filter: none;
+-             }
+-             
+-             .form-input {
+-                 background: rgba(26, 26, 46, 0.8);
+-                 -webkit-backdrop-filter: none;
+-                 backdrop-filter: none;
+-             }
+-             
+-             .custom-checkbox {
+-                 background: rgba(26, 26, 46, 0.8);
+-             }
+-         }
+- 
+-         /* iOS Safari specific fixes */
+-         @media screen and (-webkit-min-device-pixel-ratio: 0) {
+-             body {
+-                 background-attachment: scroll;
+-             }
++             25% { transform: translateX(-8px); }
++             75% { transform: translateX(8px); }
+          }
+  
+```
+
+**Chunk 20**
+Lines added: 17, lines removed: 87
+
+```diff
+@@ -616,118 +555,48 @@
+  
+              .register-card {
+-                 padding: 2rem 1.5rem;
++                 padding: 2.5rem 2rem;
+                  border-radius: 20px;
+              }
+  
+              .register-title {
+-                 font-size: 1.8rem;
++                 font-size: 1.9rem;
+              }
+  
+              .logo-container {
+-                 width: 70px;
+-                 height: 70px;
+-                 border-radius: 18px;
+-             }
+- 
+-             .logo-image {
+-                 width: 85%;
+-                 height: 85%;
+-                 border-radius: 12px;
+-             }
+- 
+-             .form-input {
+-                 padding: 0.9rem 1rem;
+-                 font-size: 0.95rem;
+-             }
+- 
+-             .submit-btn {
+-                 padding: 0.9rem;
+-                 font-size: 1rem;
+-             }
+- 
+-             /* Mobile improvements for checkbox */
+-             .terms-checkbox {
+-                 padding: 12px;
+-                 gap: 1rem;
+-             }
+- 
+-             .custom-checkbox {
+-                 width: 28px;
+-                 height: 28px;
+-                 min-width: 28px;
+-                 min-height: 28px;
+-                 border-width: 3px;
+-             }
+- 
+-             .custom-checkbox i {
+-                 font-size: 1rem;
++                 width: 80px;
++                 height: 80px;
+              }
+          }
+  
+          @media (max-width: 480px) {
+-             body {
+-                 background-attachment: scroll;
+-                 -webkit-background-size: cover;
+-                 background-size: cover;
+-             }
+-             
+              .register-card {
+-                 padding: 1.5rem 1rem;
+-                 border-radius: 16px;
+-                 background: rgba(26, 26, 46, 0.95);
+-                 -webkit-backdrop-filter: none;
+-                 backdrop-filter: none;
++                 padding: 2rem 1.5rem;
++                 border-radius: 18px;
+              }
+  
+              .register-title {
+-                 font-size: 1.6rem;
++                 font-size: 1.7rem;
+              }
+  
+              .logo-container {
+-                 width: 60px;
+-                 height: 60px;
+-                 border-radius: 16px;
+-             }
+- 
+-             .logo-image {
+-                 width: 85%;
+-                 height: 85%;
+-                 border-radius: 10px;
++                 width: 70px;
++                 height: 70px;
+              }
+  
+              .form-input {
+-                 padding: 0.8rem 0.9rem;
+-                 font-size: 0.9rem;
++                 padding: 0.9rem 1rem 0.9rem 2.8rem;
+              }
+  
+-             .submit-btn {
+-                 padding: 0.8rem;
+-                 font-size: 0.95rem;
+-             }
+- 
+-             /* Small mobile improvements for checkbox */
+-             .terms-checkbox {
+-                 padding: 16px;
+-                 gap: 1.2rem;
+-                 margin: 8px 0;
++             .submit-btn,
++             .google-btn {
++                 padding: 1rem;
+              }
+  
+              .custom-checkbox {
+-                 width: 32px;
+-                 height: 32px;
+-                 min-width: 32px;
+-                 min-height: 32px;
+-                 border-width: 3px;
+-                 border-radius: 8px;
++                 width: 28px;
++                 height: 28px;
++                 min-width: 28px;
++                 min-height: 28px;
+              }
+- 
+-             .custom-checkbox i {
+-                 font-size: 1.2rem;
+-             }
+- 
+-             .terms-text {
+-                 font-size: 1rem;
+-                 line-height: 1.5;
+-             }
+          }
+  
+```
+
+**Chunk 21**
+Lines added: 2, lines removed: 66
+
+```diff
+@@ -751,78 +620,14 @@
+              animation: spin 1s linear infinite;
+          }
+- 
+-         @-webkit-keyframes spin {
+-             0% { -webkit-transform: rotate(0deg); transform: rotate(0deg); }
+-             100% { -webkit-transform: rotate(360deg); transform: rotate(360deg); }
+-         }
+  
+          @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+          }
+- 
+-         /* Floating Elements */
+-         .floating-element {
+-             position: absolute;
+-             background: rgba(255, 255, 255, 0.1);
+-             background: rgba(26, 26, 46, 0.6);
+-             border-radius: 50%;
+-             -webkit-animation: floatElement 6s ease-in-out infinite;
+-             animation: floatElement 6s ease-in-out infinite;
+-         }
+- 
+-         .floating-element:nth-child(1) {
+-             width: 100px;
+-             height: 100px;
+-             top: 10%;
+-             left: 10%;
+-             animation-delay: 0s;
+-         }
+- 
+-         .floating-element:nth-child(2) {
+-             width: 60px;
+-             height: 60px;
+-             top: 20%;
+-             right: 15%;
+-             animation-delay: 2s;
+-         }
+- 
+-         .floating-element:nth-child(3) {
+-             width: 80px;
+-             height: 80px;
+-             bottom: 20%;
+-             left: 15%;
+-             animation-delay: 4s;
+-         }
+- 
+-         @-webkit-keyframes floatElement {
+-             0%, 100% { -webkit-transform: translateY(0px) rotate(0deg); transform: translateY(0px) rotate(0deg); }
+-             50% { -webkit-transform: translateY(-20px) rotate(180deg); transform: translateY(-20px) rotate(180deg); }
+-         }
+- 
+-         @keyframes floatElement {
+-             0%, 100% { transform: translateY(0px) rotate(0deg); }
+-             50% { transform: translateY(-20px) rotate(180deg); }
+-         }
+      &lt;/style&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+-     &lt;!-- Animated Background --&gt;
+-     &lt;div class=&quot;particles&quot;&gt;
+-         &lt;div class=&quot;particle&quot;&gt;&lt;/div&gt;
+-         &lt;div class=&quot;particle&quot;&gt;&lt;/div&gt;
+-         &lt;div class=&quot;particle&quot;&gt;&lt;/div&gt;
+-         &lt;div class=&quot;particle&quot;&gt;&lt;/div&gt;
+-         &lt;div class=&quot;particle&quot;&gt;&lt;/div&gt;
+-         &lt;div class=&quot;particle&quot;&gt;&lt;/div&gt;
+-         &lt;div class=&quot;particle&quot;&gt;&lt;/div&gt;
+-         &lt;div class=&quot;particle&quot;&gt;&lt;/div&gt;
+-         &lt;div class=&quot;particle&quot;&gt;&lt;/div&gt;
+-     &lt;/div&gt;
+- 
+-     &lt;!-- Floating Elements --&gt;
+-     &lt;div class=&quot;floating-element&quot;&gt;&lt;/div&gt;
+-     &lt;div class=&quot;floating-element&quot;&gt;&lt;/div&gt;
+-     &lt;div class=&quot;floating-element&quot;&gt;&lt;/div&gt;
++     &lt;!-- Animated Background Particles --&gt;
++     &lt;div class=&quot;particles&quot; id=&quot;particles&quot;&gt;&lt;/div&gt;
+  
+      &lt;!-- Main Container --&gt;
+```
+
+**Chunk 22**
+Lines added: 2, lines removed: 2
+
+```diff
+@@ -832,8 +637,8 @@
+              &lt;div class=&quot;register-header&quot;&gt;
+                  &lt;div class=&quot;logo-container&quot;&gt;
+-                     &lt;img src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;assets/image/logo.PNG&#39;) }}&quot; alt=&quot;Logo&quot; class=&quot;logo-image&quot;&gt;
++                     &lt;img src=&quot;{{ url_for(&#39;static&#39;, filename=&#39;assets/image/logo.PNG&#39;) }}&quot; alt=&quot;INEMI Logo&quot; class=&quot;logo-image&quot;&gt;
+                  &lt;/div&gt;
+                  &lt;h1 class=&quot;register-title&quot;&gt;Create Account&lt;/h1&gt;
+-                 &lt;p class=&quot;register-subtitle&quot;&gt;Join our music community&lt;/p&gt;
++                 &lt;p class=&quot;register-subtitle&quot;&gt;Join our community and start your journey&lt;/p&gt;
+              &lt;/div&gt;
+  
+```
+
+**Chunk 23**
+Lines added: 20, lines removed: 4
+
+```diff
+@@ -845,28 +650,44 @@
+                          &lt;div class=&quot;error-message&quot;&gt;
+                              &lt;i class=&quot;bi bi-exclamation-triangle&quot;&gt;&lt;/i&gt;
+-                             {{ message }}
++                             &lt;span&gt;{{ message }}&lt;/span&gt;
+                          &lt;/div&gt;
+                          {% endif %}
+                      {% endfor %}
+                  {% endif %}
+              {% endwith %}
++ 
++             &lt;!-- Google Login Button --&gt;
++             &lt;a href=&quot;{{ url_for(&#39;web_pages.google_login&#39;) }}&quot; class=&quot;google-btn&quot;&gt;
++                 &lt;svg class=&quot;google-icon&quot; viewBox=&quot;0 0 24 24&quot;&gt;
++                     &lt;path fill=&quot;#4285F4&quot; d=&quot;M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z&quot;/&gt;
++                     &lt;path fill=&quot;#34A853&quot; d=&quot;M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z&quot;/&gt;
++                     &lt;path fill=&quot;#FBBC05&quot; d=&quot;M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z&quot;/&gt;
++                     &lt;path fill=&quot;#EA4335&quot; d=&quot;M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z&quot;/&gt;
++                 &lt;/svg&gt;
++                 &lt;span&gt;Continue with Google&lt;/span&gt;
++             &lt;/a&gt;
++ 
++             &lt;!-- Divider --&gt;
++             &lt;div class=&quot;divider&quot;&gt;
++                 &lt;span&gt;or&lt;/span&gt;
++             &lt;/div&gt;
+  
+              &lt;!-- Register Form --&gt;
+              &lt;form class=&quot;register-form&quot; method=&quot;POST&quot; action=&quot;{{ url_for(&#39;web_pages.register&#39;) }}&quot;&gt;
+                  &lt;div class=&quot;form-group&quot;&gt;
+                      &lt;label for=&quot;username&quot; class=&quot;form-label&quot;&gt;Username&lt;/label&gt;
+-                     &lt;input type=&quot;text&quot; id=&quot;username&quot; name=&quot;username&quot; class=&quot;form-input&quot; placeholder=&quot;Choose a username&quot; required value=&quot;{{ request.form.get(&#39;username&#39;, &#39;&#39;) }}&quot;&gt;
++                     &lt;input type=&quot;text&quot; id=&quot;username&quot; name=&quot;username&quot; class=&quot;form-input&quot; placeholder=&quot;Choose a username&quot; required value=&quot;{{ request.form.get(&#39;username&#39;, &#39;&#39;) }}&quot; autocomplete=&quot;username&quot;&gt;
+                      &lt;i class=&quot;bi bi-person input-icon&quot;&gt;&lt;/i&gt;
+                  &lt;/div&gt;
+  
+                  &lt;div class=&quot;form-group&quot;&gt;
+                      &lt;label for=&quot;email&quot; class=&quot;form-label&quot;&gt;Email&lt;/label&gt;
+-                     &lt;input type=&quot;email&quot; id=&quot;email&quot; name=&quot;email&quot; class=&quot;form-input&quot; placeholder=&quot;Enter your email&quot; required value=&quot;{{ request.form.get(&#39;email&#39;, &#39;&#39;) }}&quot;&gt;
++                     &lt;input type=&quot;email&quot; id=&quot;email&quot; name=&quot;email&quot; class=&quot;form-input&quot; placeholder=&quot;Enter your email&quot; required value=&quot;{{ request.form.get(&#39;email&#39;, &#39;&#39;) }}&quot; autocomplete=&quot;email&quot;&gt;
+                      &lt;i class=&quot;bi bi-envelope input-icon&quot;&gt;&lt;/i&gt;
+                  &lt;/div&gt;
+  
+                  &lt;div class=&quot;form-group&quot;&gt;
+                      &lt;label for=&quot;password&quot; class=&quot;form-label&quot;&gt;Password&lt;/label&gt;
+-                     &lt;input type=&quot;password&quot; id=&quot;password&quot; name=&quot;password&quot; class=&quot;form-input&quot; placeholder=&quot;Create a strong password&quot; required&gt;
++                     &lt;input type=&quot;password&quot; id=&quot;password&quot; name=&quot;password&quot; class=&quot;form-input&quot; placeholder=&quot;Create a strong password&quot; required autocomplete=&quot;new-password&quot;&gt;
+                      &lt;i class=&quot;bi bi-lock input-icon&quot;&gt;&lt;/i&gt;
+                      &lt;div class=&quot;password-strength&quot;&gt;
+```
+
+**Chunk 24**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -881,5 +702,5 @@
+                  &lt;div class=&quot;form-group&quot;&gt;
+                      &lt;label for=&quot;confirm_password&quot; class=&quot;form-label&quot;&gt;Confirm Password&lt;/label&gt;
+-                     &lt;input type=&quot;password&quot; id=&quot;confirm_password&quot; name=&quot;confirm_password&quot; class=&quot;form-input&quot; placeholder=&quot;Confirm your password&quot; required&gt;
++                     &lt;input type=&quot;password&quot; id=&quot;confirm_password&quot; name=&quot;confirm_password&quot; class=&quot;form-input&quot; placeholder=&quot;Confirm your password&quot; required autocomplete=&quot;new-password&quot;&gt;
+                      &lt;i class=&quot;bi bi-shield-check input-icon&quot;&gt;&lt;/i&gt;
+                  &lt;/div&gt;
+```
+
+**Chunk 25**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -908,5 +729,5 @@
+                  &lt;/div&gt;
+                  &lt;div class=&quot;link-item&quot;&gt;
+-                     &lt;a href=&quot;{{ url_for(&#39;web_pages.index&#39;) }}&quot;&gt;Back to Home&lt;/a&gt;
++                     &lt;a href=&quot;{{ url_for(&#39;web_pages.index&#39;) }}&quot;&gt;← Back to Home&lt;/a&gt;
+                  &lt;/div&gt;
+              &lt;/div&gt;
+```
+
+**Chunk 26**
+Lines added: 11, lines removed: undefined
+
+```diff
+@@ -916,4 +737,15 @@
+      &lt;script src=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js&quot;&gt;&lt;/script&gt;
+      &lt;script&gt;
++         // Create animated particles
++         const particlesContainer = document.getElementById(&#39;particles&#39;);
++         for (let i = 0; i &lt; 15; i++) {
++             const particle = document.createElement(&#39;div&#39;);
++             particle.className = &#39;particle&#39;;
++             particle.style.left = Math.random() * 100 + &#39;%&#39;;
++             particle.style.animationDelay = Math.random() * 8 + &#39;s&#39;;
++             particle.style.animationDuration = (6 + Math.random() * 4) + &#39;s&#39;;
++             particlesContainer.appendChild(particle);
++         }
++ 
+          // Password strength checker
+          const passwordInput = document.getElementById(&#39;password&#39;);
+```
+
+**Chunk 27**
+Lines added: undefined, lines removed: 4
+
+```diff
+@@ -988,8 +820,4 @@
+          const termsInput = document.getElementById(&#39;terms&#39;);
+          const termsGroup = document.querySelector(&#39;.terms-group&#39;);
+- 
+-         console.log(&#39;Checkbox element:&#39;, checkbox);
+-         console.log(&#39;Terms input element:&#39;, termsInput);
+-         console.log(&#39;Terms group element:&#39;, termsGroup);
+  
+          function toggleTerms() {
+```
+
+**Chunk 28**
+Lines added: undefined, lines removed: 19
+
+```diff
+@@ -998,27 +826,8 @@
+              termsGroup.setAttribute(&#39;aria-checked&#39;, termsInput.checked.toString());
+              checkPasswordMatch();
+-             console.log(&#39;Terms toggled:&#39;, termsInput.checked);
+          }
+  
+          // Single event listener for the entire terms group
+          termsGroup.addEventListener(&#39;click&#39;, function(e) {
+-             console.log(&#39;Terms group clicked, target:&#39;, e.target);
+-             console.log(&#39;Current terms checked:&#39;, termsInput.checked);
+-             e.preventDefault();
+-             e.stopPropagation();
+-             toggleTerms();
+-         });
+- 
+-         // Also add click listener to checkbox specifically
+-         checkbox.addEventListener(&#39;click&#39;, function(e) {
+-             console.log(&#39;Checkbox clicked directly&#39;);
+-             e.preventDefault();
+-             e.stopPropagation();
+-             toggleTerms();
+-         });
+- 
+-         // Add click listener to terms text as well
+-         document.querySelector(&#39;.terms-text&#39;).addEventListener(&#39;click&#39;, function(e) {
+-             console.log(&#39;Terms text clicked&#39;);
+              e.preventDefault();
+              e.stopPropagation();
+```
+
+**Chunk 29**
+Lines added: undefined, lines removed: 262
+
+```diff
+@@ -1031,266 +840,4 @@
+              termsGroup.setAttribute(&#39;aria-checked&#39;, this.checked.toString());
+              checkPasswordMatch();
+-             console.log(&#39;Input change event:&#39;, this.checked);
+-         });
+- 
+-         // Add mousedown event for better responsiveness
+-         termsGroup.addEventListener(&#39;mousedown&#39;, function(e) {
+-             console.log(&#39;Terms group mousedown&#39;);
+-             e.preventDefault();
+-         });
+- 
+-         // Add touchstart event for mobile devices
+-         termsGroup.addEventListener(&#39;touchstart&#39;, function(e) {
+-             console.log(&#39;Terms group touchstart&#39;);
+-             e.preventDefault();
+-         });
+- 
+-         // Add touchend event for better mobile interaction
+-         termsGroup.addEventListener(&#39;touchend&#39;, function(e) {
+-             console.log(&#39;Terms group touchend&#39;);
+-             e.preventDefault();
+-             toggleTerms();
+-         });
+- 
+-         // Add touch events to checkbox specifically for mobile
+-         checkbox.addEventListener(&#39;touchend&#39;, function(e) {
+-             console.log(&#39;Checkbox touchend&#39;);
+-             e.preventDefault();
+-             e.stopPropagation();
+-             toggleTerms();
+-         });
+- 
+-         // Add keyboard support for accessibility
+-         termsGroup.addEventListener(&#39;keydown&#39;, function(e) {
+-             if (e.key === &#39;Enter&#39; || e.key === &#39; &#39;) {
+-                 console.log(&#39;Terms group keyboard event:&#39;, e.key);
+-                 e.preventDefault();
+-                 toggleTerms();
+-             }
+-         });
+- 
+-         // Add double-click prevention
+-         termsGroup.addEventListener(&#39;dblclick&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add context menu prevention
+-         termsGroup.addEventListener(&#39;contextmenu&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add select prevention
+-         termsGroup.addEventListener(&#39;selectstart&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add drag prevention
+-         termsGroup.addEventListener(&#39;dragstart&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add copy prevention
+-         termsGroup.addEventListener(&#39;copy&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add cut prevention
+-         termsGroup.addEventListener(&#39;cut&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add paste prevention
+-         termsGroup.addEventListener(&#39;paste&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add drop prevention
+-         termsGroup.addEventListener(&#39;drop&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add dragover prevention
+-         termsGroup.addEventListener(&#39;dragover&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add dragenter prevention
+-         termsGroup.addEventListener(&#39;dragenter&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add dragleave prevention
+-         termsGroup.addEventListener(&#39;dragleave&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add dragend prevention
+-         termsGroup.addEventListener(&#39;dragend&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add beforeunload prevention
+-         termsGroup.addEventListener(&#39;beforeunload&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add unload prevention
+-         termsGroup.addEventListener(&#39;unload&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add load prevention
+-         termsGroup.addEventListener(&#39;load&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add error prevention
+-         termsGroup.addEventListener(&#39;error&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add abort prevention
+-         termsGroup.addEventListener(&#39;abort&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add canplay prevention
+-         termsGroup.addEventListener(&#39;canplay&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add canplaythrough prevention
+-         termsGroup.addEventListener(&#39;canplaythrough&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add durationchange prevention
+-         termsGroup.addEventListener(&#39;durationchange&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add emptied prevention
+-         termsGroup.addEventListener(&#39;emptied&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add ended prevention
+-         termsGroup.addEventListener(&#39;ended&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add loadeddata prevention
+-         termsGroup.addEventListener(&#39;loadeddata&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add loadedmetadata prevention
+-         termsGroup.addEventListener(&#39;loadedmetadata&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add loadstart prevention
+-         termsGroup.addEventListener(&#39;loadstart&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add pause prevention
+-         termsGroup.addEventListener(&#39;pause&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add play prevention
+-         termsGroup.addEventListener(&#39;play&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add playing prevention
+-         termsGroup.addEventListener(&#39;playing&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add progress prevention
+-         termsGroup.addEventListener(&#39;progress&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add ratechange prevention
+-         termsGroup.addEventListener(&#39;ratechange&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add seeked prevention
+-         termsGroup.addEventListener(&#39;seeked&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add seeking prevention
+-         termsGroup.addEventListener(&#39;seeking&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add stalled prevention
+-         termsGroup.addEventListener(&#39;stalled&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add suspend prevention
+-         termsGroup.addEventListener(&#39;suspend&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add timeupdate prevention
+-         termsGroup.addEventListener(&#39;timeupdate&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add volumechange prevention
+-         termsGroup.addEventListener(&#39;volumechange&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add waiting prevention
+-         termsGroup.addEventListener(&#39;waiting&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add wheel prevention
+-         termsGroup.addEventListener(&#39;wheel&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add scroll prevention
+-         termsGroup.addEventListener(&#39;scroll&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add resize prevention
+-         termsGroup.addEventListener(&#39;resize&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add orientationchange prevention
+-         termsGroup.addEventListener(&#39;orientationchange&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add fullscreenchange prevention
+-         termsGroup.addEventListener(&#39;fullscreenchange&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add fullscreenerror prevention
+-         termsGroup.addEventListener(&#39;fullscreenerror&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add webkitfullscreenchange prevention
+-         termsGroup.addEventListener(&#39;webkitfullscreenchange&#39;, function(e) {
+-             e.preventDefault();
+-         });
+- 
+-         // Add webkitfullscreenerror prevention
+-         termsGroup.addEventListener(&#39;webkitfullscreenerror&#39;, function(e) {
+-             e.preventDefault();
+          });
+  
+```
+
+**Chunk 30**
+Lines added: undefined, lines removed: 22
+
+```diff
+@@ -1379,30 +926,8 @@
+          document.querySelector(&#39;.register-form&#39;).addEventListener(&#39;submit&#39;, function(e) {
+              const btnText = submitBtn.querySelector(&#39;.btn-text&#39;);
+-             
+-             // Validate form before submission
+-             const username = document.getElementById(&#39;username&#39;).value.trim();
+-             const email = document.getElementById(&#39;email&#39;).value.trim();
+-             const password = document.getElementById(&#39;password&#39;).value;
+-             const confirmPassword = document.getElementById(&#39;confirm_password&#39;).value;
+-             const termsChecked = document.getElementById(&#39;terms&#39;).checked;
+-             
+-             console.log(&#39;Form submission validation:&#39;, {
+-                 username: username,
+-                 email: email,
+-                 password: password ? &#39;***&#39; : &#39;empty&#39;,
+-                 confirmPassword: confirmPassword ? &#39;***&#39; : &#39;empty&#39;,
+-                 termsChecked: termsChecked,
+-                 passwordStrength: checkPasswordStrength(password)
+-             });
+              
+              // Add loading state
+              submitBtn.classList.add(&#39;loading&#39;);
+              btnText.textContent = &#39;Creating Account...&#39;;
+-             
+-             // Remove loading state after form submission
+-             setTimeout(() =&gt; {
+-                 submitBtn.classList.remove(&#39;loading&#39;);
+-                 btnText.textContent = &#39;Create Account&#39;;
+-             }, 2000);
+          });
+  
+```
+
+**Chunk 31**
+Lines added: undefined, lines removed: 76
+
+```diff
+@@ -1417,80 +942,4 @@
+              });
+          });
+- 
+-         // Add floating animation to particles
+-         function createParticle() {
+-             const particle = document.createElement(&#39;div&#39;);
+-             particle.className = &#39;particle&#39;;
+-             particle.style.left = Math.random() * 100 + &#39;%&#39;;
+-             particle.style.animationDelay = Math.random() * 6 + &#39;s&#39;;
+-             document.querySelector(&#39;.particles&#39;).appendChild(particle);
+-             
+-             setTimeout(() =&gt; {
+-                 particle.remove();
+-             }, 6000);
+-         }
+- 
+-         // Create particles periodically
+-         setInterval(createParticle, 2000);
+- 
+-         // Add entrance animation to form elements
+-         const observerOptions = {
+-             threshold: 0.1,
+-             rootMargin: &#39;0px 0px -50px 0px&#39;
+-         };
+- 
+-         const observer = new IntersectionObserver((entries) =&gt; {
+-             entries.forEach(entry =&gt; {
+-                 if (entry.isIntersecting) {
+-                     entry.target.style.opacity = &#39;1&#39;;
+-                     entry.target.style.transform = &#39;translateY(0)&#39;;
+-                 }
+-             });
+-         }, observerOptions);
+- 
+-         // Observe form elements
+-         document.querySelectorAll(&#39;.form-group, .submit-btn, .register-links&#39;).forEach(el =&gt; {
+-             el.style.opacity = &#39;0&#39;;
+-             el.style.transform = &#39;translateY(20px)&#39;;
+-             el.style.transition = &#39;opacity 0.6s ease, transform 0.6s ease&#39;;
+-             observer.observe(el);
+-         });
+- 
+-         // Debug: Check if all elements are properly loaded
+-         setTimeout(() =&gt; {
+-             console.log(&#39;=== DEBUG INFO ===&#39;);
+-             console.log(&#39;Checkbox element:&#39;, checkbox);
+-             console.log(&#39;Terms input element:&#39;, termsInput);
+-             console.log(&#39;Terms group element:&#39;, termsGroup);
+-             console.log(&#39;Terms text element:&#39;, document.querySelector(&#39;.terms-text&#39;));
+-             console.log(&#39;All elements found:&#39;, !!checkbox &amp;&amp; !!termsInput &amp;&amp; !!termsGroup);
+-             
+-             // Test click functionality
+-             if (checkbox &amp;&amp; termsInput &amp;&amp; termsGroup) {
+-                 console.log(&#39;All elements found, testing click functionality...&#39;);
+-                 console.log(&#39;Initial checkbox state:&#39;, termsInput.checked);
+-                 console.log(&#39;Initial checkbox class:&#39;, checkbox.classList.contains(&#39;checked&#39;));
+-                 console.log(&#39;Terms group attributes:&#39;, {
+-                     tabindex: termsGroup.getAttribute(&#39;tabindex&#39;),
+-                     role: termsGroup.getAttribute(&#39;role&#39;),
+-                     &#39;aria-checked&#39;: termsGroup.getAttribute(&#39;aria-checked&#39;),
+-                     &#39;aria-label&#39;: termsGroup.getAttribute(&#39;aria-label&#39;)
+-                 });
+-                 
+-                 // Test click simulation
+-                 console.log(&#39;Testing click simulation...&#39;);
+-                 // Don&#39;t actually click, just log the current state
+-                 console.log(&#39;Current state before any clicks:&#39;, termsInput.checked);
+-                 console.log(&#39;Checkbox is ready for interaction!&#39;);
+-                 console.log(&#39;Form field names:&#39;, {
+-                     username: document.getElementById(&#39;username&#39;).name,
+-                     email: document.getElementById(&#39;email&#39;).name,
+-                     password: document.getElementById(&#39;password&#39;).name,
+-                     confirm_password: document.getElementById(&#39;confirm_password&#39;).name,
+-                     terms: termsInput.name
+-                 });
+-                 console.log(&#39;Form validation ready!&#39;);
+-             }
+-         }, 1000);
+      &lt;/script&gt;
+  &lt;/body&gt;
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="generic" data-tool-name="read_lints">
+<details>
+          <summary>Tool use: **read_lints** • Read lints for 1 file</summary>
+      
+Lint paths:
+
+- `backend/templates/register.html`
+
+Lint results
+
+
+**No lint errors found**
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Sudah menerapkan desain yang sama seperti halaman login ke halaman registrasi. Ringkasan perubahan:
+
+## Perubahan yang diterapkan
+
+### 1. Desain visual
+- Glassmorphism: card dengan backdrop blur dan transparansi
+- Gradien: background dan elemen menggunakan gradien
+- Animasi: card entrance, logo pulse, hover effects
+- Partikel animasi: background particles yang bergerak
+
+### 2. Struktur HTML
+- Header dengan logo dan judul
+- Tombol Google login (konsistensi dengan login)
+- Divider "or" antara Google dan form
+- Form fields dengan icon di kiri
+- Terms checkbox dengan styling modern
+- Links ke login dan home
+
+### 3. Fitur yang dipertahankan
+- Password strength indicator (4 bar dengan warna)
+- Password confirmation validation
+- Terms checkbox functionality
+- Form validation (email, username, password)
+- Loading state pada submit button
+- Error messages dengan styling modern
+
+### 4. Responsive design
+- Mobile-friendly dengan breakpoints
+- Ukuran font dan padding disesuaikan untuk mobile
+- Touch-friendly checkbox dan buttons
+
+### 5. Styling konsisten
+- Warna dan gradient sama dengan login page
+- Typography menggunakan font Inter
+- Spacing dan border radius konsisten
+- Hover effects dan transitions
+
+Halaman registrasi sekarang memiliki desain yang sama modern dan konsisten dengan halaman login, sambil mempertahankan semua fungsionalitas yang ada.
+
+---
+
+_**User (2025-11-05 06:23Z)**_
+
+@http://127.0.0.1:5000/login pada login dan Registrasi jika berhasil kasih notifikasi dong biar keren dan bagus
+
+---
+
+_**Agent (model default, mode Agent)**_
+
+
+
+---
+
+
+Memeriksa handler login dan register di backend, lalu menambahkan notifikasi sukses yang menarik:
+
+
+---
+
+<tool-use data-tool-type="grep" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "def login|def register" in "backend/web/routes.py" • 2 matches</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `backend/web/routes.py` | `def login():` | L598 |
+| `backend/web/routes.py` | `def register():` | L1061 |
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: backend/web/routes.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: backend/web/routes.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: backend/templates/login.html</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: backend/web/routes.py</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+
+
+---
+
+
+
+---
+
+
+Menambahkan notifikasi sukses yang menarik untuk login dan registrasi:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **code_edit** • Edit file: backend/web/routes.py</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: undefined
+
+```diff
+@@ -617,4 +617,5 @@
+          session[&#39;avatar_url&#39;] = user.avatar_url or &#39;/static/assets/image/default.jpg&#39;
+          session[&#39;kredit&#39;] = user.kredit if user.kredit is not None else 0  # Simpan kredit di session juga
++         flash(&#39;Login berhasil! Selamat datang kembali, &#39; + user.username + &#39;!&#39;, &#39;success&#39;)
+          return redirect(url_for(&#39;web_pages.profil&#39;))
+      
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **code_edit** • Edit file: backend/web/routes.py</summary>
+
+**Chunk 1**
+Lines added: 1, lines removed: undefined
+
+```diff
+@@ -1165,4 +1165,5 @@
+          db.session.add(user)
+          db.session.commit()
++         flash(&#39;Registrasi berhasil! Akun Anda telah dibuat. Silakan login untuk melanjutkan.&#39;, &#39;success&#39;)
+          return redirect(url_for(&#39;web_pages.login&#39;))
+      return render_template(&#39;register.html&#39;)
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: backend/templates/login.html</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Menambahkan toast notification yang menarik di login.html dan register.html:
+
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **code_edit** • Edit file: backend/templates/login.html</summary>
+
+**Chunk 1**
+Lines added: 170, lines removed: undefined
+
+```diff
+@@ -425,4 +425,174 @@
+              75% { transform: translateX(8px); }
+          }
++ 
++         /* Toast Notification Container */
++         .toast-container {
++             position: fixed;
++             top: 20px;
++             right: 20px;
++             z-index: 10000;
++             display: flex;
++             flex-direction: column;
++             gap: 1rem;
++             pointer-events: none;
++         }
++ 
++         /* Toast Notification */
++         .toast {
++             background: rgba(29, 27, 63, 0.95);
++             backdrop-filter: blur(30px) saturate(180%);
++             -webkit-backdrop-filter: blur(30px) saturate(180%);
++             border: 1px solid rgba(102, 126, 234, 0.3);
++             border-radius: 16px;
++             padding: 1.2rem 1.5rem;
++             min-width: 320px;
++             max-width: 400px;
++             box-shadow: 
++                 0 20px 40px rgba(0, 0, 0, 0.5),
++                 0 0 30px rgba(102, 126, 234, 0.3),
++                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
++             display: flex;
++             align-items: center;
++             gap: 1rem;
++             animation: toastSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
++             pointer-events: auto;
++             position: relative;
++             overflow: hidden;
++         }
++ 
++         .toast.success {
++             border-color: rgba(81, 207, 102, 0.4);
++             box-shadow: 
++                 0 20px 40px rgba(0, 0, 0, 0.5),
++                 0 0 30px rgba(81, 207, 102, 0.3),
++                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
++         }
++ 
++         .toast.danger {
++             border-color: rgba(220, 53, 69, 0.4);
++             box-shadow: 
++                 0 20px 40px rgba(0, 0, 0, 0.5),
++                 0 0 30px rgba(220, 53, 69, 0.3),
++                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
++         }
++ 
++         @keyframes toastSlideIn {
++             from {
++                 opacity: 0;
++                 transform: translateX(400px) scale(0.8);
++             }
++             to {
++                 opacity: 1;
++                 transform: translateX(0) scale(1);
++             }
++         }
++ 
++         .toast-icon {
++             width: 48px;
++             height: 48px;
++             border-radius: 12px;
++             display: flex;
++             align-items: center;
++             justify-content: center;
++             flex-shrink: 0;
++             font-size: 1.5rem;
++             animation: iconPulse 2s ease-in-out infinite;
++         }
++ 
++         .toast.success .toast-icon {
++             background: linear-gradient(135deg, rgba(81, 207, 102, 0.2), rgba(81, 207, 102, 0.1));
++             color: #51cf66;
++         }
++ 
++         .toast.danger .toast-icon {
++             background: linear-gradient(135deg, rgba(220, 53, 69, 0.2), rgba(220, 53, 69, 0.1));
++             color: #ff6b6b;
++         }
++ 
++         @keyframes iconPulse {
++             0%, 100% { transform: scale(1); }
++             50% { transform: scale(1.1); }
++         }
++ 
++         .toast-content {
++             flex: 1;
++             display: flex;
++             flex-direction: column;
++             gap: 0.25rem;
++         }
++ 
++         .toast-title {
++             font-weight: 700;
++             font-size: 1rem;
++             color: var(--text-primary);
++             margin: 0;
++         }
++ 
++         .toast-message {
++             font-size: 0.9rem;
++             color: var(--text-secondary);
++             margin: 0;
++             line-height: 1.4;
++         }
++ 
++         .toast-close {
++             background: transparent;
++             border: none;
++             color: var(--text-secondary);
++             font-size: 1.2rem;
++             cursor: pointer;
++             padding: 0.25rem;
++             border-radius: 6px;
++             transition: all 0.3s ease;
++             flex-shrink: 0;
++             width: 28px;
++             height: 28px;
++             display: flex;
++             align-items: center;
++             justify-content: center;
++         }
++ 
++         .toast-close:hover {
++             background: rgba(255, 255, 255, 0.1);
++             color: var(--text-primary);
++             transform: rotate(90deg);
++         }
++ 
++         /* Toast Progress Bar */
++         .toast-progress {
++             position: absolute;
++             bottom: 0;
++             left: 0;
++             height: 3px;
++             background: linear-gradient(90deg, #667eea, #764ba2);
++             border-radius: 0 0 16px 16px;
++             animation: toastProgress 5s linear forwards;
++         }
++ 
++         .toast.success .toast-progress {
++             background: linear-gradient(90deg, #51cf66, #40c057);
++         }
++ 
++         .toast.danger .toast-progress {
++             background: linear-gradient(90deg, #ff6b6b, #fa5252);
++         }
++ 
++         @keyframes toastProgress {
++             from { width: 100%; }
++             to { width: 0%; }
++         }
++ 
++         @media (max-width: 480px) {
++             .toast-container {
++                 top: 10px;
++                 right: 10px;
++                 left: 10px;
++             }
++ 
++             .toast {
++                 min-width: auto;
++                 max-width: 100%;
++             }
++         }
+  
+          /* Responsive Design */
+```
+
+</details>
+
+</tool-use>
+
+---
+
+Model performed no edit
+
+---
+
+<tool-use data-tool-type="write" data-tool-name="search_replace">
+
+<details><summary>Tool use: **code_edit** • Edit file: backend/templates/login.html</summary>
+
+**Chunk 1**
+Lines added: 47, lines removed: undefined
+
+```diff
+@@ -739,7 +739,54 @@
+          &lt;/div&gt;
+      &lt;/div&gt;
++ 
++     &lt;!-- Toast Notification Container --&gt;
++     &lt;div class=&quot;toast-container&quot; id=&quot;toastContainer&quot;&gt;&lt;/div&gt;
+  
+      &lt;script src=&quot;https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js&quot;&gt;&lt;/script&gt;
+      &lt;script&gt;
++         // Toast Notification Function
++         function showToast(message, type = &#39;success&#39;, title = null) {
++             const toastContainer = document.getElementById(&#39;toastContainer&#39;);
++             const toast = document.createElement(&#39;div&#39;);
++             toast.className = &#96;toast ${type}&#96;;
++             
++             const icon = type === &#39;success&#39; ? &#39;bi-check-circle-fill&#39; : &#39;bi-exclamation-triangle-fill&#39;;
++             const defaultTitle = type === &#39;success&#39; ? &#39;Berhasil!&#39; : &#39;Error&#39;;
++             
++             toast.innerHTML = &#96;
++                 &lt;div class=&quot;toast-icon&quot;&gt;
++                     &lt;i class=&quot;bi ${icon}&quot;&gt;&lt;/i&gt;
++                 &lt;/div&gt;
++                 &lt;div class=&quot;toast-content&quot;&gt;
++                     &lt;div class=&quot;toast-title&quot;&gt;${title || defaultTitle}&lt;/div&gt;
++                     &lt;div class=&quot;toast-message&quot;&gt;${message}&lt;/div&gt;
++                 &lt;/div&gt;
++                 &lt;button class=&quot;toast-close&quot; onclick=&quot;this.parentElement.remove()&quot;&gt;
++                     &lt;i class=&quot;bi bi-x&quot;&gt;&lt;/i&gt;
++                 &lt;/button&gt;
++                 &lt;div class=&quot;toast-progress&quot;&gt;&lt;/div&gt;
++             &#96;;
++             
++             toastContainer.appendChild(toast);
++             
++             // Auto remove after 5 seconds
++             setTimeout(() =&gt; {
++                 toast.style.animation = &#39;toastSlideIn 0.3s ease reverse&#39;;
++                 setTimeout(() =&gt; toast.remove(), 300);
++             }, 5000);
++         }
++ 
++         // Check for flash messages and show toast
++         {% with messages = get_flashed_messages(with_categories=true) %}
++             {% if messages %}
++                 {% for category, message in messages %}
++                     {% if category == &#39;success&#39; %}
++                     showToast(&#39;{{ message }}&#39;, &#39;success&#39;, &#39;Berhasil!&#39;);
++                     {% elif category == &#39;danger&#39; %}
++                     showToast(&#39;{{ message }}&#39;, &#39;danger&#39;, &#39;Error&#39;);
++                     {% endif %}
++                 {% endfor %}
++             {% endif %}
++         {% endwith %}
+          // Create animated particles
+          const particlesContainer = document.getElementById(&#39;particles&#39;);
+```
+
+</details>
+
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: backend/templates/register.html</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+Menambahkan toast notification yang sama di register.html:
+
+
+---
+
+<tool-use data-tool-type="grep" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep** • Grep for "Error Messages|error-message" in "backend/templates/register.html" • 3 matches</summary>
+
+Output mode: content
+
+
+| File | Content | Line |
+|------|------|------|
+| `backend/templates/register.html` | `/* Error Messages */` | L529 |
+| `backend/templates/register.html` | `.error-message \{` | L530 |
+| `backend/templates/register.html` | `<div class="error-message">` | L650 |
+
+
+</details>
+</tool-use>
+
+---
+
+<tool-use data-tool-type="read" data-tool-name="read_file">
+<details><summary>Tool use: **read_file** • Read file: backend/templates/register.html</summary>
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="search_replace">
+<details>
+<summary>Tool use: **search_replace**</summary>
+
+
+Parameters:
+
+```json
+{
+  &quot;relativeWorkspacePath&quot;: &quot;backend/templates/register.html&quot;
+}
+```
+Additional data:
+
+```json
+{
+  &quot;codeblockId&quot;: &quot;c5b7c29c-a1d7-422c-9177-44ace56bdd42&quot;
+}
+```
+User decision: **accepted**
+
+Status: **loading**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="grep">
+<details>
+<summary>Tool use: **grep**</summary>
+
+Status: **loading**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="search_replace">
+<details>
+<summary>Tool use: **search_replace**</summary>
+
+Status: **loading**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
+
+---
+
+
+
+---
+
+<tool-use data-tool-type="unknown" data-tool-name="read_file">
+<details>
+<summary>Tool use: **read_file**</summary>
+
+Status: **loading**
+
+
+</details>
+</tool-use>
+
+---
+
+
+
+---
+
+
 
 ---
 
