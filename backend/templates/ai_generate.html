@@ -190,26 +190,9 @@
         z-index: 0;
     }
 
-    /* Sidebar - Top Navigation on Mobile */
+    /* Sidebar - Hidden (replaced with floating button) */
     .ai-sidebar {
-        display: flex;
-        flex-direction: row;
-        position: sticky;
-        top: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-        background: var(--bg-sidebar);
-        border-bottom: 1px solid var(--border-neon);
-        padding: 10px 12px;
-        gap: 8px;
-        align-items: center;
-        justify-content: space-around;
-        z-index: 1000;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 20px rgba(76, 126, 255, 0.1);
-        backdrop-filter: blur(10px);
-        margin-bottom: 12px;
-        border-radius: 0 0 16px 16px;
+        display: none !important;
     }
     
     .ai-sidebar-logo {
@@ -1170,22 +1153,14 @@
         width: 100%;
         max-width: 100%;
         overflow-x: hidden;
+        overflow-y: visible;
         display: flex;
         flex-direction: column;
     }
 
-    /* Mode Chips */
+    /* Mode Chips (hidden, kept for compatibility) */
     .ai-mode-chips {
-        display: flex;
-        gap: 6px;
-        margin-bottom: 12px;
-        flex-wrap: wrap;
-        width: 100%;
-        max-width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width: none;
-        padding-bottom: 4px;
+        display: none !important;
     }
     
     .ai-mode-chips::-webkit-scrollbar {
@@ -1230,13 +1205,14 @@
         gap: 10px;
         background: var(--bg-input-extra);
         border: 1px solid var(--border-neon);
-        border-radius: 12px;
-        padding: 10px 12px;
+        border-radius: 16px;
+        padding: 16px 18px;
         transition: all 200ms;
         width: 100%;
         max-width: 100%;
         min-width: 0;
-        overflow: hidden;
+        overflow: visible;
+        min-height: 60px;
     }
 
     .ai-prompt-wrapper:focus-within {
@@ -1246,17 +1222,17 @@
 
     /* Attachment Button */
     .ai-attach-btn {
-        width: 36px;
-        height: 36px;
-        min-width: 36px;
-        border-radius: 8px;
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        border-radius: 10px;
         background: transparent;
         color: var(--text-secondary);
         border: none;
         cursor: pointer;
         display: grid;
         place-items: center;
-        font-size: 18px;
+        font-size: 20px;
         transition: all 150ms;
         flex-shrink: 0;
     }
@@ -1268,6 +1244,155 @@
 
     .ai-attach-btn:active {
         transform: scale(0.95);
+    }
+
+    /* Mode Dropdown Inline (inside input) */
+    .ai-mode-dropdown-inline {
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .ai-mode-dropdown-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        background: rgba(76, 126, 255, 0.1);
+        border: 1px solid rgba(76, 126, 255, 0.3);
+        border-radius: 10px;
+        color: var(--text-primary);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 200ms;
+        white-space: nowrap;
+    }
+
+    .ai-mode-dropdown-btn:hover {
+        background: rgba(76, 126, 255, 0.15);
+        border-color: rgba(76, 126, 255, 0.5);
+    }
+
+    .ai-mode-dropdown-btn i {
+        font-size: 12px;
+        transition: transform 200ms;
+    }
+
+    .ai-mode-dropdown-inline.open .ai-mode-dropdown-btn i {
+        transform: rotate(180deg);
+    }
+
+    .ai-mode-dropdown-menu {
+        position: fixed;
+        width: 220px;
+        max-height: 300px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-neon);
+        border-radius: 12px;
+        padding: 6px;
+        box-shadow: 
+            0 12px 32px rgba(0, 0, 0, 0.5),
+            0 0 0 1px rgba(76, 126, 255, 0.2),
+            0 0 30px rgba(76, 126, 255, 0.15);
+        backdrop-filter: blur(20px);
+        z-index: 10001;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(8px) scale(0.95);
+        transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
+                    visibility 200ms cubic-bezier(0.4, 0, 0.2, 1),
+                    transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-y: auto;
+        overflow-x: hidden;
+        pointer-events: none;
+        will-change: opacity, transform, visibility;
+    }
+
+    .ai-mode-dropdown-inline.open .ai-mode-dropdown-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+
+    .ai-mode-dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 150ms;
+        color: var(--text-secondary);
+        font-size: 13px;
+    }
+
+    .ai-mode-dropdown-item:hover {
+        background: rgba(76, 126, 255, 0.1);
+        color: var(--text-primary);
+    }
+
+    .ai-mode-dropdown-item.active {
+        background: rgba(76, 126, 255, 0.15);
+        color: var(--accent-neon);
+        border: 1px solid var(--accent-neon);
+    }
+
+    .ai-mode-dropdown-item i {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+    }
+
+    /* Input Bottom Row (contains drop hint and menu button) */
+    .ai-input-bottom-row {
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    /* Input Menu Wrapper (inside bottom row) */
+    .ai-input-menu-wrapper {
+        position: relative;
+        flex-shrink: 0;
+        z-index: 10001;
+    }
+
+    /* Input Menu Button (inside card, below input wrapper) */
+    .ai-input-menu-btn {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        border-radius: 10px;
+        background: rgba(76, 126, 255, 0.1);
+        color: var(--text-secondary);
+        border: 1px solid rgba(76, 126, 255, 0.2);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-size: 18px;
+        transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .ai-input-menu-btn:hover {
+        color: var(--accent-neon);
+        background: rgba(76, 126, 255, 0.15);
+        border-color: rgba(76, 126, 255, 0.4);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(76, 126, 255, 0.2);
+    }
+
+    .ai-input-menu-btn:active {
+        transform: translateY(0);
+    }
+
+    .ai-input-menu-btn.active {
+        color: var(--accent-neon);
+        background: rgba(76, 126, 255, 0.2);
+        border-color: var(--accent-neon);
+        box-shadow: 0 0 12px rgba(76, 126, 255, 0.3);
     }
 
     /* Attachment Preview */
@@ -2391,11 +2516,11 @@
         border: none;
         outline: none;
         color: var(--text-primary);
-        font-size: 14px;
-        line-height: 1.5;
+        font-size: 15px;
+        line-height: 1.6;
         resize: none;
-        min-height: 22px;
-        max-height: 120px;
+        min-height: 28px;
+        max-height: 200px;
         font-family: inherit;
         min-width: 0;
         max-width: 100%;
@@ -2404,6 +2529,7 @@
         overflow-wrap: break-word;
         overflow-x: hidden;
         overflow-y: auto;
+        padding: 4px 0;
     }
 
     .ai-prompt-input::placeholder {
@@ -2412,17 +2538,17 @@
     }
 
     .ai-send-btn {
-        width: 40px;
-        height: 40px;
-        min-width: 40px;
-        border-radius: 10px;
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        border-radius: 12px;
         background: var(--accent-neon-glow);
         color: var(--text-primary);
         border: none;
         cursor: pointer;
         display: grid;
         place-items: center;
-        font-size: 16px;
+        font-size: 18px;
         transition: all 200ms;
         box-shadow: 0 0 12px rgba(93, 95, 239, 0.3);
         flex-shrink: 0;
@@ -2849,18 +2975,74 @@
         }
         
         .ai-prompt-wrapper {
-            padding: 12px 14px;
-            gap: 12px;
+            padding: 12px 10px;
+            gap: 6px;
+            min-height: 52px;
         }
         
         .ai-prompt-input {
             font-size: 15px;
+            min-height: 28px;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .ai-attach-btn {
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .ai-mode-dropdown-btn {
+            padding: 6px 10px;
+            font-size: 12px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        /* Hide text only on extra small mobile, show on tablet+ */
+        @media (max-width: 480px) {
+            .ai-mode-dropdown-text {
+                display: none;
+            }
+            
+            .ai-mode-dropdown-icon {
+                margin-left: 0 !important;
+            }
+            
+            .ai-mode-dropdown-btn {
+                padding: 6px !important;
+                min-width: 32px;
+                width: 32px;
+                justify-content: center;
+                gap: 0 !important;
+            }
+            
+            .ai-mode-dropdown-btn .ai-mode-dropdown-icon {
+                margin: 0 !important;
+                font-size: 14px;
+            }
+        }
+        
+        /* Tablet and above - ensure text is visible */
+        @media (min-width: 481px) {
+            .ai-mode-dropdown-text {
+                display: inline-block !important;
+            }
+            
+            .ai-mode-dropdown-btn {
+                padding: 6px 12px;
+            }
         }
         
         .ai-send-btn {
-            width: 44px;
-            height: 44px;
-            font-size: 18px;
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            font-size: 16px;
+            flex-shrink: 0;
         }
         
         .ai-extra-inputs {
@@ -2894,25 +3076,21 @@
         }
         
         .ai-sidebar {
-            display: flex;
-            flex-direction: column;
-            position: sticky;
-            top: 20px;
-            height: fit-content;
-            width: 80px;
-            flex-shrink: 0;
-            background: var(--bg-sidebar);
-            border: 1px solid var(--border-neon);
-            border-radius: 18px;
-            padding: 16px 0 20px;
-            align-items: center;
-            gap: 36px;
-            z-index: 10;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            bottom: auto;
-            left: auto;
-            right: auto;
-            overflow: visible;
+            display: none !important;
+        }
+        
+        /* Ensure mode dropdown text is visible on desktop */
+        .ai-mode-dropdown-btn {
+            padding: 8px 14px;
+            font-size: 13px;
+        }
+        
+        .ai-mode-dropdown-text {
+            display: inline-block !important;
+        }
+        
+        .ai-mode-dropdown-icon {
+            margin-left: 6px;
         }
         
         .ai-sidebar-logo {
@@ -3164,50 +3342,183 @@
     /* Floating Sidebar Behaviour - Mobile & Tablet */
     @media (max-width: 1023px) {
         .ai-container {
-            padding-top: 140px;
+            padding-top: 12px;
         }
 
         .ai-main {
             margin-top: 0;
-        }
-
-        .ai-sidebar {
-            position: fixed;
-            top: 60px;
-            left: var(--ai-sidebar-left, 16px);
-            right: auto;
-            bottom: auto;
-            transform: none;
-            width: var(--ai-sidebar-width, calc(100% - 32px));
-            max-width: 520px;
-            border-radius: 24px;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 25px rgba(76, 126, 255, 0.2);
-            z-index: 2000;
         }
     }
 
     /* Floating Sidebar Behaviour - Desktop */
     @media (min-width: 1024px) {
         .ai-container {
-            padding-left: 120px;
-        }
-
-        .ai-sidebar {
-            position: fixed;
-            top: 50%;
-            left: var(--ai-sidebar-left, 240px);
-            right: auto;
-            bottom: auto;
-            transform: translateY(-50%);
-            height: auto;
-            width: 80px;
-            border-radius: 20px;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 25px rgba(76, 126, 255, 0.2);
-            z-index: 2000;
+            padding-left: 20px;
         }
 
         .ai-main {
             margin-left: 0;
+        }
+    }
+
+    /* Input Menu Dropdown (popup outside card) */
+    .ai-input-menu {
+        position: fixed;
+        width: 280px;
+        min-height: auto;
+        max-height: 500px;
+        background: var(--bg-card);
+        border: 1px solid var(--border-neon);
+        border-radius: 16px;
+        padding: 8px;
+        box-shadow: 
+            0 16px 48px rgba(0, 0, 0, 0.6),
+            0 0 0 1px rgba(76, 126, 255, 0.2),
+            0 0 40px rgba(76, 126, 255, 0.2);
+        backdrop-filter: blur(20px);
+        z-index: 10000 !important;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(10px) scale(0.95);
+        transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-y: auto;
+        overflow-x: hidden;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .ai-input-menu.show {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+    }
+
+    .ai-input-menu-item {
+        display: flex !important;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        color: var(--text-secondary);
+        margin-bottom: 4px;
+        position: relative;
+        width: 100%;
+        flex-shrink: 0;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    .ai-input-menu-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .ai-input-menu-item:hover {
+        background: rgba(76, 126, 255, 0.1);
+        color: var(--text-primary);
+        transform: translateX(4px);
+    }
+
+    .ai-input-menu-item.active {
+        background: rgba(76, 126, 255, 0.15);
+        color: var(--accent-neon);
+        border: 1px solid var(--accent-neon);
+        box-shadow: 0 0 12px rgba(76, 126, 255, 0.3);
+    }
+
+    .ai-input-menu-item i {
+        font-size: 18px;
+        width: 22px;
+        text-align: center;
+    }
+
+    .ai-input-menu-item span {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .ai-input-menu-divider {
+        height: 1px;
+        background: var(--border-neon);
+        margin: 8px 0;
+        opacity: 0.3;
+    }
+
+    /* Mobile adjustments for input menu */
+    @media (max-width: 768px) {
+        .ai-input-area {
+            padding: 12px;
+        }
+        
+        .ai-input-bottom-row {
+            margin-top: 10px;
+            gap: 8px;
+        }
+
+        .ai-input-menu-btn {
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+        }
+
+        .ai-input-menu {
+            width: calc(100vw - 40px);
+            max-width: 320px;
+            right: 0;
+            left: auto;
+        }
+        
+        /* Optimize dropdown menu for mobile */
+        .ai-mode-dropdown-menu {
+            width: 200px;
+            max-height: 280px;
+        }
+        
+        .ai-mode-dropdown-item {
+            padding: 10px;
+            font-size: 13px;
+        }
+        
+        .ai-mode-dropdown-item i {
+            font-size: 14px;
+            width: 18px;
+        }
+    }
+    
+    /* Extra small mobile */
+    @media (max-width: 480px) {
+        .ai-prompt-wrapper {
+            padding: 10px 8px;
+            gap: 4px;
+            min-height: 48px;
+        }
+        
+        .ai-attach-btn {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            font-size: 16px;
+        }
+        
+        .ai-mode-dropdown-btn {
+            padding: 5px 8px;
+            font-size: 11px;
+        }
+        
+        .ai-prompt-input {
+            font-size: 14px;
+            min-height: 26px;
+        }
+        
+        .ai-send-btn {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            font-size: 15px;
         }
     }
 </style>
@@ -3320,8 +3631,58 @@
                 </div>
             </div>
 
-            <!-- Mode Chips -->
-            <div class="ai-mode-chips">
+            <!-- Prompt Input - ChatGPT Style -->
+            <div class="ai-prompt-wrapper" id="promptWrapper">
+                <button type="button" id="attachBtn" class="ai-attach-btn" title="Lampirkan file">
+                    <i class="bi bi-paperclip"></i>
+                </button>
+                
+                <!-- Mode Selection Dropdown (inside input) -->
+                <div class="ai-mode-dropdown-inline" id="modeDropdownInline">
+                    <button type="button" class="ai-mode-dropdown-btn" id="modeDropdownBtn" title="Pilih Mode">
+                        <span class="ai-mode-dropdown-text" id="modeDropdownText">Auto</span>
+                        <i class="ai-mode-dropdown-icon bi bi-sliders"></i>
+                    </button>
+                    <div class="ai-mode-dropdown-menu" id="modeDropdownMenu">
+                        <div class="ai-mode-dropdown-item active" data-mode="" data-label="Auto">
+                            <i class="bi bi-magic"></i>
+                            <span>Auto</span>
+                        </div>
+                        <div class="ai-mode-dropdown-item" data-mode="image_generate" data-label="Gambar">
+                            <i class="bi bi-image"></i>
+                            <span>Gambar</span>
+                        </div>
+                        <div class="ai-mode-dropdown-item" data-mode="image_edit" data-label="Edit">
+                            <i class="bi bi-pencil"></i>
+                            <span>Edit</span>
+                        </div>
+                        <div class="ai-mode-dropdown-item" data-mode="image_to_video" data-label="G→V">
+                            <i class="bi bi-camera-video"></i>
+                            <span>G→V</span>
+                        </div>
+                        <div class="ai-mode-dropdown-item" data-mode="video_generate" data-label="Video">
+                            <i class="bi bi-camera-reels"></i>
+                            <span>Video</span>
+                        </div>
+                        <div class="ai-mode-dropdown-item" data-mode="music_generate" data-label="Musik">
+                            <i class="bi bi-music-note-beamed"></i>
+                            <span>Musik</span>
+                        </div>
+                        <div class="ai-mode-dropdown-item" data-mode="video_face_swap" data-label="Video Face Swap">
+                            <i class="bi bi-person-badge"></i>
+                            <span>Video Face Swap</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <textarea id="aiPrompt" class="ai-prompt-input" rows="1" placeholder="Ketik ide atau perintah AI di sini…"></textarea>
+                <button type="button" id="runBtn" class="ai-send-btn" title="Kirim">
+                    <i class="bi bi-send"></i>
+                </button>
+            </div>
+            
+            <!-- Mode Chips (hidden, kept for compatibility) -->
+            <div class="ai-mode-chips" style="display: none;">
                 <div class="ai-mode-chip active" data-mode="">Auto</div>
                 <div class="ai-mode-chip" data-mode="image_generate">Gambar</div>
                 <div class="ai-mode-chip" data-mode="image_edit">Edit</div>
@@ -3330,16 +3691,53 @@
                 <div class="ai-mode-chip" data-mode="music_generate">Musik</div>
                 <div class="ai-mode-chip" data-mode="video_face_swap" title="Video Face Swap">Video Face Swap</div>
             </div>
-
-            <!-- Prompt Input - ChatGPT Style -->
-            <div class="ai-prompt-wrapper" id="promptWrapper">
-                <button type="button" id="attachBtn" class="ai-attach-btn" title="Lampirkan file">
-                    <i class="bi bi-paperclip"></i>
-                </button>
-                <textarea id="aiPrompt" class="ai-prompt-input" rows="1" placeholder="Ketik ide atau perintah AI di sini…"></textarea>
-                <button type="button" id="runBtn" class="ai-send-btn" title="Kirim">
-                    <i class="bi bi-send"></i>
-                </button>
+            
+            <!-- Menu Button and Drop Hint (below input wrapper, inside card) -->
+            <div class="ai-input-bottom-row">
+                <div class="ai-drop-hint" id="dropHint" title="Seret gambar ke kotak input, atau klik untuk memilih">
+                    <i class="bi bi-cloud-upload"></i>
+                    <span>Drag & drop gambar</span>
+                    <span class="kbd">atau klik</span>
+                </div>
+                
+                <div class="ai-input-menu-wrapper">
+                    <button type="button" id="inputMenuBtn" class="ai-input-menu-btn" title="Menu">
+                        <i class="bi bi-gear"></i>
+                    </button>
+                    
+                    <!-- Input Menu Dropdown (positioned relative to menu button) -->
+                    <div class="ai-input-menu" id="inputMenu">
+                        <div class="ai-input-menu-item active" data-mode="" id="inputMenuChat">
+                            <i class="bi bi-chat-dots"></i>
+                            <span>Chat</span>
+                        </div>
+                        <div class="ai-input-menu-item" data-mode="image_generate" id="inputMenuImage">
+                            <i class="bi bi-image"></i>
+                            <span>Gambar</span>
+                        </div>
+                        <div class="ai-input-menu-item" data-mode="video_generate" id="inputMenuVideo">
+                            <i class="bi bi-camera-reels"></i>
+                            <span>Video</span>
+                        </div>
+                        <div class="ai-input-menu-item" data-mode="music_generate" id="inputMenuMusic">
+                            <i class="bi bi-music-note-beamed"></i>
+                            <span>Musik</span>
+                        </div>
+                        <div class="ai-input-menu-item" data-mode="video_face_swap" id="inputMenuFaceSwap">
+                            <i class="bi bi-person-badge"></i>
+                            <span>Video Face Swap</span>
+                        </div>
+                        <div class="ai-input-menu-divider"></div>
+                        <div class="ai-input-menu-item" id="inputMenuDownloadHistory">
+                            <i class="bi bi-download"></i>
+                            <span>Download Riwayat Chat</span>
+                        </div>
+                        <div class="ai-input-menu-item" id="inputMenuClearHistory">
+                            <i class="bi bi-trash"></i>
+                            <span>Hapus Riwayat Chat</span>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <!-- Smart Prompt Quality Indicator -->
@@ -3361,12 +3759,6 @@
             
             <!-- Contextual Suggestions -->
             <div class="ai-contextual-suggestions" id="contextualSuggestions"></div>
-            
-            <div class="ai-drop-hint" id="dropHint" title="Seret gambar ke kotak input, atau klik untuk memilih">
-                <i class="bi bi-cloud-upload"></i>
-                <span>Drag & drop gambar</span>
-                <span class="kbd">atau klik</span>
-            </div>
 
             <!-- Hidden File Input -->
             <input type="file" id="fileInput" accept="image/*,video/*" multiple style="display: none;" />
@@ -3605,29 +3997,325 @@
         }
 
         
+        // Helper function to update all mode indicators
+        function updateModeIndicators(mode) {
+            // Update mode chips
+            modeChips.forEach(c => {
+                c.classList.toggle('active', c.dataset.mode === mode);
+            });
+            
+            // Update input menu items
+            const inputMenuItems = document.querySelectorAll('.ai-input-menu-item[data-mode]');
+            inputMenuItems.forEach(item => {
+                item.classList.toggle('active', item.dataset.mode === mode);
+            });
+            
+            // Update inline dropdown
+            const modeDropdownText = document.getElementById('modeDropdownText');
+            const modeDropdownItems = document.querySelectorAll('.ai-mode-dropdown-item');
+            if (modeDropdownItems.length > 0) {
+                modeDropdownItems.forEach(item => {
+                    item.classList.toggle('active', item.dataset.mode === mode);
+                    if (item.dataset.mode === mode && modeDropdownText) {
+                        modeDropdownText.textContent = item.dataset.label || 'Auto';
+                    }
+                });
+            }
+        }
+        
         // Mode Chips
         const modeChips = document.querySelectorAll('.ai-mode-chip');
         modeChips.forEach(chip => {
             chip.addEventListener('click', () => {
+                const mode = chip.dataset.mode || '';
                 modeChips.forEach(c => c.classList.remove('active'));
                 chip.classList.add('active');
                 if (modeSelect) {
-                    modeSelect.value = chip.dataset.mode || '';
+                    modeSelect.value = mode;
                 }
+                updateModeIndicators(mode);
             });
         });
         
         // Mode select change handler
         if (modeSelect) {
             modeSelect.addEventListener('change', () => {
-                // Update active chip
-                modeChips.forEach(c => {
-                    c.classList.toggle('active', c.dataset.mode === modeSelect.value);
-                });
+                const mode = modeSelect.value || '';
+                updateModeIndicators(mode);
             });
         }
 
-        // Sidebar Items
+        // Inline Mode Dropdown (inside input)
+        const modeDropdownInline = document.getElementById('modeDropdownInline');
+        const modeDropdownBtn = document.getElementById('modeDropdownBtn');
+        const modeDropdownMenu = document.getElementById('modeDropdownMenu');
+        const modeDropdownItems = document.querySelectorAll('.ai-mode-dropdown-item');
+        
+        if (modeDropdownBtn && modeDropdownMenu) {
+            let isClosing = false;
+            
+            // Helper function to close dropdown smoothly
+            const closeDropdown = () => {
+                if (isClosing) return; // Prevent multiple close calls
+                isClosing = true;
+                
+                modeDropdownInline.classList.remove('open');
+                
+                // Wait for transition to complete before resetting position
+                setTimeout(() => {
+                    if (!modeDropdownInline.classList.contains('open')) {
+                        modeDropdownMenu.style.top = '';
+                        modeDropdownMenu.style.left = '';
+                        modeDropdownMenu.style.right = '';
+                        modeDropdownMenu.style.bottom = '';
+                    }
+                    isClosing = false;
+                }, 200); // Match transition duration
+            };
+            
+            // Toggle dropdown (popup outside card)
+            modeDropdownBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const isOpen = modeDropdownInline.classList.contains('open');
+                
+                if (isOpen) {
+                    closeDropdown();
+                } else {
+                    // Calculate position for popup (above button)
+                    const btnRect = modeDropdownBtn.getBoundingClientRect();
+                    const menuHeight = 300; // Approximate menu height
+                    const spacing = 8; // Space between button and menu
+                    
+                    // Position menu above button, aligned to left
+                    const top = btnRect.top - menuHeight - spacing;
+                    const left = btnRect.left;
+                    
+                    // Ensure menu doesn't go off screen
+                    const finalTop = Math.max(20, top);
+                    const finalLeft = Math.max(20, Math.min(left, window.innerWidth - 240));
+                    
+                    // Set position first
+                    modeDropdownMenu.style.top = `${finalTop}px`;
+                    modeDropdownMenu.style.left = `${finalLeft}px`;
+                    modeDropdownMenu.style.right = 'auto';
+                    modeDropdownMenu.style.bottom = 'auto';
+                    
+                    // Force reflow to ensure position is set before animation
+                    void modeDropdownMenu.offsetHeight;
+                    
+                    // Then trigger animation
+                    modeDropdownInline.classList.add('open');
+                }
+            });
+            
+            // Handle item selection
+            modeDropdownItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const mode = item.dataset.mode || '';
+                    const label = item.dataset.label || 'Auto';
+                    
+                    // Update mode select
+                    if (modeSelect) {
+                        modeSelect.value = mode;
+                    }
+                    
+                    // Update all indicators
+                    updateModeIndicators(mode);
+                    
+                    // Close dropdown smoothly
+                    closeDropdown();
+                });
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (modeDropdownInline && !modeDropdownInline.contains(e.target)) {
+                    if (modeDropdownInline.classList.contains('open')) {
+                        closeDropdown();
+                    }
+                }
+            });
+            
+            // Update menu position on window resize
+            window.addEventListener('resize', () => {
+                if (modeDropdownInline.classList.contains('open') && modeDropdownBtn) {
+                    const btnRect = modeDropdownBtn.getBoundingClientRect();
+                    const menuHeight = 300;
+                    const spacing = 8;
+                    const top = btnRect.top - menuHeight - spacing;
+                    const left = btnRect.left;
+                    const finalTop = Math.max(20, top);
+                    const finalLeft = Math.max(20, Math.min(left, window.innerWidth - 240));
+                    
+                    modeDropdownMenu.style.top = `${finalTop}px`;
+                    modeDropdownMenu.style.left = `${finalLeft}px`;
+                }
+            });
+        }
+
+        // Input Menu Button and Dropdown (inside card)
+        const inputMenuBtn = document.getElementById('inputMenuBtn');
+        const inputMenu = document.getElementById('inputMenu');
+        const inputMenuItems = document.querySelectorAll('.ai-input-menu-item');
+        const inputMenuDownloadHistory = document.getElementById('inputMenuDownloadHistory');
+        const inputMenuClearHistory = document.getElementById('inputMenuClearHistory');
+        
+        // Toggle input menu (popup outside card)
+        if (inputMenuBtn && inputMenu) {
+            console.log('[Input Menu] Button and menu found:', inputMenuBtn, inputMenu);
+            inputMenuBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('[Input Menu] Button clicked');
+                const isShowing = inputMenu.classList.contains('show');
+                const icon = inputMenuBtn.querySelector('i');
+                console.log('[Input Menu] Is showing:', isShowing);
+                if (isShowing) {
+                    inputMenu.classList.remove('show');
+                    inputMenuBtn.classList.remove('active');
+                    if (icon) {
+                        icon.className = 'bi bi-gear';
+                    }
+                    console.log('[Input Menu] Menu hidden');
+                } else {
+                    // Calculate position for popup (above button, aligned to right)
+                    const btnRect = inputMenuBtn.getBoundingClientRect();
+                    const menuHeight = 400; // Approximate menu height
+                    const spacing = 12; // Space between button and menu
+                    
+                    // Position menu above button, aligned to right
+                    const top = btnRect.top - menuHeight - spacing;
+                    const right = window.innerWidth - btnRect.right;
+                    
+                    // Ensure menu doesn't go off screen
+                    const finalTop = Math.max(20, top);
+                    
+                    inputMenu.style.top = `${finalTop}px`;
+                    inputMenu.style.right = `${right}px`;
+                    inputMenu.style.bottom = 'auto';
+                    inputMenu.style.left = 'auto';
+                    
+                    inputMenu.classList.add('show');
+                    inputMenuBtn.classList.add('active');
+                    if (icon) {
+                        icon.className = 'bi bi-x-lg';
+                    }
+                    console.log('[Input Menu] Menu shown at position:', finalTop, right);
+                }
+            });
+        } else {
+            console.error('[Input Menu] Button or menu not found:', inputMenuBtn, inputMenu);
+        }
+        
+        // Handle menu item clicks
+        inputMenuItems.forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                // Handle mode selection
+                if (item.dataset.mode !== undefined) {
+                    // Remove active from all items
+                    inputMenuItems.forEach(m => m.classList.remove('active'));
+                    // Add active to clicked item
+                    item.classList.add('active');
+                    
+                    // Update mode select
+                    const selectedMode = item.dataset.mode || '';
+                    if (modeSelect) {
+                        modeSelect.value = selectedMode;
+                    }
+                    
+                    // Update all mode indicators (including inline dropdown)
+                    updateModeIndicators(selectedMode);
+                    
+                    // Close menu
+                    if (inputMenu) {
+                        inputMenu.classList.remove('show');
+                        inputMenuBtn.classList.remove('active');
+                        const icon = inputMenuBtn.querySelector('i');
+                        if (icon) {
+                            icon.className = 'bi bi-gear';
+                        }
+                    }
+                }
+            });
+        });
+        
+        // Handle download history
+        if (inputMenuDownloadHistory) {
+            inputMenuDownloadHistory.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const downloadHistoryBtn = document.getElementById('downloadHistoryBtn');
+                if (downloadHistoryBtn) {
+                    downloadHistoryBtn.click();
+                }
+                if (inputMenu) {
+                    inputMenu.classList.remove('show');
+                    inputMenuBtn.classList.remove('active');
+                    const icon = inputMenuBtn.querySelector('i');
+                    if (icon) {
+                        icon.className = 'bi bi-gear';
+                    }
+                }
+            });
+        }
+        
+        // Handle clear history
+        if (inputMenuClearHistory) {
+            inputMenuClearHistory.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+                if (clearHistoryBtn) {
+                    clearHistoryBtn.click();
+                }
+                if (inputMenu) {
+                    inputMenu.classList.remove('show');
+                    inputMenuBtn.classList.remove('active');
+                    const icon = inputMenuBtn.querySelector('i');
+                    if (icon) {
+                        icon.className = 'bi bi-gear';
+                    }
+                }
+            });
+        }
+        
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (inputMenu && inputMenuBtn) {
+                if (!inputMenu.contains(e.target) && !inputMenuBtn.contains(e.target)) {
+                    inputMenu.classList.remove('show');
+                    inputMenuBtn.classList.remove('active');
+                    const icon = inputMenuBtn.querySelector('i');
+                    if (icon) {
+                        icon.className = 'bi bi-gear';
+                    }
+                    // Reset position
+                    inputMenu.style.top = '';
+                    inputMenu.style.right = '';
+                    inputMenu.style.bottom = '';
+                    inputMenu.style.left = '';
+                }
+            }
+        });
+        
+        // Update menu position on window resize
+        window.addEventListener('resize', () => {
+            if (inputMenu && inputMenu.classList.contains('show') && inputMenuBtn) {
+                const btnRect = inputMenuBtn.getBoundingClientRect();
+                const menuHeight = 400;
+                const spacing = 12;
+                const top = btnRect.top - menuHeight - spacing;
+                const right = window.innerWidth - btnRect.right;
+                const finalTop = Math.max(20, top);
+                
+                inputMenu.style.top = `${finalTop}px`;
+                inputMenu.style.right = `${right}px`;
+            }
+        });
+        
+        // Legacy Sidebar Items (kept for compatibility, but hidden)
         const sidebarItems = document.querySelectorAll('.ai-sidebar-item');
         const settingsBtn = document.getElementById('settingsBtn');
         const settingsDropdown = document.getElementById('settingsDropdown');
