@@ -3259,6 +3259,7 @@
         </div>
 
         <!-- Chat Section -->
+        {% if request.path != '/ai_generate' %}
         <div class="chat-section">
             <div class="chat-header">
                 <i class="bi bi-chat-dots"></i>
@@ -3275,6 +3276,7 @@
                 </a>
             </div>
         </div>
+        {% endif %}
     </nav>
 
     <!-- Main Content -->
@@ -3531,6 +3533,7 @@
                     </div>
 
                     <!-- Chat Section -->
+                    {% if request.path != '/ai_generate' %}
                     <div class="mobile-nav-section">
                         <h5 class="mobile-nav-section-title">
                             <i class="bi bi-chat-dots"></i>
@@ -3547,6 +3550,7 @@
                             </a>
                         </div>
                     </div>
+                    {% endif %}
 
                     <!-- Admin Section -->
                     {% if session.get('role') == 'admin' or (current_user and current_user.role == 'admin') %}
@@ -3604,7 +3608,7 @@
     </script>
 
     <!-- AI Assistant Widget -->
-{% if session.get('username') %}
+{% if session.get('username') and request.path != '/ai_generate' %}
   <div id="ai-assistant-widget"></div>
   <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/ai-assistant.css') }}">
   <script src="{{ url_for('static', filename='assets/js/ai-assistant.js') }}"></script>
