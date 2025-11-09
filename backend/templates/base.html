@@ -1750,7 +1750,7 @@
 
         /* Mobile Navigation */
         .mobile-nav {
-            display: none;
+            display: none; /* Will be overridden by media query for mobile */
             position: fixed !important;
             bottom: 0 !important;
             left: 0 !important;
@@ -3102,13 +3102,15 @@
         @media (max-width: 768px) {
             .mobile-nav {
                 display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
                 /* Ensure fixed position on iOS */
                 position: fixed !important;
                 bottom: 0 !important;
                 left: 0 !important;
                 right: 0 !important;
                 width: 100% !important;
-                z-index: 9999 !important;
+                z-index: 99999 !important;
             }
 
             .content-wrapper {
@@ -3128,6 +3130,9 @@
                 }
                 
                 .mobile-nav {
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
                     position: fixed !important;
                     bottom: 0 !important;
                     left: 0 !important;
@@ -3149,6 +3154,7 @@
                     padding-right: 0 !important;
                     /* Ensure it's always at the bottom */
                     top: auto !important;
+                    z-index: 99999 !important;
                 }
                 
                 /* Ensure no parent transforms interfere */
@@ -4214,15 +4220,74 @@ document.addEventListener('DOMContentLoaded', function() {
                 const mobileNav = document.querySelector('.mobile-nav');
                 if (!mobileNav) return;
                 
-                // Only apply fix on iOS devices
+                // Check if mobile (width <= 768px)
+                const isMobile = window.innerWidth <= 768;
+                
+                // Only apply fix on iOS devices or mobile devices
                 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+                
+                if (isMobile) {
+                    // Always ensure menu is visible on mobile
+                    function ensureVisible() {
+                        try {
+                            mobileNav.style.setProperty('display', 'block', 'important');
+                            mobileNav.style.setProperty('visibility', 'visible', 'important');
+                            mobileNav.style.setProperty('opacity', '1', 'important');
+                        } catch (e) {
+                            mobileNav.style.display = 'block';
+                            mobileNav.style.visibility = 'visible';
+                            mobileNav.style.opacity = '1';
+                        }
+                    }
+                    
+                    ensureVisible();
+                    
+                    // Watch for any changes that might hide the menu
+                    const visibilityObserver = new MutationObserver(function(mutations) {
+                        mutations.forEach(function(mutation) {
+                            if (mutation.type === 'attributes') {
+                                const style = window.getComputedStyle(mobileNav);
+                                if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) < 0.5) {
+                                    ensureVisible();
+                                }
+                            }
+                        });
+                    });
+                    
+                    visibilityObserver.observe(mobileNav, {
+                        attributes: true,
+                        attributeFilter: ['style', 'class']
+                    });
+                    
+                    // Also check on scroll
+                    window.addEventListener('scroll', function() {
+                        ensureVisible();
+                    }, { passive: true });
+                    
+                    // Also check on resize
+                    window.addEventListener('resize', function() {
+                        ensureVisible();
+                    }, { passive: true });
+                    
+                    // Periodic check to ensure visibility (every 500ms)
+                    setInterval(ensureVisible, 500);
+                }
                 
                 if (isIOS && window.innerWidth <= 768) {
                     // Set initial fixed styles
                     function applyFixedStyles() {
+                        // CRITICAL: Always ensure menu is visible FIRST before applying other styles
+                        mobileNav.style.display = 'block';
+                        mobileNav.style.visibility = 'visible';
+                        mobileNav.style.opacity = '1';
+                        
                         // Use setProperty with important flag for maximum compatibility
                         try {
+                            // CRITICAL: Ensure menu is always visible
+                            mobileNav.style.setProperty('display', 'block', 'important');
+                            mobileNav.style.setProperty('visibility', 'visible', 'important');
+                            mobileNav.style.setProperty('opacity', '1', 'important');
                             mobileNav.style.setProperty('position', 'fixed', 'important');
                             mobileNav.style.setProperty('bottom', '0', 'important');
                             mobileNav.style.setProperty('left', '0', 'important');
@@ -4236,6 +4301,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             mobileNav.style.setProperty('z-index', '99999', 'important');
                         } catch (e) {
                             // Fallback for browsers that don't support setProperty with important
+                            mobileNav.style.display = 'block';
+                            mobileNav.style.visibility = 'visible';
+                            mobileNav.style.opacity = '1';
                             mobileNav.style.position = 'fixed';
                             mobileNav.style.bottom = '0';
                             mobileNav.style.left = '0';
@@ -4257,6 +4325,11 @@ document.addEventListener('DOMContentLoaded', function() {
                             cancelAnimationFrame(scrollTimeout);
                         }
                         scrollTimeout = requestAnimationFrame(function() {
+                            // CRITICAL: Ensure menu is visible during scroll
+                            mobileNav.style.display = 'block';
+                            mobileNav.style.visibility = 'visible';
+                            mobileNav.style.opacity = '1';
+                            
                             applyFixedStyles();
                             // Double check position
                             const rect = mobileNav.getBoundingClientRect();
@@ -4268,12 +4341,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Update on resize
                     window.addEventListener('resize', function() {
+                        // Ensure visible first
+                        mobileNav.style.display = 'block';
+                        mobileNav.style.visibility = 'visible';
+                        mobileNav.style.opacity = '1';
                         applyFixedStyles();
                     }, { passive: true });
                     
                     // Update on orientation change
                     window.addEventListener('orientationchange', function() {
-                        setTimeout(applyFixedStyles, 100);
+                        setTimeout(function() {
+                            // Ensure visible first
+                            mobileNav.style.display = 'block';
+                            mobileNav.style.visibility = 'visible';
+                            mobileNav.style.opacity = '1';
+                            applyFixedStyles();
+                        }, 100);
                     });
                     
                     // Use MutationObserver to watch for style changes
