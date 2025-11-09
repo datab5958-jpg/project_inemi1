@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" x-data="{ sidebarOpen: false, darkMode: true }" :class="{ 'dark-mode': darkMode }" style="-webkit-transform: none !important; transform: none !important;">
+<html lang="en" x-data="{ sidebarOpen: false, darkMode: true }" :class="{ 'dark-mode': darkMode }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -66,9 +66,8 @@
             font-family: 'Inter', sans-serif;
             overflow-x: hidden;
             position: relative;
-            /* Ensure no transform interferes with fixed positioning on iOS */
-            -webkit-transform: none !important;
-            transform: none !important;
+            /* Prevent iOS Safari from moving fixed elements */
+            -webkit-overflow-scrolling: touch;
         }
 
         body::before {
@@ -1736,50 +1735,49 @@
             margin-left: 280px;
             min-height: 100vh;
             transition: margin-left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            /* Ensure no transform interferes with fixed positioning */
-            -webkit-transform: none !important;
-            transform: none !important;
+            /* Prevent transform from affecting fixed children on iOS */
+            -webkit-transform: none;
+            transform: none;
         }
 
         .content-wrapper {
             padding: 2rem;
-            /* Ensure no transform interferes with fixed positioning */
-            -webkit-transform: none !important;
-            transform: none !important;
+            /* Prevent transform from affecting fixed children on iOS */
+            -webkit-transform: none;
+            transform: none;
         }
 
         /* Mobile Navigation */
         .mobile-nav {
-            display: none; /* Will be overridden by media query for mobile */
+            display: none;
             position: fixed !important;
             bottom: 0 !important;
             left: 0 !important;
             right: 0 !important;
             width: 100% !important;
-            max-width: 100% !important;
+            max-width: 100vw !important;
             background: linear-gradient(180deg, rgba(14, 11, 44, 0.95) 0%, rgba(14, 11, 44, 0.98) 100%);
             backdrop-filter: blur(30px);
             -webkit-backdrop-filter: blur(30px);
             border-top: 1px solid rgba(76, 126, 255, 0.2);
             padding: 0.75rem 1rem;
+            padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px)) !important;
             z-index: 99999 !important;
             box-shadow: 
                 0 -4px 30px rgba(0, 0, 0, 0.4),
                 0 -2px 10px rgba(76, 126, 255, 0.1);
             min-height: 75px;
-            /* iOS Safari fix for position:fixed - More aggressive approach */
+            margin: 0 !important;
+            /* iOS Safari fix for position:fixed - Force hardware acceleration */
             -webkit-transform: translate3d(0, 0, 0) !important;
             transform: translate3d(0, 0, 0) !important;
             -webkit-backface-visibility: hidden !important;
             backface-visibility: hidden !important;
-            -webkit-perspective: 1000px !important;
-            perspective: 1000px !important;
             /* Prevent scrolling issues on iOS */
             -webkit-overflow-scrolling: touch;
             will-change: transform;
-            /* Ensure it stays at bottom */
-            margin: 0 !important;
-            padding-bottom: env(safe-area-inset-bottom, 0.75rem) !important;
+            /* Ensure it stays at bottom viewport */
+            top: auto !important;
         }
 
         /* Mobile Menu Button */
@@ -3102,15 +3100,13 @@
         @media (max-width: 768px) {
             .mobile-nav {
                 display: block !important;
-                visibility: visible !important;
-                opacity: 1 !important;
                 /* Ensure fixed position on iOS */
                 position: fixed !important;
                 bottom: 0 !important;
                 left: 0 !important;
                 right: 0 !important;
                 width: 100% !important;
-                z-index: 99999 !important;
+                z-index: 9999 !important;
             }
 
             .content-wrapper {
@@ -3119,49 +3115,36 @@
                 -webkit-overflow-scrolling: touch;
             }
             
-            /* iOS Safari specific fixes - Aggressive approach */
+            /* iOS Safari specific fixes */
             @supports (-webkit-touch-callout: none) {
-                body {
-                    -webkit-overflow-scrolling: touch !important;
-                    overflow-x: hidden !important;
-                    /* Prevent iOS from moving fixed elements */
-                    -webkit-transform: translate3d(0, 0, 0) !important;
-                    transform: translate3d(0, 0, 0) !important;
+                html, body {
+                    -webkit-overflow-scrolling: touch;
+                    overflow-x: hidden;
+                    height: 100%;
+                    position: relative;
                 }
                 
                 .mobile-nav {
-                    display: block !important;
-                    visibility: visible !important;
-                    opacity: 1 !important;
                     position: fixed !important;
                     bottom: 0 !important;
                     left: 0 !important;
                     right: 0 !important;
                     width: 100% !important;
                     max-width: 100vw !important;
+                    margin: 0 !important;
+                    padding-left: 0 !important;
+                    padding-right: 0 !important;
                     -webkit-transform: translate3d(0, 0, 0) !important;
                     transform: translate3d(0, 0, 0) !important;
                     -webkit-backface-visibility: hidden !important;
                     backface-visibility: hidden !important;
-                    -webkit-perspective: 1000px !important;
-                    perspective: 1000px !important;
-                    /* Force hardware acceleration */
-                    -webkit-transform-style: preserve-3d !important;
-                    transform-style: preserve-3d !important;
-                    /* Prevent any movement */
-                    margin: 0 !important;
-                    padding-left: 0 !important;
-                    padding-right: 0 !important;
-                    /* Ensure it's always at the bottom */
                     top: auto !important;
                     z-index: 99999 !important;
                 }
                 
-                /* Ensure no parent transforms interfere */
-                .content-wrapper,
-                .main-content,
-                main,
-                [role="main"] {
+                /* Prevent parent transforms from affecting fixed nav */
+                main.main-content,
+                .content-wrapper {
                     -webkit-transform: none !important;
                     transform: none !important;
                 }
@@ -4215,187 +4198,112 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
             
-            // iOS Safari fix: Ensure mobile bottom nav stays fixed during scroll
-            function fixMobileNavPosition() {
+            // iOS Safari fix: Keep mobile bottom nav fixed during scroll
+            function fixMobileNavForIOS() {
                 const mobileNav = document.querySelector('.mobile-nav');
                 if (!mobileNav) return;
                 
-                // Check if mobile (width <= 768px)
-                const isMobile = window.innerWidth <= 768;
-                
-                // Only apply fix on iOS devices or mobile devices
+                // Check if iOS device
                 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
                              (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
                 
-                if (isMobile) {
-                    // Always ensure menu is visible on mobile
-                    function ensureVisible() {
-                        try {
-                            mobileNav.style.setProperty('display', 'block', 'important');
-                            mobileNav.style.setProperty('visibility', 'visible', 'important');
-                            mobileNav.style.setProperty('opacity', '1', 'important');
-                        } catch (e) {
-                            mobileNav.style.display = 'block';
-                            mobileNav.style.visibility = 'visible';
-                            mobileNav.style.opacity = '1';
-                        }
-                    }
-                    
-                    ensureVisible();
-                    
-                    // Watch for any changes that might hide the menu
-                    const visibilityObserver = new MutationObserver(function(mutations) {
-                        mutations.forEach(function(mutation) {
-                            if (mutation.type === 'attributes') {
-                                const style = window.getComputedStyle(mobileNav);
-                                if (style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) < 0.5) {
-                                    ensureVisible();
-                                }
-                            }
-                        });
-                    });
-                    
-                    visibilityObserver.observe(mobileNav, {
-                        attributes: true,
-                        attributeFilter: ['style', 'class']
-                    });
-                    
-                    // Also check on scroll
-                    window.addEventListener('scroll', function() {
-                        ensureVisible();
-                    }, { passive: true });
-                    
-                    // Also check on resize
-                    window.addEventListener('resize', function() {
-                        ensureVisible();
-                    }, { passive: true });
-                    
-                    // Periodic check to ensure visibility (every 500ms)
-                    setInterval(ensureVisible, 500);
-                }
+                // Check if mobile viewport
+                const isMobile = window.innerWidth <= 768;
                 
-                if (isIOS && window.innerWidth <= 768) {
-                    // Set initial fixed styles
-                    function applyFixedStyles() {
-                        // CRITICAL: Always ensure menu is visible FIRST before applying other styles
-                        mobileNav.style.display = 'block';
-                        mobileNav.style.visibility = 'visible';
-                        mobileNav.style.opacity = '1';
+                if (isMobile) {
+                    // Function to force fixed position
+                    function enforceFixedPosition() {
+                        const computedStyle = window.getComputedStyle(mobileNav);
+                        if (computedStyle.display === 'none') return;
                         
-                        // Use setProperty with important flag for maximum compatibility
+                        // Get viewport height (accounting for iOS address bar)
+                        const vh = window.innerHeight;
+                        const navRect = mobileNav.getBoundingClientRect();
+                        
+                        // Force fixed position with inline styles using setProperty
                         try {
-                            // CRITICAL: Ensure menu is always visible
-                            mobileNav.style.setProperty('display', 'block', 'important');
-                            mobileNav.style.setProperty('visibility', 'visible', 'important');
-                            mobileNav.style.setProperty('opacity', '1', 'important');
                             mobileNav.style.setProperty('position', 'fixed', 'important');
                             mobileNav.style.setProperty('bottom', '0', 'important');
                             mobileNav.style.setProperty('left', '0', 'important');
                             mobileNav.style.setProperty('right', '0', 'important');
                             mobileNav.style.setProperty('width', '100%', 'important');
-                            mobileNav.style.setProperty('max-width', '100%', 'important');
-                            mobileNav.style.setProperty('transform', 'translate3d(0, 0, 0)', 'important');
-                            mobileNav.style.setProperty('-webkit-transform', 'translate3d(0, 0, 0)', 'important');
+                            mobileNav.style.setProperty('max-width', '100vw', 'important');
+                            mobileNav.style.setProperty('z-index', '99999', 'important');
                             mobileNav.style.setProperty('margin', '0', 'important');
                             mobileNav.style.setProperty('top', 'auto', 'important');
-                            mobileNav.style.setProperty('z-index', '99999', 'important');
+                            mobileNav.style.setProperty('-webkit-transform', 'translate3d(0, 0, 0)', 'important');
+                            mobileNav.style.setProperty('transform', 'translate3d(0, 0, 0)', 'important');
                         } catch (e) {
                             // Fallback for browsers that don't support setProperty with important
-                            mobileNav.style.display = 'block';
-                            mobileNav.style.visibility = 'visible';
-                            mobileNav.style.opacity = '1';
                             mobileNav.style.position = 'fixed';
                             mobileNav.style.bottom = '0';
                             mobileNav.style.left = '0';
                             mobileNav.style.right = '0';
                             mobileNav.style.width = '100%';
+                            mobileNav.style.zIndex = '99999';
                             mobileNav.style.transform = 'translate3d(0, 0, 0)';
                             mobileNav.style.webkitTransform = 'translate3d(0, 0, 0)';
-                            mobileNav.style.zIndex = '99999';
                         }
-                    }
-                    
-                    // Apply styles immediately
-                    applyFixedStyles();
-                    
-                    // Update on scroll with requestAnimationFrame for performance
-                    let scrollTimeout;
-                    window.addEventListener('scroll', function() {
-                        if (scrollTimeout) {
-                            cancelAnimationFrame(scrollTimeout);
-                        }
-                        scrollTimeout = requestAnimationFrame(function() {
-                            // CRITICAL: Ensure menu is visible during scroll
-                            mobileNav.style.display = 'block';
-                            mobileNav.style.visibility = 'visible';
-                            mobileNav.style.opacity = '1';
-                            
-                            applyFixedStyles();
-                            // Double check position
-                            const rect = mobileNav.getBoundingClientRect();
-                            if (rect.bottom !== window.innerHeight) {
-                                applyFixedStyles();
+                        
+                        // Verify position is correct
+                        requestAnimationFrame(() => {
+                            const newRect = mobileNav.getBoundingClientRect();
+                            const currentVh = window.innerHeight;
+                            if (Math.abs(newRect.bottom - currentVh) > 1) {
+                                // Force recalculation
+                                mobileNav.style.setProperty('bottom', '0', 'important');
                             }
                         });
+                    }
+                    
+                    // Apply immediately
+                    enforceFixedPosition();
+                    
+                    // Apply on scroll (with throttling using requestAnimationFrame)
+                    let scrollRaf;
+                    window.addEventListener('scroll', function() {
+                        if (scrollRaf) {
+                            cancelAnimationFrame(scrollRaf);
+                        }
+                        scrollRaf = requestAnimationFrame(enforceFixedPosition);
                     }, { passive: true });
                     
-                    // Update on resize
+                    // Apply on resize/orientation change
                     window.addEventListener('resize', function() {
-                        // Ensure visible first
-                        mobileNav.style.display = 'block';
-                        mobileNav.style.visibility = 'visible';
-                        mobileNav.style.opacity = '1';
-                        applyFixedStyles();
+                        requestAnimationFrame(enforceFixedPosition);
                     }, { passive: true });
                     
-                    // Update on orientation change
                     window.addEventListener('orientationchange', function() {
                         setTimeout(function() {
-                            // Ensure visible first
-                            mobileNav.style.display = 'block';
-                            mobileNav.style.visibility = 'visible';
-                            mobileNav.style.opacity = '1';
-                            applyFixedStyles();
+                            requestAnimationFrame(enforceFixedPosition);
                         }, 100);
                     });
                     
-                    // Use MutationObserver to watch for style changes
-                    const observer = new MutationObserver(function(mutations) {
-                        mutations.forEach(function(mutation) {
-                            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                                applyFixedStyles();
+                    // Periodic check (every 300ms) to ensure position is maintained on iOS
+                    if (isIOS) {
+                        setInterval(function() {
+                            const computedStyle = window.getComputedStyle(mobileNav);
+                            if (computedStyle.display !== 'none') {
+                                enforceFixedPosition();
                             }
-                        });
-                    });
-                    
-                    observer.observe(mobileNav, {
-                        attributes: true,
-                        attributeFilter: ['style']
-                    });
-                    
-                    // Periodic check to ensure position is maintained (every 300ms)
-                    setInterval(function() {
-                        const rect = mobileNav.getBoundingClientRect();
-                        if (rect.bottom !== window.innerHeight || rect.top !== window.innerHeight - rect.height) {
-                            applyFixedStyles();
-                        }
-                    }, 300);
+                        }, 300);
+                    }
                 }
             }
             
-            // Initialize mobile nav position fix
+            // Initialize iOS fix
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', fixMobileNavPosition);
+                document.addEventListener('DOMContentLoaded', fixMobileNavForIOS);
             } else {
-                fixMobileNavPosition();
+                fixMobileNavForIOS();
             }
             
-            // Also run after a short delay to ensure everything is loaded
-            setTimeout(fixMobileNavPosition, 500);
+            // Also run after a delay to ensure everything is loaded
+            setTimeout(fixMobileNavForIOS, 300);
             
             // Run again after Alpine.js initializes (if present)
             if (window.Alpine) {
-                Alpine.nextTick(fixMobileNavPosition);
+                Alpine.nextTick(fixMobileNavForIOS);
             }
 });
 
