@@ -1142,9 +1142,9 @@
     /* Input Area - Bottom */
     .ai-input-area {
         background: var(--bg-input);
-        border-radius: 14px;
-        padding: 16px;
-        margin-top: 16px;
+        border-radius: 20px;
+        padding: 24px;
+        margin-top: 20px;
         box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3), var(--shadow-glow);
         border: 1px solid rgba(76, 126, 255, 0.2);
         position: sticky;
@@ -1197,63 +1197,90 @@
         font-weight: 600;
     }
 
-    /* Prompt Input */
+    /* Prompt Input - Layout Vertikal: Input di atas, Icon di bawah */
     .ai-prompt-wrapper {
         position: relative;
         display: flex;
-        align-items: center;
-        gap: 10px;
+        flex-direction: column;
+        gap: 12px;
         background: var(--bg-input-extra);
         border: 1px solid var(--border-neon);
-        border-radius: 16px;
-        padding: 16px 18px;
+        border-radius: 20px;
+        padding: 20px 24px;
         transition: all 200ms;
         width: 100%;
         max-width: 100%;
         min-width: 0;
         overflow: visible;
-        min-height: 60px;
-        flex-wrap: nowrap; /* Jangan wrap elemen */
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Baris Input Text (Full Width) */
+    .ai-prompt-input-row {
+        width: 100%;
+        display: flex;
+        align-items: flex-start;
+    }
+    
+    /* Textarea harus full width */
+    .ai-prompt-input-row .ai-prompt-input {
+        width: 100%;
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+    }
+    
+    /* Baris Icon (Horizontal) */
+    .ai-prompt-icons-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+    }
+    
+    /* Spacer untuk push tombol kanan ke kanan */
+    .ai-icons-spacer {
+        flex: 1;
+        min-width: 0;
     }
     
     /* Pastikan tombol tidak shrink */
-    .ai-prompt-wrapper .ai-attach-btn,
-    .ai-prompt-wrapper .ai-mode-dropdown-inline,
-    .ai-prompt-wrapper .ai-send-btn {
+    .ai-prompt-icons-row .ai-attach-btn,
+    .ai-prompt-icons-row .ai-mode-dropdown-inline,
+    .ai-prompt-icons-row .ai-enhance-btn,
+    .ai-prompt-icons-row .ai-mic-btn,
+    .ai-prompt-icons-row .ai-send-btn {
         flex-shrink: 0;
-    }
-    
-    /* Textarea harus bisa grow tapi tidak mendorong tombol */
-    .ai-prompt-wrapper .ai-prompt-input {
-        flex: 1;
-        min-width: 0;
     }
 
     .ai-prompt-wrapper:focus-within {
         border-color: var(--accent-neon);
-        box-shadow: 0 0 16px rgba(76, 126, 255, 0.2);
+        box-shadow: 0 0 20px rgba(76, 126, 255, 0.3), 0 4px 12px rgba(0, 0, 0, 0.15);
+        transform: translateY(-2px);
     }
 
-    /* Attachment Button */
+    /* Attachment Button - Lebih Besar dan Modern */
     .ai-attach-btn {
-        width: 40px;
-        height: 40px;
-        min-width: 40px;
-        border-radius: 10px;
-        background: transparent;
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
         color: var(--text-secondary);
-        border: none;
+        border: 1px solid rgba(255, 255, 255, 0.1);
         cursor: pointer;
         display: grid;
         place-items: center;
-        font-size: 20px;
-        transition: all 150ms;
+        font-size: 22px;
+        transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
         flex-shrink: 0;
     }
 
     .ai-attach-btn:hover {
         color: var(--accent-neon);
-        background: rgba(76, 126, 255, 0.1);
+        background: rgba(76, 126, 255, 0.15);
+        border-color: rgba(76, 126, 255, 0.3);
+        transform: scale(1.05);
     }
 
     .ai-attach-btn:active {
@@ -1269,38 +1296,57 @@
     .ai-mode-dropdown-btn {
         display: flex;
         align-items: center;
-        gap: 6px;
-        padding: 8px 14px;
-        background: rgba(76, 126, 255, 0.1);
-        border: 1px solid rgba(76, 126, 255, 0.3);
-        border-radius: 10px;
+        gap: 8px;
+        padding: 10px 16px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
         color: var(--text-primary);
-        font-size: 13px;
+        font-size: 14px;
         font-weight: 500;
         cursor: pointer;
-        transition: all 200ms;
+        transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
         white-space: nowrap;
         flex-shrink: 0;
         min-width: fit-content;
+    }
+    
+    .ai-mode-dropdown-btn i:first-child {
+        font-size: 16px;
+        color: var(--text-secondary);
     }
     
     .ai-mode-dropdown-btn .ai-mode-dropdown-text {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        color: var(--text-primary);
+    }
+    
+    .ai-mode-dropdown-btn .ai-mode-auto-text {
+        color: var(--text-muted);
+        font-size: 13px;
+        margin-left: 4px;
+    }
+    
+    .ai-mode-dropdown-btn .ai-mode-dropdown-icon {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-left: 4px;
     }
 
     .ai-mode-dropdown-btn:hover {
-        background: rgba(76, 126, 255, 0.15);
-        border-color: rgba(76, 126, 255, 0.5);
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.25);
+        transform: translateY(-1px);
     }
 
-    .ai-mode-dropdown-btn i {
+    .ai-mode-dropdown-btn .ai-mode-dropdown-icon {
         font-size: 12px;
         transition: transform 200ms;
     }
 
-    .ai-mode-dropdown-inline.open .ai-mode-dropdown-btn i {
+    .ai-mode-dropdown-inline.open .ai-mode-dropdown-btn .ai-mode-dropdown-icon {
         transform: rotate(180deg);
     }
 
@@ -2535,10 +2581,10 @@
         border: none;
         outline: none;
         color: var(--text-primary);
-        font-size: 15px;
-        line-height: 1.6;
+        font-size: 16px;
+        line-height: 1.7;
         resize: none;
-        min-height: 28px;
+        min-height: 32px;
         max-height: 200px;
         font-family: inherit;
         min-width: 0;
@@ -2548,45 +2594,118 @@
         overflow-wrap: break-word;
         overflow-x: hidden;
         overflow-y: auto;
-        padding: 4px 0;
+        padding: 6px 0;
         box-sizing: border-box;
     }
 
     .ai-prompt-input::placeholder {
         color: var(--text-muted);
-        font-style: italic;
+        font-style: normal;
+        opacity: 0.7;
     }
 
     .ai-send-btn {
-        width: 44px;
-        height: 44px;
-        min-width: 44px;
-        border-radius: 12px;
-        background: var(--accent-neon-glow);
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--accent-neon) 0%, var(--accent-neon-glow) 100%);
         color: var(--text-primary);
         border: none;
         cursor: pointer;
         display: grid;
         place-items: center;
-        font-size: 18px;
-        transition: all 200ms;
-        box-shadow: 0 0 12px rgba(93, 95, 239, 0.3);
+        font-size: 20px;
+        transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 12px rgba(93, 95, 239, 0.4), 0 0 20px rgba(76, 126, 255, 0.2);
         flex-shrink: 0;
     }
 
     .ai-send-btn:hover {
-        transform: scale(1.08);
-        box-shadow: 0 0 20px rgba(93, 95, 239, 0.4);
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 6px 16px rgba(93, 95, 239, 0.5), 0 0 30px rgba(76, 126, 255, 0.3);
     }
 
     .ai-send-btn:active {
-        transform: scale(0.98);
+        transform: translateY(0) scale(0.98);
     }
 
     .ai-send-btn:disabled {
         opacity: 0.6;
         cursor: not-allowed;
         transform: none;
+    }
+
+    /* Enhance Button (Sparkle) */
+    .ai-enhance-btn {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-size: 20px;
+        transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        flex-shrink: 0;
+    }
+
+    .ai-enhance-btn:hover {
+        color: var(--accent-neon);
+        background: rgba(76, 126, 255, 0.15);
+        border-color: rgba(76, 126, 255, 0.3);
+        transform: scale(1.05);
+    }
+
+    .ai-enhance-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* Microphone Button */
+    .ai-mic-btn {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-size: 20px;
+        transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+        flex-shrink: 0;
+    }
+
+    .ai-mic-btn:hover {
+        color: var(--accent-neon);
+        background: rgba(76, 126, 255, 0.15);
+        border-color: rgba(76, 126, 255, 0.3);
+        transform: scale(1.05);
+    }
+
+    .ai-mic-btn:active {
+        transform: scale(0.95);
+    }
+
+    .ai-mic-btn.recording {
+        background: rgba(220, 53, 69, 0.2);
+        border-color: rgba(220, 53, 69, 0.4);
+        color: #ff6b6b;
+        animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
+        }
+        50% {
+            box-shadow: 0 0 0 8px rgba(220, 53, 69, 0);
+        }
     }
 
     /* Small static hint under input */
@@ -3524,67 +3643,94 @@
         
         /* Input area - Lebih luas dengan padding optimal */
         .ai-input-area {
-            padding: 12px 10px;
-            margin-top: 12px;
-            border-radius: 12px;
+            padding: 20px 16px;
+            margin-top: 16px;
+            border-radius: 18px;
         }
         
-        /* Prompt wrapper - Lebih compact tapi tetap luas */
+        /* Prompt wrapper - Layout vertikal untuk mobile */
         .ai-prompt-wrapper {
-            padding: 12px 14px;
+            padding: 16px 18px;
+            gap: 10px;
+            border-radius: 18px;
+            flex-direction: column;
+        }
+        
+        /* Baris icon untuk mobile */
+        .ai-prompt-icons-row {
             gap: 8px;
-            min-height: 56px;
-            border-radius: 14px;
-            align-items: flex-start; /* Pastikan tombol tetap di atas */
-            flex-wrap: nowrap; /* Jangan wrap tombol */
         }
         
         /* Pastikan semua tombol tetap di posisi yang benar */
-        .ai-prompt-wrapper .ai-attach-btn,
-        .ai-prompt-wrapper .ai-mode-dropdown-inline,
-        .ai-prompt-wrapper .ai-send-btn {
+        .ai-prompt-icons-row .ai-attach-btn,
+        .ai-prompt-icons-row .ai-mode-dropdown-inline,
+        .ai-prompt-icons-row .ai-enhance-btn,
+        .ai-prompt-icons-row .ai-mic-btn,
+        .ai-prompt-icons-row .ai-send-btn {
             flex-shrink: 0;
-            align-self: flex-start;
-            margin-top: 2px; /* Sedikit offset untuk alignment */
         }
         
-        /* Textarea harus flex-grow dan tidak mendorong tombol */
-        .ai-prompt-wrapper .ai-prompt-input {
-            flex: 1;
+        /* Textarea full width di mobile */
+        .ai-prompt-input-row .ai-prompt-input {
+            width: 100%;
             min-width: 0;
             max-width: 100%;
-            align-self: stretch;
             margin: 0;
         }
         
-        /* Input buttons - Ukuran optimal untuk touch */
+        /* Input buttons - Ukuran optimal untuk touch tapi tetap besar */
         .ai-attach-btn,
-        .ai-send-btn {
-            width: 38px;
-            height: 38px;
-            min-width: 38px;
-            font-size: 18px;
+        .ai-enhance-btn,
+        .ai-mic-btn {
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
+            font-size: 20px;
         }
         
-        /* Mode dropdown button - Lebih compact */
+        .ai-send-btn {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            font-size: 19px;
+        }
+        
+        /* Mode dropdown button - Compact untuk mobile, hanya Auto */
         .ai-mode-dropdown-btn {
-            padding: 7px 10px;
-            font-size: 12px;
-            max-width: 80px; /* Batasi lebar maksimal */
+            padding: 9px 12px;
+            font-size: 13px;
+            max-width: 80px;
             overflow: hidden;
+            gap: 4px;
+        }
+        
+        /* Sembunyikan icon search dan teks "Riset Mendalam" di mobile */
+        .ai-mode-dropdown-btn i:first-child {
+            display: none;
         }
         
         .ai-mode-dropdown-btn .ai-mode-dropdown-text {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 50px;
+            display: none !important;
+        }
+        
+        /* Tampilkan hanya "Auto" di mobile */
+        .ai-mode-dropdown-btn .ai-mode-auto-text {
+            display: inline-block !important;
+            font-size: 13px;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        
+        .ai-mode-dropdown-btn .ai-mode-dropdown-icon {
+            font-size: 11px;
+            margin-left: 2px;
         }
         
         /* Prompt input - Font size optimal */
         .ai-prompt-input {
             font-size: 15px;
-            line-height: 1.5;
+            line-height: 1.6;
+            min-height: 30px;
         }
         
         /* Input bottom row - Layout lebih rapi */
@@ -3753,50 +3899,82 @@
             font-size: 13px;
         }
         
-        /* Prompt wrapper - Lebih compact */
+        /* Prompt wrapper - Layout vertikal untuk extra small */
         .ai-prompt-wrapper {
-            padding: 10px 12px;
+            padding: 14px 16px;
+            gap: 8px;
+            border-radius: 16px;
+            flex-direction: column;
+        }
+        
+        /* Baris icon untuk extra small */
+        .ai-prompt-icons-row {
             gap: 6px;
-            min-height: 52px;
-            align-items: flex-start;
-            flex-wrap: nowrap;
         }
         
         /* Pastikan tombol tetap di posisi yang benar di extra small */
-        .ai-prompt-wrapper .ai-attach-btn,
-        .ai-prompt-wrapper .ai-mode-dropdown-inline,
-        .ai-prompt-wrapper .ai-send-btn {
+        .ai-prompt-icons-row .ai-attach-btn,
+        .ai-prompt-icons-row .ai-mode-dropdown-inline,
+        .ai-prompt-icons-row .ai-enhance-btn,
+        .ai-prompt-icons-row .ai-mic-btn,
+        .ai-prompt-icons-row .ai-send-btn {
             flex-shrink: 0;
-            align-self: flex-start;
-            margin-top: 1px;
         }
         
-        .ai-prompt-wrapper .ai-prompt-input {
-            flex: 1;
+        /* Textarea full width di extra small */
+        .ai-prompt-input-row .ai-prompt-input {
+            width: 100%;
             min-width: 0;
             max-width: 100%;
-            align-self: stretch;
+            margin: 0;
         }
         
-        /* Input buttons - Sedikit lebih kecil */
+        /* Input buttons - Tetap cukup besar untuk touch */
         .ai-attach-btn,
-        .ai-send-btn {
-            width: 36px;
-            height: 36px;
-            min-width: 36px;
-            font-size: 17px;
+        .ai-enhance-btn,
+        .ai-mic-btn {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            font-size: 19px;
         }
         
-        /* Mode dropdown - Lebih compact */
+        .ai-send-btn {
+            width: 42px;
+            height: 42px;
+            min-width: 42px;
+            font-size: 18px;
+        }
+        
+        /* Mode dropdown - Compact untuk extra small, hanya Auto */
         .ai-mode-dropdown-btn {
-            padding: 6px 8px;
-            font-size: 11px;
+            padding: 8px 10px;
+            font-size: 12px;
             max-width: 70px;
             overflow: hidden;
+            gap: 3px;
+        }
+        
+        /* Sembunyikan icon search dan teks "Riset Mendalam" di extra small */
+        .ai-mode-dropdown-btn i:first-child {
+            display: none;
         }
         
         .ai-mode-dropdown-btn .ai-mode-dropdown-text {
-            max-width: 40px;
+            display: none !important;
+        }
+        
+        /* Tampilkan hanya "Auto" di extra small */
+        .ai-mode-dropdown-btn .ai-mode-auto-text {
+            display: inline-block !important;
+            font-size: 12px;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        
+        .ai-mode-dropdown-btn .ai-mode-dropdown-icon {
+            font-size: 10px;
+            margin-left: 2px;
         }
         
         /* Prompt input */
@@ -3805,9 +3983,9 @@
             min-height: 24px;
         }
         
-        /* Input area - Padding lebih kecil */
+        /* Input area - Tetap luas dengan padding yang cukup */
         .ai-input-area {
-            padding: 10px 8px;
+            padding: 16px 12px;
         }
         
         /* Quality indicator - Tetap vertikal */
@@ -3938,54 +4116,78 @@
                 </div>
             </div>
 
-            <!-- Prompt Input - ChatGPT Style -->
+            <!-- Prompt Input - Layout Vertikal: Input di atas, Icon di bawah -->
             <div class="ai-prompt-wrapper" id="promptWrapper">
-                <button type="button" id="attachBtn" class="ai-attach-btn" title="Lampirkan file">
-                    <i class="bi bi-paperclip"></i>
-                </button>
-                
-                <!-- Mode Selection Dropdown (inside input) -->
-                <div class="ai-mode-dropdown-inline" id="modeDropdownInline">
-                    <button type="button" class="ai-mode-dropdown-btn" id="modeDropdownBtn" title="Pilih Mode">
-                        <span class="ai-mode-dropdown-text" id="modeDropdownText">Auto</span>
-                        <i class="ai-mode-dropdown-icon bi bi-sliders"></i>
-                    </button>
-                    <div class="ai-mode-dropdown-menu" id="modeDropdownMenu">
-                        <div class="ai-mode-dropdown-item active" data-mode="" data-label="Auto">
-                            <i class="bi bi-magic"></i>
-                            <span>Auto</span>
-                        </div>
-                        <div class="ai-mode-dropdown-item" data-mode="image_generate" data-label="Gambar">
-                            <i class="bi bi-image"></i>
-                            <span>Gambar</span>
-                        </div>
-                        <div class="ai-mode-dropdown-item" data-mode="image_edit" data-label="Edit">
-                            <i class="bi bi-pencil"></i>
-                            <span>Edit</span>
-                        </div>
-                        <div class="ai-mode-dropdown-item" data-mode="image_to_video" data-label="G→V">
-                            <i class="bi bi-camera-video"></i>
-                            <span>G→V</span>
-                        </div>
-                        <div class="ai-mode-dropdown-item" data-mode="video_generate" data-label="Video">
-                            <i class="bi bi-camera-reels"></i>
-                            <span>Video</span>
-                        </div>
-                        <div class="ai-mode-dropdown-item" data-mode="music_generate" data-label="Musik">
-                            <i class="bi bi-music-note-beamed"></i>
-                            <span>Musik</span>
-                        </div>
-                        <div class="ai-mode-dropdown-item" data-mode="video_face_swap" data-label="Video Face Swap">
-                            <i class="bi bi-person-badge"></i>
-                            <span>Video Face Swap</span>
-                        </div>
-                    </div>
+                <!-- Baris 1: Text Input (Full Width) -->
+                <div class="ai-prompt-input-row">
+                    <textarea id="aiPrompt" class="ai-prompt-input" rows="1" placeholder="Tanya apa saja ke Supa (tekan enter untuk mengirim)"></textarea>
                 </div>
                 
-                <textarea id="aiPrompt" class="ai-prompt-input" rows="1" placeholder="Ketik ide atau perintah AI di sini…"></textarea>
-                <button type="button" id="runBtn" class="ai-send-btn" title="Kirim">
-                    <i class="bi bi-send"></i>
-                </button>
+                <!-- Baris 2: Icon Baris (Plus, Auto, Enhance, Mic, Send) -->
+                <div class="ai-prompt-icons-row">
+                    <!-- Plus Button (Attach) -->
+                    <button type="button" id="attachBtn" class="ai-attach-btn" title="Lampirkan file">
+                        <i class="bi bi-plus-lg"></i>
+                    </button>
+                    
+                    <!-- Mode Selection Dropdown -->
+                    <div class="ai-mode-dropdown-inline" id="modeDropdownInline">
+                        <button type="button" class="ai-mode-dropdown-btn" id="modeDropdownBtn" title="Pilih Mode">
+                            <i class="bi bi-search"></i>
+                            <span class="ai-mode-dropdown-text" id="modeDropdownText">Riset Mendalam</span>
+                            <span class="ai-mode-auto-text">Auto</span>
+                            <i class="ai-mode-dropdown-icon bi bi-chevron-down"></i>
+                        </button>
+                        <div class="ai-mode-dropdown-menu" id="modeDropdownMenu">
+                            <div class="ai-mode-dropdown-item active" data-mode="" data-label="Auto">
+                                <i class="bi bi-magic"></i>
+                                <span>Auto</span>
+                            </div>
+                            <div class="ai-mode-dropdown-item" data-mode="image_generate" data-label="Gambar">
+                                <i class="bi bi-image"></i>
+                                <span>Gambar</span>
+                            </div>
+                            <div class="ai-mode-dropdown-item" data-mode="image_edit" data-label="Edit">
+                                <i class="bi bi-pencil"></i>
+                                <span>Edit</span>
+                            </div>
+                            <div class="ai-mode-dropdown-item" data-mode="image_to_video" data-label="G→V">
+                                <i class="bi bi-camera-video"></i>
+                                <span>G→V</span>
+                            </div>
+                            <div class="ai-mode-dropdown-item" data-mode="video_generate" data-label="Video">
+                                <i class="bi bi-camera-reels"></i>
+                                <span>Video</span>
+                            </div>
+                            <div class="ai-mode-dropdown-item" data-mode="music_generate" data-label="Musik">
+                                <i class="bi bi-music-note-beamed"></i>
+                                <span>Musik</span>
+                            </div>
+                            <div class="ai-mode-dropdown-item" data-mode="video_face_swap" data-label="Video Face Swap">
+                                <i class="bi bi-person-badge"></i>
+                                <span>Video Face Swap</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Spacer untuk push tombol ke kanan -->
+                    <div class="ai-icons-spacer"></div>
+                    
+                    <!-- Enhance Button (Sparkle) -->
+                    <button type="button" id="enhanceBtnInline" class="ai-enhance-btn" title="Enhance prompt">
+                        <i class="bi bi-stars"></i>
+                    </button>
+                    
+                    <!-- Microphone Button -->
+                    <button type="button" id="micBtn" class="ai-mic-btn" title="Voice input">
+                        <i class="bi bi-mic-fill"></i>
+                    </button>
+                    
+                    <!-- Send Button -->
+                    <button type="button" id="runBtn" class="ai-send-btn" title="Kirim">
+                        <i class="bi bi-arrow-up"></i>
+                    </button>
+                </div>
             </div>
             
             <!-- Mode Chips (hidden, kept for compatibility) -->
@@ -4280,6 +4482,8 @@
         const qualityFill = document.getElementById('qualityFill');
         const qualityScoreText = document.getElementById('qualityScore');
         const enhanceBtn = document.getElementById('enhanceBtn');
+        const enhanceBtnInline = document.getElementById('enhanceBtnInline');
+        const micBtn = document.getElementById('micBtn');
         const contextualSuggestions = document.getElementById('contextualSuggestions');
         const errorPredictions = document.getElementById('errorPredictions');
         
@@ -4319,12 +4523,39 @@
             
             // Update inline dropdown
             const modeDropdownText = document.getElementById('modeDropdownText');
+            const modeAutoText = document.querySelector('.ai-mode-auto-text');
             const modeDropdownItems = document.querySelectorAll('.ai-mode-dropdown-item');
+            
+            // Check if mobile (screen width <= 768px)
+            const isMobile = window.innerWidth <= 768;
+            
             if (modeDropdownItems.length > 0) {
                 modeDropdownItems.forEach(item => {
                     item.classList.toggle('active', item.dataset.mode === mode);
-                    if (item.dataset.mode === mode && modeDropdownText) {
-                        modeDropdownText.textContent = item.dataset.label || 'Auto';
+                    if (item.dataset.mode === mode) {
+                        const label = item.dataset.label || 'Auto';
+                        if (modeDropdownText && modeAutoText) {
+                            if (isMobile) {
+                                // Di mobile: hanya tampilkan "Auto" atau label singkat
+                                if (mode === '' || mode === 'auto') {
+                                    modeDropdownText.textContent = '';
+                                    modeAutoText.textContent = 'Auto';
+                                } else {
+                                    // Untuk mode lain, tampilkan label singkat di "Auto"
+                                    modeDropdownText.textContent = '';
+                                    modeAutoText.textContent = label;
+                                }
+                            } else {
+                                // Di desktop: tampilkan "Riset Mendalam Auto" atau label lengkap
+                                if (mode === '' || mode === 'auto') {
+                                    modeDropdownText.textContent = 'Riset Mendalam';
+                                    modeAutoText.textContent = 'Auto';
+                                } else {
+                                    modeDropdownText.textContent = label;
+                                    modeAutoText.textContent = '';
+                                }
+                            }
+                        }
                     }
                 });
             }
@@ -4521,6 +4752,12 @@
                     modeDropdownMenu.style.top = `${finalTop}px`;
                     modeDropdownMenu.style.left = `${finalLeft}px`;
                     modeDropdownMenu.style.position = 'fixed';
+                }
+                
+                // Update mode indicators on resize untuk memastikan tampilan mobile/desktop konsisten
+                if (modeSelect) {
+                    const currentMode = modeSelect.value || '';
+                    updateModeIndicators(currentMode);
                 }
             });
         }
@@ -5036,54 +5273,189 @@
             }
         }
 
-        // Enhance Prompt Button
+        // Enhance Prompt Function
+        async function enhancePrompt(buttonElement) {
+            if (!promptInput) return;
+            const prompt = promptInput.value.trim();
+            if (!prompt) {
+                if (window.showToast) {
+                    window.showToast('Silakan ketik prompt terlebih dahulu', 'error');
+                }
+                return;
+            }
+            
+            const originalHTML = buttonElement.innerHTML;
+            buttonElement.classList.add('loading');
+            buttonElement.disabled = true;
+            buttonElement.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+            
+            try {
+                const mode = modeSelect ? modeSelect.value : '';
+                const hasImage = attachments.length > 0 && attachments.some(a => a.type === 'image');
+                
+                const res = await fetch('/api/ai_generate/enhance-prompt', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        mode: mode,
+                        has_image: hasImage
+                    })
+                });
+                
+                const data = await res.json();
+                
+                if (data.success && data.enhanced) {
+                    promptInput.value = data.enhanced;
+                    autoResizeTextarea();
+                    analyzePromptQuality();
+                    
+                    // Show toast
+                    if (window.showToast) {
+                        window.showToast('Prompt berhasil di-enhance!', 'success');
+                    }
+                }
+            } catch (error) {
+                console.error('Enhance error:', error);
+                if (window.showToast) {
+                    window.showToast('Gagal enhance prompt', 'error');
+                }
+            } finally {
+                buttonElement.classList.remove('loading');
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = originalHTML;
+            }
+        }
+
+        // Enhance Prompt Button (Original)
         if (enhanceBtn && promptInput) {
-            enhanceBtn.addEventListener('click', async () => {
-                const prompt = promptInput.value.trim();
-                if (!prompt) return;
+            enhanceBtn.addEventListener('click', () => enhancePrompt(enhanceBtn));
+        }
+
+        // Enhance Prompt Button (Inline)
+        if (enhanceBtnInline && promptInput) {
+            enhanceBtnInline.addEventListener('click', () => enhancePrompt(enhanceBtnInline));
+        }
+
+        // Microphone Button (Voice Input) - Auto Send setelah selesai
+        let recognition = null;
+        let isRecording = false;
+        let voiceTranscript = ''; // Simpan transcript untuk auto send
+        
+        if (micBtn && promptInput && runBtn) {
+            // Check if browser supports Web Speech API
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = false;
+                recognition.lang = 'id-ID'; // Indonesian language
                 
-                enhanceBtn.classList.add('loading');
-                enhanceBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> <span>Enhancing...</span>';
+                recognition.onstart = () => {
+                    isRecording = true;
+                    voiceTranscript = ''; // Reset transcript
+                    micBtn.classList.add('recording');
+                    if (window.showToast) {
+                        window.showToast('Mendengarkan...', 'info');
+                    }
+                };
                 
-                try {
-                    const mode = modeSelect ? modeSelect.value : '';
-                    const hasImage = attachments.length > 0 && attachments.some(a => a.type === 'image');
+                recognition.onresult = (event) => {
+                    // Ambil transcript dari hasil (ambil yang terakhir jika ada multiple results)
+                    const result = event.results[event.results.length - 1];
+                    voiceTranscript = result[0].transcript;
                     
-                    const res = await fetch('/api/ai_generate/enhance-prompt', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        credentials: 'same-origin',
-                        body: JSON.stringify({
-                            prompt: prompt,
-                            mode: mode,
-                            has_image: hasImage
-                        })
-                    });
+                    // Update input dengan transcript (append ke yang sudah ada)
+                    const currentValue = promptInput.value.trim();
+                    promptInput.value = currentValue + (currentValue ? ' ' : '') + voiceTranscript;
+                    autoResizeTextarea();
                     
-                    const data = await res.json();
+                    // Trigger input event untuk update quality indicator
+                    promptInput.dispatchEvent(new Event('input', { bubbles: true }));
+                };
+                
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error:', event.error);
+                    isRecording = false;
+                    micBtn.classList.remove('recording');
+                    voiceTranscript = ''; // Reset transcript on error
                     
-                    if (data.success && data.enhanced) {
-                        promptInput.value = data.enhanced;
-                        autoResizeTextarea();
-                        analyzePromptQuality();
-                        
-                        // Show toast
+                    // Jangan tampilkan error untuk "no-speech" karena user mungkin hanya klik tanpa bicara
+                    if (event.error !== 'no-speech' && event.error !== 'aborted') {
                         if (window.showToast) {
-                            window.showToast('Prompt berhasil di-enhance!', 'success');
+                            const errorMessages = {
+                                'network': 'Koneksi jaringan bermasalah',
+                                'not-allowed': 'Izin microphone tidak diberikan',
+                                'service-not-allowed': 'Layanan speech recognition tidak tersedia'
+                            };
+                            const message = errorMessages[event.error] || 'Error: ' + event.error;
+                            window.showToast(message, 'error');
                         }
                     }
-                } catch (error) {
-                    console.error('Enhance error:', error);
-                    if (window.showToast) {
-                        window.showToast('Gagal enhance prompt', 'error');
+                };
+                
+                recognition.onend = () => {
+                    isRecording = false;
+                    micBtn.classList.remove('recording');
+                    
+                    // Auto send jika ada transcript yang valid
+                    if (voiceTranscript && voiceTranscript.trim() && promptInput) {
+                        // Pastikan transcript sudah di-set ke input
+                        const currentValue = promptInput.value.trim();
+                        if (!currentValue.includes(voiceTranscript.trim())) {
+                            // Jika transcript belum ada di input, tambahkan
+                            promptInput.value = currentValue + (currentValue ? ' ' : '') + voiceTranscript;
+                            autoResizeTextarea();
+                        }
+                        
+                        // Tunggu sebentar untuk memastikan UI update dan user melihat transcript
+                        setTimeout(() => {
+                            // Trigger click pada send button untuk auto send
+                            if (runBtn && !runBtn.disabled && promptInput.value.trim()) {
+                                // Show toast bahwa akan auto send
+                                if (window.showToast) {
+                                    window.showToast('Mengirim prompt...', 'info');
+                                }
+                                runBtn.click();
+                            }
+                        }, 500); // Delay sedikit lebih lama untuk UX yang lebih baik
+                    } else {
+                        // Jika tidak ada transcript, reset
+                        voiceTranscript = '';
                     }
-                } finally {
-                    enhanceBtn.classList.remove('loading');
-                    enhanceBtn.innerHTML = '<i class="bi bi-magic"></i> <span>Enhance</span>';
-                }
-            });
+                };
+                
+                micBtn.addEventListener('click', () => {
+                    if (isRecording) {
+                        // Stop recording
+                        recognition.stop();
+                    } else {
+                        try {
+                            // Clear previous transcript
+                            voiceTranscript = '';
+                            recognition.start();
+                        } catch (error) {
+                            console.error('Failed to start recognition:', error);
+                            if (window.showToast) {
+                                window.showToast('Voice input tidak tersedia', 'error');
+                            }
+                        }
+                    }
+                });
+            } else {
+                // Browser doesn't support speech recognition
+                micBtn.style.opacity = '0.5';
+                micBtn.style.cursor = 'not-allowed';
+                micBtn.title = 'Voice input tidak didukung di browser ini';
+                micBtn.addEventListener('click', () => {
+                    if (window.showToast) {
+                        window.showToast('Voice input tidak didukung di browser ini', 'error');
+                    }
+                });
+            }
         }
 
         // Load Contextual Suggestions
