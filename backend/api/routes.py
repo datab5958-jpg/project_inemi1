@@ -1470,22 +1470,42 @@ def api_gallery_infinite():
     
 
     
-    from models import Image, Video, Song, User, Like, Comment, VideoIklan
+    from models import Image, Video, Song, User, Like, Comment, VideoIklan, ModerationAction
     
-    # Calculate offset
-    offset = (page - 1) * per_page
+    # Helper function to check if content is deactivated (same as in routes.py)
+    def is_deactivated(content_type: str, content_id: str, obj=None) -> bool:
+        if obj is not None and hasattr(obj, 'is_active') and obj.is_active is not None:
+            return not bool(obj.is_active)
+        action = ModerationAction.query.filter_by(content_type=content_type, content_id=content_id, action='deactivate').first()
+        return bool(action and action.active)
+    
+    # Calculate offset - but we need to account for filtering
+    # Since we filter after querying, we'll query more items to compensate
+    # Use a larger multiplier for offset to account for filtered items
+    query_multiplier = 3  # Query 3x more to account for filtering
+    # Increase offset multiplier to skip more items (accounting for filtered ones)
+    offset_multiplier = 2  # Skip 2x more to account for filtered items
+    offset = (page - 1) * per_page * offset_multiplier
+    query_limit = per_page * query_multiplier
+    
+    print(f"📊 API Infinite Scroll - Page {page}, Offset: {offset}, Query Limit: {query_limit}, Type: {content_type}")
     
     all_media = []
     
     try:
         if content_type == 'all':
-            # For 'all' type, we need to get items from all types and then sort
-            # Get items from each type with larger limit to ensure we have enough after sorting
-            items_per_type = per_page // 2  # Get more items per type to ensure variety
+            # For 'all' type, we need balanced distribution: ~7 images, ~7 videos, ~6 music per page
+            # Calculate items per type for balanced distribution
+            items_per_type = 7  # ~7 items per type for balanced mix
             
-            # Get images
-            images = Image.query.order_by(Image.created_at.desc()).offset(offset).limit(items_per_type).all()
+            # Get images (skip already loaded items using offset)
+            images = Image.query.order_by(Image.created_at.desc()).offset(offset).limit(items_per_type * 2).all()
             for img in images:
+                # Apply same filters as main route
+                if is_deactivated('image', str(img.id), img):
+                    continue
+                if not img.image_url or (isinstance(img.image_url, str) and img.image_url.strip() == ''):
+                    continue
                 likes_count = Like.query.filter_by(content_type='image', content_id=str(img.id)).count()
                 comments_count = Comment.query.filter_by(content_type='image', content_id=str(img.id)).count()
                 user = User.query.get(img.user_id)
@@ -1504,9 +1524,14 @@ def api_gallery_infinite():
                     'comments_count': comments_count
                 })
             
-            # Get videos
-            videos = Video.query.order_by(Video.created_at.desc()).offset(offset).limit(items_per_type).all()
+            # Get videos (skip already loaded items using offset)
+            videos = Video.query.order_by(Video.created_at.desc()).offset(offset).limit(items_per_type * 2).all()
             for vid in videos:
+                # Apply same filters as main route
+                if is_deactivated('video', str(vid.id), vid):
+                    continue
+                if not vid.video_url or (isinstance(vid.video_url, str) and vid.video_url.strip() == ''):
+                    continue
                 likes_count = Like.query.filter_by(content_type='video', content_id=str(vid.id)).count()
                 comments_count = Comment.query.filter_by(content_type='video', content_id=str(vid.id)).count()
                 user = User.query.get(vid.user_id)
@@ -1525,9 +1550,14 @@ def api_gallery_infinite():
                     'comments_count': comments_count
                 })
             
-            # Get video_iklan
-            videos_iklan = VideoIklan.query.order_by(VideoIklan.created_at.desc()).offset(offset).limit(items_per_type).all()
+            # Get video_iklan (skip already loaded items using offset)
+            videos_iklan = VideoIklan.query.order_by(VideoIklan.created_at.desc()).offset(offset).limit(items_per_type * 2).all()
             for vid in videos_iklan:
+                # Apply same filters as main route
+                if is_deactivated('video_iklan', str(vid.id), vid):
+                    continue
+                if not vid.video_url or (isinstance(vid.video_url, str) and vid.video_url.strip() == ''):
+                    continue
                 likes_count = Like.query.filter_by(content_type='video_iklan', content_id=str(vid.id)).count()
                 comments_count = Comment.query.filter_by(content_type='video_iklan', content_id=str(vid.id)).count()
                 user = User.query.get(vid.user_id)
@@ -1546,9 +1576,14 @@ def api_gallery_infinite():
                     'comments_count': comments_count
                 })
             
-            # Get songs
-            songs = Song.query.order_by(Song.created_at.desc()).offset(offset).limit(items_per_type).all()
+            # Get songs (skip already loaded items using offset)
+            songs = Song.query.order_by(Song.created_at.desc()).offset(offset).limit(items_per_type * 2).all()
             for song in songs:
+                # Apply same filters as main route
+                if is_deactivated('song', str(song.id), song):
+                    continue
+                if not song.audio_url or (isinstance(song.audio_url, str) and song.audio_url.strip() == ''):
+                    continue
                 likes_count = Like.query.filter_by(content_type='song', content_id=song.id).count()
                 comments_count = Comment.query.filter_by(content_type='song', content_id=song.id).count()
                 user = User.query.get(song.user_id)
@@ -1571,8 +1606,13 @@ def api_gallery_infinite():
         else:
             # For specific content types, use normal pagination
             if content_type == 'image':
-                images = Image.query.order_by(Image.created_at.desc()).offset(offset).limit(per_page).all()
+                images = Image.query.order_by(Image.created_at.desc()).offset(offset).limit(query_limit).all()
                 for img in images:
+                    # Apply same filters as main route
+                    if is_deactivated('image', str(img.id), img):
+                        continue
+                    if not img.image_url or (isinstance(img.image_url, str) and img.image_url.strip() == ''):
+                        continue
                     likes_count = Like.query.filter_by(content_type='image', content_id=str(img.id)).count()
                     comments_count = Comment.query.filter_by(content_type='image', content_id=str(img.id)).count()
                     user = User.query.get(img.user_id)
@@ -1592,8 +1632,13 @@ def api_gallery_infinite():
                     })
             
             elif content_type == 'video':
-                videos = Video.query.order_by(Video.created_at.desc()).offset(offset).limit(per_page).all()
+                videos = Video.query.order_by(Video.created_at.desc()).offset(offset).limit(query_limit).all()
                 for vid in videos:
+                    # Apply same filters as main route
+                    if is_deactivated('video', str(vid.id), vid):
+                        continue
+                    if not vid.video_url or (isinstance(vid.video_url, str) and vid.video_url.strip() == ''):
+                        continue
                     likes_count = Like.query.filter_by(content_type='video', content_id=str(vid.id)).count()
                     comments_count = Comment.query.filter_by(content_type='video', content_id=str(vid.id)).count()
                     user = User.query.get(vid.user_id)
@@ -1613,8 +1658,13 @@ def api_gallery_infinite():
                     })
             
             elif content_type == 'video_iklan':
-                videos_iklan = VideoIklan.query.order_by(VideoIklan.created_at.desc()).offset(offset).limit(per_page).all()
+                videos_iklan = VideoIklan.query.order_by(VideoIklan.created_at.desc()).offset(offset).limit(query_limit).all()
                 for vid in videos_iklan:
+                    # Apply same filters as main route
+                    if is_deactivated('video_iklan', str(vid.id), vid):
+                        continue
+                    if not vid.video_url or (isinstance(vid.video_url, str) and vid.video_url.strip() == ''):
+                        continue
                     likes_count = Like.query.filter_by(content_type='video_iklan', content_id=str(vid.id)).count()
                     comments_count = Comment.query.filter_by(content_type='video_iklan', content_id=str(vid.id)).count()
                     user = User.query.get(vid.user_id)
@@ -1634,8 +1684,13 @@ def api_gallery_infinite():
                     })
             
             elif content_type == 'music':
-                songs = Song.query.order_by(Song.created_at.desc()).offset(offset).limit(per_page).all()
+                songs = Song.query.order_by(Song.created_at.desc()).offset(offset).limit(query_limit).all()
                 for song in songs:
+                    # Apply same filters as main route
+                    if is_deactivated('song', str(song.id), song):
+                        continue
+                    if not song.audio_url or (isinstance(song.audio_url, str) and song.audio_url.strip() == ''):
+                        continue
                     likes_count = Like.query.filter_by(content_type='song', content_id=song.id).count()
                     comments_count = Comment.query.filter_by(content_type='song', content_id=song.id).count()
                     user = User.query.get(song.user_id)
@@ -1660,11 +1715,58 @@ def api_gallery_infinite():
         print(f"Error in api_gallery_infinite: {str(e)}")
         return jsonify({'error': f'Internal server error: {str(e)}'}), 500
     
-    # Sort all items by created_at desc to ensure newest first
-    all_media.sort(key=lambda x: x['created_at'], reverse=True)
+    # Separate by type for balanced distribution
+    images_list = [item for item in all_media if item['type'] == 'image']
+    videos_list = [item for item in all_media if item['type'] == 'video']
+    videos_iklan_list = [item for item in all_media if item['type'] == 'video_iklan']
+    music_list = [item for item in all_media if item['type'] == 'music']
+    
+    # Calculate balanced distribution: ~7 images, ~7 videos, ~6 music per page
+    items_per_type = 7
+    total_target = per_page
+    
+    # Take items from each type (already sorted by created_at desc)
+    selected_images = images_list[:items_per_type]
+    selected_videos = videos_list[:items_per_type]
+    selected_videos_iklan = videos_iklan_list[:items_per_type]
+    selected_music = music_list[:min(items_per_type, len(music_list))]
+    
+    # Combine videos and video_iklan
+    selected_videos_all = selected_videos + selected_videos_iklan
+    
+    # Combine and sort by created_at to maintain chronological order
+    balanced_items = selected_images + selected_videos_all + selected_music
+    balanced_items.sort(key=lambda x: x['created_at'], reverse=True)
+    
+    # If we have less than per_page items, fill with remaining items from all types
+    if len(balanced_items) < total_target:
+        remaining = []
+        remaining.extend(images_list[items_per_type:])
+        remaining.extend(videos_list[items_per_type:])
+        remaining.extend(videos_iklan_list[items_per_type:])
+        remaining.extend(music_list[items_per_type:])
+        remaining.sort(key=lambda x: x['created_at'], reverse=True)
+        
+        # Add remaining items up to per_page total
+        needed = total_target - len(balanced_items)
+        balanced_items.extend(remaining[:needed])
+        balanced_items.sort(key=lambda x: x['created_at'], reverse=True)
+    
+    # Limit to exactly per_page items
+    all_media = balanced_items[:total_target]
+    
+    # Count types after balancing
+    types_after = {'image': 0, 'video': 0, 'video_iklan': 0, 'music': 0}
+    for item in all_media:
+        item_type = item.get('type', 'unknown')
+        if item_type in types_after:
+            types_after[item_type] += 1
+    
+    print(f"📦 API Response - Page {page}: {len(all_media)} items (Balanced: Images: {types_after['image']}, Videos: {types_after['video']}, Video Iklan: {types_after['video_iklan']}, Music: {types_after['music']})")
     
     # Check if there are more items by querying the next page
-    next_offset = offset + per_page
+    # Use a larger offset to check for more items
+    next_offset = offset + (per_page * offset_multiplier)
     has_more = False
     
     if content_type == 'all':
