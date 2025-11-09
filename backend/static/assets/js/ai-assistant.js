@@ -136,19 +136,91 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!userMsg) return;
     addMessage({text: userMsg, from: 'user'});
     input.value = '';
+    
+    // Disable form while processing
+    const sendBtn = document.getElementById('ai-send-btn');
+    const originalBtnContent = sendBtn.innerHTML;
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid #fff;border-top-color:transparent;border-radius:50%;animation:spin 0.6s linear infinite;"></span>';
+    
     // Kirim ke backend
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
+        credentials: 'same-origin',
         body: JSON.stringify({message: userMsg})
       });
+      
+      // Check response status
+      if (!res.ok) {
+        let errorMsg = 'Gagal terhubung ke server.';
+        try {
+          const errorData = await res.json();
+          if (errorData.error) {
+            errorMsg = errorData.error;
+          } else if (res.status === 401) {
+            errorMsg = 'Sesi Anda telah berakhir. Silakan login ulang.';
+          } else if (res.status === 500) {
+            errorMsg = 'Terjadi kesalahan pada server. Silakan coba lagi.';
+          }
+        } catch (parseErr) {
+          if (res.status === 401) {
+            errorMsg = 'Sesi Anda telah berakhir. Silakan login ulang.';
+          } else if (res.status === 500) {
+            errorMsg = 'Terjadi kesalahan pada server. Silakan coba lagi.';
+          }
+        }
+        addMessage({text: errorMsg, from: 'ai'});
+        return;
+      }
+      
+      // Parse JSON response
       const data = await res.json();
-      addMessage({text: data.response, from: 'ai'});
+      
+      // Check if response has success flag
+      if (data.success === false) {
+        addMessage({text: data.error || 'Terjadi kesalahan saat memproses pesan.', from: 'ai'});
+        return;
+      }
+      
+      // Check if response has response field
+      if (data.response) {
+        addMessage({text: data.response, from: 'ai'});
+      } else if (data.error) {
+        addMessage({text: data.error, from: 'ai'});
+      } else {
+        addMessage({text: 'Terjadi kesalahan: Response tidak valid.', from: 'ai'});
+      }
     } catch (err) {
-      addMessage({text: 'Gagal terhubung ke server.', from: 'ai'});
+      console.error('AI Assistant Error:', err);
+      let errorMsg = 'Gagal terhubung ke server.';
+      if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+        errorMsg = 'Gagal terhubung ke server. Silakan cek koneksi internet Anda.';
+      } else if (err.message.includes('JSON')) {
+        errorMsg = 'Terjadi kesalahan saat memproses response dari server.';
+      } else {
+        errorMsg = 'Terjadi kesalahan: ' + err.message;
+      }
+      addMessage({text: errorMsg, from: 'ai'});
+    } finally {
+      // Re-enable form
+      sendBtn.disabled = false;
+      sendBtn.innerHTML = originalBtnContent;
     }
   };
+  
+  // Add spinner animation CSS
+  if (!document.getElementById('ai-assistant-spinner-style')) {
+    const style = document.createElement('style');
+    style.id = 'ai-assistant-spinner-style';
+    style.textContent = `
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
 
   const voiceBtn = document.getElementById('ai-voice-btn');
   const voiceIcon = document.getElementById('ai-voice-icon');

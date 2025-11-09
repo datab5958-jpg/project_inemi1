@@ -210,8 +210,8 @@ def create_app():
         print(f"ERROR: Failed to register landing_content_bp: {e}")
     
     try:
-        app.register_blueprint(api_routes)
-        print("SUCCESS: api_routes blueprint registered")
+        app.register_blueprint(api_routes, url_prefix='/api')
+        print("SUCCESS: api_routes blueprint registered with /api prefix")
     except Exception as e:
         print(f"ERROR: Failed to register api_routes: {e}")
     

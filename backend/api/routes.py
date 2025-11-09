@@ -219,22 +219,44 @@ def chat_api():
     # Cek session user
     session_user_id = session.get('user_id')
     if not session_user_id:
-        return jsonify({'error': 'User belum login'}), 401
+        return jsonify({'success': False, 'error': 'User belum login'}), 401
+    
+    # Cek apakah Gemini API key sudah dikonfigurasi
+    if not GEMINI_API_KEY or GEMINI_API_KEY == 'your-gemini-api-key':
+        return jsonify({'success': False, 'error': 'Gemini API tidak dikonfigurasi. Silakan hubungi administrator.'}), 500
     
     try:
         data = request.get_json()
-        message = data.get('message', '')
+        if not data:
+            return jsonify({'success': False, 'error': 'Request body tidak valid'}), 400
+        
+        message = data.get('message', '').strip()
         user_id = str(session_user_id)  # Gunakan session user_id
+        
         if not message:
-            return jsonify({'error': 'Message is required'}), 400
+            return jsonify({'success': False, 'error': 'Message tidak boleh kosong'}), 400
+        
+        # Initialize chat history jika belum ada
         if user_id not in chat_history:
             chat_history[user_id] = []
+        
+        # Add user message to history
         chat_history[user_id].append({'role': 'user', 'parts': [message]})
+        
+        # Get history for context (last 10 messages)
         history_for_gemini = chat_history[user_id][:-1]
+        if len(history_for_gemini) > 10:
+            history_for_gemini = history_for_gemini[-10:]
+        
+        # Start chat with history
         chat = text_model.start_chat(history=history_for_gemini)
+        
         # Tambahkan instruksi bahasa Indonesia
         prompt_id = f"Jawab selalu dalam bahasa Indonesia. {message}"
+        
+        # Send message to Gemini
         response = chat.send_message(prompt_id)
+        
         # FILTER MARKDOWN DAN RAPIKAN TAMPILAN
         import re
         def bersihkan_markdown(teks):
@@ -260,13 +282,40 @@ def chat_api():
             # Bersihkan spasi berlebih
             teks = re.sub(r'[ \t]+$', '', teks, flags=re.MULTILINE)
             return teks.strip()
+        
+        # Clean response text
+        if not response or not hasattr(response, 'text') or not response.text:
+            return jsonify({'success': False, 'error': 'Response dari Gemini kosong'}), 500
+        
         clean_response = bersihkan_markdown(response.text)
+        
+        # Add AI response to history
         chat_history[user_id].append({'role': 'model', 'parts': [clean_response]})
+        
+        # Limit history to last 10 messages
         if len(chat_history[user_id]) > 10:
             chat_history[user_id] = chat_history[user_id][-10:]
+        
         return jsonify({'success': True, 'response': clean_response, 'history': chat_history[user_id]})
+    
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"Error in /api/chat: {str(e)}")
+        print(f"Traceback: {error_trace}")
+        
+        # Provide more specific error messages
+        error_msg = str(e)
+        if 'API key' in error_msg or 'authentication' in error_msg.lower():
+            error_msg = 'API key Gemini tidak valid. Silakan hubungi administrator.'
+        elif 'quota' in error_msg.lower() or 'rate limit' in error_msg.lower():
+            error_msg = 'Quota Gemini API telah habis. Silakan coba lagi nanti.'
+        elif 'timeout' in error_msg.lower():
+            error_msg = 'Request timeout. Silakan coba lagi.'
+        elif 'network' in error_msg.lower() or 'connection' in error_msg.lower():
+            error_msg = 'Gagal terhubung ke Gemini API. Silakan cek koneksi internet.'
+        
+        return jsonify({'success': False, 'error': error_msg}), 500
 
 @api_routes.route('/generate-creative-content', methods=['POST'])
 def generate_creative_content():
