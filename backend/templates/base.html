@@ -251,56 +251,86 @@
         }
 
         .user-profile {
-            padding: 1rem;
+            padding: 1.25rem 1rem;
             display: flex;
-            align-items: center;
-            gap: 0.75rem;
+            align-items: flex-start;
+            gap: 0.875rem;
             border-bottom: 1px solid var(--border-color);
+            min-height: 80px;
         }
 
         .user-avatar {
-            width: 48px;
-            height: 48px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid transparent;
             background: var(--primary-gradient);
-            padding: 1px;
+            padding: 2px;
             box-shadow: var(--glow-primary);
+            flex-shrink: 0;
         }
 
         .user-info {
             flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
         }
 
         .user-name-row {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 0.5rem;
             width: 100%;
-            margin-bottom: 0.25rem;
+            min-width: 0;
+        }
+
+        .user-name-wrapper {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-name-text {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-primary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+            min-width: 0;
         }
 
         .user-actions {
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            flex-shrink: 0;
         }
 
         .logout-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 36px;
-            height: 36px;
-            background: rgba(255, 107, 107, 0.1);
-            border: 1px solid rgba(255, 107, 107, 0.3);
-            border-radius: 8px;
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            min-height: 38px;
+            background: rgba(255, 107, 107, 0.12);
+            border: 2px solid rgba(255, 107, 107, 0.35);
+            border-radius: 10px;
             color: #ff6b6b;
             text-decoration: none;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            flex-shrink: 0;
         }
 
         .logout-btn::before {
@@ -310,7 +340,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 107, 107, 0.25), transparent);
             transition: left 0.5s;
         }
 
@@ -319,39 +349,46 @@
         }
 
         .logout-btn:hover {
-            background: rgba(255, 107, 107, 0.2);
+            background: rgba(255, 107, 107, 0.25);
             border-color: #ff5252;
             color: #ff5252;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4);
+        }
+
+        .logout-btn:active {
+            transform: translateY(0) scale(1);
         }
 
         .logout-btn i {
-            font-size: 1rem;
+            font-size: 1.1rem;
             z-index: 1;
             position: relative;
         }
 
         .user-info h4 {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
             margin: 0;
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            flex: 1;
+            width: 100%;
+            min-width: 0;
         }
 
         .credits-badge {
             background: var(--success-gradient);
             color: var(--text-primary);
-            padding: 0.2rem 0.6rem;
+            padding: 0.25rem 0.65rem;
             border-radius: 16px;
             font-size: 0.65rem;
             font-weight: 600;
             display: inline-flex;
             align-items: center;
             gap: 0.2rem;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         .user-role {
@@ -754,19 +791,22 @@
         }
 
         .nav-menu {
-            padding: 1rem 0.75rem;
+            padding: 1.25rem 1rem;
             flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
         .nav-item {
-            margin-bottom: 0.4rem;
+            margin-bottom: 0;
         }
 
         .nav-link {
             display: flex;
             align-items: center;
             gap: 0.875rem;
-            padding: 0.875rem 1.125rem;
+            padding: 0.95rem 1.125rem;
             color: var(--text-secondary);
             text-decoration: none;
             border-radius: 12px;
@@ -776,6 +816,7 @@
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid transparent;
             backdrop-filter: blur(10px);
+            min-height: 48px;
         }
 
         .nav-link::before {
@@ -863,10 +904,10 @@
             align-items: center;
             gap: 0.75rem;
             margin-bottom: 1rem;
-            padding: 0.5rem 0.75rem;
-            background: rgba(76, 126, 255, 0.05);
+            padding: 0.625rem 0.875rem;
+            background: rgba(76, 126, 255, 0.06);
             border-radius: 10px;
-            border: 1px solid rgba(76, 126, 255, 0.1);
+            border: 1px solid rgba(76, 126, 255, 0.12);
         }
 
         .ai-tools-header i {
@@ -897,7 +938,7 @@
             display: flex;
             align-items: center;
             gap: 0.875rem;
-            padding: 0.75rem 1rem;
+            padding: 0.875rem 1rem;
             color: var(--text-secondary);
             text-decoration: none;
             border-radius: 10px;
@@ -907,6 +948,7 @@
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid transparent;
             backdrop-filter: blur(8px);
+            min-height: 44px;
         }
 
         .ai-tool-item::before {
@@ -970,48 +1012,61 @@
 
         /* Chat Section */
         .chat-section {
-            padding: 1rem;
-            border-top: 1px solid var(--border-color);
+            padding: 1.25rem 1rem;
+            border-top: 1px solid rgba(76, 126, 255, 0.15);
+            background: linear-gradient(180deg, transparent 0%, rgba(79, 172, 254, 0.02) 100%);
         }
 
         .chat-header {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            margin-bottom: 0.75rem;
-            padding: 0.5rem 0;
+            margin-bottom: 1rem;
+            padding: 0.625rem 0.875rem;
+            background: rgba(79, 172, 254, 0.06);
+            border-radius: 10px;
+            border: 1px solid rgba(79, 172, 254, 0.12);
         }
 
         .chat-header i {
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: var(--accent-color);
+            filter: drop-shadow(0 0 8px rgba(79, 172, 254, 0.5));
         }
 
         .chat-title {
-            font-size: 0.8rem;
-            font-weight: 600;
+            font-size: 0.85rem;
+            font-weight: 700;
             color: var(--text-primary);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, var(--accent-color), rgba(79, 172, 254, 0.9));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .chat-menu {
             display: flex;
             flex-direction: column;
-            gap: 0.4rem;
+            gap: 0.5rem;
         }
 
         .chat-item {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.6rem 0.8rem;
+            gap: 0.875rem;
+            padding: 0.875rem 1rem;
             color: var(--text-secondary);
             text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-            font-size: 0.8rem;
+            border-radius: 10px;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 0.85rem;
             position: relative;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid transparent;
+            backdrop-filter: blur(8px);
+            min-height: 44px;
             overflow: hidden;
         }
 
@@ -1717,9 +1772,16 @@
             display: flex !important;
             justify-content: space-between !important;
             align-items: center !important;
-            position: sticky !important;
-            top: 0 !important;
-            z-index: 10 !important;
+            position: relative !important;
+            overflow: visible !important;
+        }
+        
+        /* Ensure close button is visible and positioned correctly */
+        .mobile-navbar-header .btn-close {
+            position: fixed !important;
+            right: 24px !important;
+            top: 16px !important;
+            z-index: 99999 !important;
         }
 
         .mobile-navbar-logo {
@@ -2044,20 +2106,59 @@
                 inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
         }
 
-        /* Modal Close Button */
+        /* Modal Close Button - Styled like logout button */
         .mobile-navbar-modal .btn-close {
-            filter: invert(1) !important;
-            opacity: 0.7 !important;
-            transition: opacity 0.3s ease !important;
-            background: none !important;
-            border: none !important;
-            font-size: 1.5rem !important;
-            color: var(--text-primary) !important;
+            filter: none !important;
+            opacity: 1 !important;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            background: rgba(255, 107, 107, 0.12) !important;
+            border: 2px solid rgba(255, 107, 107, 0.35) !important;
+            border-radius: 10px !important;
+            color: #ff6b6b !important;
+            width: 38px !important;
+            height: 38px !important;
+            min-width: 38px !important;
+            min-height: 38px !important;
+            padding: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            position: fixed !important;
+            right: 32px !important;
+            top: 18px !important;
+            z-index: 99999 !important;
+            box-shadow: none !important;
+            backdrop-filter: none !important;
+            animation: none !important;
+            cursor: pointer !important;
+            background-image: none !important;
+        }
+        
+        .mobile-navbar-modal .btn-close::before {
+            content: '×' !important;
+            font-size: 1.3rem !important;
+            font-weight: 700 !important;
+            line-height: 1 !important;
+            color: #ff6b6b !important;
+            text-shadow: none !important;
+            display: block !important;
+        }
+        
+        /* Hide any default Bootstrap content */
+        .mobile-navbar-modal .btn-close > * {
+            display: none !important;
         }
 
         .mobile-navbar-modal .btn-close:hover {
-            opacity: 1 !important;
-            color: var(--text-primary) !important;
+            background: rgba(255, 107, 107, 0.25) !important;
+            border-color: #ff5252 !important;
+            color: #ff5252 !important;
+            transform: translateY(-2px) scale(1.05) !important;
+            box-shadow: 0 6px 16px rgba(255, 107, 107, 0.4) !important;
+        }
+
+        .mobile-navbar-modal .btn-close:active {
+            transform: translateY(0) scale(1) !important;
         }
 
         /* Responsive adjustments for mobile navbar modal */
@@ -2689,94 +2790,151 @@
             }
 
             .sidebar.open {
-                transform: translateX(0);
+                transform: translateX(0) !important;
                 box-shadow: 4px 0 40px rgba(76, 126, 255, 0.2);
+            }
+            
+            /* Ensure sidebar close button is always visible when sidebar is open */
+            .sidebar.open .sidebar-close-btn,
+            .sidebar.open #sidebarCloseBtn,
+            body .sidebar.open .sidebar-close-btn,
+            body .sidebar.open #sidebarCloseBtn {
+                display: flex !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                pointer-events: auto !important;
+                position: fixed !important;
+                right: 16px !important;
+                top: 16px !important;
+                z-index: 99999 !important;
+                width: 56px !important;
+                height: 56px !important;
             }
 
             /* Show close button on mobile */
             .sidebar-header { 
                 position: relative !important;
-                padding: 1.75rem 1.25rem 1.25rem !important;
+                padding: 1.5rem 1.25rem 1.25rem !important;
                 background: linear-gradient(180deg, rgba(76, 126, 255, 0.1) 0%, transparent 100%) !important;
                 min-height: 80px !important;
                 overflow: visible !important;
             }
             
-            /* Close button - Fixed position di pojok kanan atas layar */
+            /* Close button - Base styles */
             .sidebar-close-btn {
-                display: none !important;
                 position: fixed !important;
-                right: 20px !important;
-                top: 20px !important;
-                z-index: 10000 !important;
-                width: 60px !important;
-                height: 60px !important;
-                min-width: 60px !important;
-                min-height: 60px !important;
+                right: 16px !important;
+                top: 16px !important;
+                z-index: 99999 !important;
+                width: 56px !important;
+                height: 56px !important;
+                min-width: 56px !important;
+                min-height: 56px !important;
                 background: linear-gradient(135deg, #ff3333, #cc0000) !important;
-                border: 5px solid #ffffff !important;
-                border-radius: 20px !important;
+                border: 4px solid #ffffff !important;
+                border-radius: 16px !important;
                 transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1) !important;
                 box-shadow: 
-                    0 10px 40px rgba(255, 0, 0, 0.9),
-                    0 0 0 5px rgba(255, 255, 255, 0.6),
-                    0 0 30px rgba(255, 0, 0, 0.7),
-                    inset 0 3px 0 rgba(255, 255, 255, 0.5),
-                    inset 0 -3px 0 rgba(0, 0, 0, 0.4) !important;
-                backdrop-filter: blur(25px) !important;
+                    0 8px 32px rgba(255, 0, 0, 0.8),
+                    0 0 0 4px rgba(255, 255, 255, 0.5),
+                    0 0 24px rgba(255, 0, 0, 0.6),
+                    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+                    inset 0 -2px 0 rgba(0, 0, 0, 0.3) !important;
+                backdrop-filter: blur(20px) !important;
                 animation: pulseGlow 1.5s ease-in-out infinite !important;
-                opacity: 1 !important;
-                visibility: visible !important;
-                pointer-events: auto !important;
                 cursor: pointer !important;
                 transform: none !important;
-            }
-            
-            /* Muncul hanya saat sidebar open */
-            .sidebar.open .sidebar-close-btn {
-                display: flex !important;
-            }
-            
-            /* Sembunyi saat sidebar tidak open */
-            .sidebar:not(.open) .sidebar-close-btn {
                 display: none !important;
                 opacity: 0 !important;
                 visibility: hidden !important;
                 pointer-events: none !important;
             }
+            
+            /* Force show close button when sidebar is open on mobile */
+            @media (max-width: 1024px) {
+                /* Show when sidebar has open class - HIGHEST PRIORITY */
+                .sidebar.open .sidebar-close-btn,
+                .sidebar[class*="open"] .sidebar-close-btn,
+                body .sidebar.open .sidebar-close-btn,
+                html body .sidebar.open .sidebar-close-btn {
+                    display: flex !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    pointer-events: auto !important;
+                    position: fixed !important;
+                    right: 16px !important;
+                    top: 16px !important;
+                    z-index: 99999 !important;
+                }
+                
+                /* Show when sidebar is visible (not translated off-screen) */
+                .sidebar:not([style*="translateX(-100%)"]) .sidebar-close-btn,
+                .sidebar[style*="translateX(0)"] .sidebar-close-btn,
+                .sidebar[style*="transform: translateX(0)"] .sidebar-close-btn {
+                    display: flex !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    pointer-events: auto !important;
+                    position: fixed !important;
+                    right: 16px !important;
+                    top: 16px !important;
+                    z-index: 99999 !important;
+                }
+                
+                /* Always ensure positioning */
+                .sidebar .sidebar-close-btn {
+                    position: fixed !important;
+                    z-index: 99999 !important;
+                    right: 16px !important;
+                    top: 16px !important;
+                }
+            }
+            
+            /* Additional selector for Alpine.js reactive class */
+            [x-data] .sidebar.open .sidebar-close-btn,
+            html [x-data] .sidebar.open .sidebar-close-btn {
+                display: flex !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                pointer-events: auto !important;
+                position: fixed !important;
+                right: 16px !important;
+                top: 16px !important;
+                z-index: 99999 !important;
+            }
 
             @keyframes pulseGlow {
                 0%, 100% {
                     box-shadow: 
-                        0 10px 40px rgba(255, 0, 0, 0.9),
-                        0 0 0 5px rgba(255, 255, 255, 0.6),
-                        0 0 30px rgba(255, 0, 0, 0.7),
-                        inset 0 3px 0 rgba(255, 255, 255, 0.5),
-                        inset 0 -3px 0 rgba(0, 0, 0, 0.4);
+                        0 8px 32px rgba(255, 0, 0, 0.8),
+                        0 0 0 4px rgba(255, 255, 255, 0.5),
+                        0 0 24px rgba(255, 0, 0, 0.6),
+                        inset 0 2px 0 rgba(255, 255, 255, 0.4),
+                        inset 0 -2px 0 rgba(0, 0, 0, 0.3);
                     transform: scale(1);
                     border-color: #ffffff;
                 }
                 50% {
                     box-shadow: 
-                        0 14px 50px rgba(255, 0, 0, 1),
-                        0 0 0 7px rgba(255, 255, 255, 0.8),
-                        0 0 40px rgba(255, 0, 0, 1),
-                        inset 0 3px 0 rgba(255, 255, 255, 0.6),
-                        inset 0 -3px 0 rgba(0, 0, 0, 0.4);
-                    transform: scale(1.08);
+                        0 12px 40px rgba(255, 0, 0, 0.95),
+                        0 0 0 6px rgba(255, 255, 255, 0.7),
+                        0 0 32px rgba(255, 0, 0, 0.8),
+                        inset 0 2px 0 rgba(255, 255, 255, 0.5),
+                        inset 0 -2px 0 rgba(0, 0, 0, 0.3);
+                    transform: scale(1.06);
                     border-color: rgba(255, 255, 255, 0.9);
                 }
             }
 
             .sidebar-close-btn i {
-                font-size: 2rem !important;
+                font-size: 1.75rem !important;
                 color: #ffffff !important;
                 font-weight: 900 !important;
                 text-shadow: 
-                    0 4px 12px rgba(0, 0, 0, 0.8),
-                    0 0 20px rgba(255, 255, 255, 0.6),
-                    0 0 30px rgba(255, 255, 255, 0.4) !important;
-                filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9)) !important;
+                    0 3px 10px rgba(0, 0, 0, 0.7),
+                    0 0 16px rgba(255, 255, 255, 0.5),
+                    0 0 24px rgba(255, 255, 255, 0.3) !important;
+                filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8)) !important;
                 line-height: 1 !important;
                 display: flex !important;
                 align-items: center !important;
@@ -2789,13 +2947,13 @@
             .sidebar-close-btn:active {
                 background: linear-gradient(135deg, #ff0000, #cc0000) !important;
                 border-color: #ffffff !important;
-                transform: scale(1.15) rotate(90deg) !important;
+                transform: scale(1.12) rotate(90deg) !important;
                 box-shadow: 
-                    0 12px 40px rgba(255, 0, 0, 1),
-                    0 0 0 6px rgba(255, 255, 255, 0.8),
-                    0 0 30px rgba(255, 0, 0, 0.9),
-                    inset 0 2px 0 rgba(255, 255, 255, 0.5),
-                    inset 0 -2px 0 rgba(0, 0, 0, 0.4) !important;
+                    0 10px 36px rgba(255, 0, 0, 0.95),
+                    0 0 0 5px rgba(255, 255, 255, 0.7),
+                    0 0 28px rgba(255, 0, 0, 0.8),
+                    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+                    inset 0 -2px 0 rgba(0, 0, 0, 0.3) !important;
                 animation: none !important;
             }
 
@@ -2972,7 +3130,18 @@
 
         @media (max-width: 480px) {
             .user-profile {
-                padding: 0.75rem;
+                padding: 1rem 0.75rem;
+            }
+            
+            .user-name-text {
+                font-size: 0.9rem;
+            }
+            
+            .logout-btn {
+                width: 36px !important;
+                height: 36px !important;
+                min-width: 36px !important;
+                min-height: 36px !important;
             }
 
             .nav-menu {
@@ -3123,23 +3292,28 @@
                 <img src="/static/assets/image/logo.png" alt="INEMI Logo" class="logo-image">
                 <span class="logo-text">INEMI</span>
             </div>
-            <!-- Close Menu Button for Mobile -->
-            <button class="sidebar-close-btn" @click="sidebarOpen = false" title="Close Menu">
-                <i class="bi bi-x-lg"></i>
-            </button>
         </div>
+        
+        <!-- Close Menu Button for Mobile - Outside sidebar header -->
+        <button class="sidebar-close-btn" 
+                @click="sidebarOpen = false" 
+                onclick="const sidebar = this.closest('.sidebar'); if(sidebar) { sidebar.classList.remove('open'); } if(window.Alpine) { try { const root = document.querySelector('[x-data]'); if(root && root._x_dataStack) { root._x_dataStack[0].sidebarOpen = false; } } catch(e) {} }" 
+                title="Close Menu"
+                id="sidebarCloseBtn">
+            <i class="bi bi-x-lg"></i>
+        </button>
         
         <div class="user-profile">
             <img src="{{ session['avatar_url'] if session.get('avatar_url') else '/static/assets/image/default.jpg' }}" alt="User Avatar" class="user-avatar">
             <div class="user-info">
                 <div class="user-name-row">
-                    <h4>
-                        {{ session['username'] if session.get('username') else 'User' }}
+                    <div class="user-name-wrapper">
+                        <span class="user-name-text">{{ session['username'] if session.get('username') else 'User' }}</span>
                         <span class="credits-badge">
                             <i class="bi bi-currency-dollar" style="font-size:1.1em;margin-right:6px;color:#fff;font-weight:bold;"></i>
                             <span style="font-weight:700;">{{ current_user.kredit if current_user and current_user.kredit is not none else (session.get('kredit', 0) if session.get('kredit') is not none else 0) }}</span>
                         </span>
-                    </h4>
+                    </div>
                     <div class="user-actions">
                         <!-- Notification Bell next to user name -->
                         <div class="notification-bell-sidebar" id="notification-bell-sidebar">
@@ -3665,16 +3839,172 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
 
-            // Close sidebar when clicking outside on mobile
-            document.addEventListener('click', function(e) {
-                if (window.innerWidth <= 1024) {
-                    const sidebar = document.querySelector('.sidebar');
+            // Sidebar toggle functionality for mobile
+            function initSidebarToggle() {
+                const sidebar = document.querySelector('.sidebar');
+                const closeBtn = document.querySelector('.sidebar-close-btn') || document.getElementById('sidebarCloseBtn');
+                const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+                
+                if (!sidebar) {
+                    console.error('Sidebar not found!');
+                    return;
+                }
+                
+                if (!closeBtn) {
+                    console.error('Close button not found!');
+                    return;
+                }
+                
+                console.log('Initializing sidebar toggle:', { sidebar, closeBtn, mobileMenuBtn });
+                
+                // Function to show/hide close button based on sidebar state
+                function updateCloseButton() {
+                    if (window.innerWidth > 1024) {
+                        closeBtn.style.display = 'none';
+                        return;
+                    }
                     
-                    if (sidebar && !sidebar.contains(e.target)) {
-                        sidebar.classList.remove('open');
+                    const computedStyle = getComputedStyle(sidebar);
+                    const transform = computedStyle.transform;
+                    const hasOpenClass = sidebar.classList.contains('open');
+                    const isVisible = transform === 'none' || 
+                                     transform === 'matrix(1, 0, 0, 1, 0, 0)' ||
+                                     transform.includes('matrix(1, 0, 0, 1, 0') ||
+                                     sidebar.style.transform === 'translateX(0px)' ||
+                                     sidebar.style.transform === 'translateX(0)';
+                    
+                    const isOpen = hasOpenClass || isVisible;
+                    
+                    if (isOpen) {
+                        // Force show with inline styles
+                        closeBtn.style.setProperty('display', 'flex', 'important');
+                        closeBtn.style.setProperty('opacity', '1', 'important');
+                        closeBtn.style.setProperty('visibility', 'visible', 'important');
+                        closeBtn.style.setProperty('pointer-events', 'auto', 'important');
+                        closeBtn.style.setProperty('position', 'fixed', 'important');
+                        closeBtn.style.setProperty('right', '16px', 'important');
+                        closeBtn.style.setProperty('top', '16px', 'important');
+                        closeBtn.style.setProperty('z-index', '99999', 'important');
+                        console.log('Close button shown');
+                    } else {
+                        closeBtn.style.setProperty('display', 'none', 'important');
+                        closeBtn.style.setProperty('opacity', '0', 'important');
+                        closeBtn.style.setProperty('visibility', 'hidden', 'important');
+                        closeBtn.style.setProperty('pointer-events', 'none', 'important');
+                        console.log('Close button hidden');
                     }
                 }
-            });
+                
+                // Watch for sidebar state changes
+                const observer = new MutationObserver(updateCloseButton);
+                observer.observe(sidebar, {
+                    attributes: true,
+                    attributeFilter: ['class', 'style'],
+                    childList: false,
+                    subtree: false
+                });
+                
+                // Also check periodically (fallback)
+                setInterval(updateCloseButton, 100);
+                
+                // Initial check
+                updateCloseButton();
+                
+                // Debug: Log button state
+                console.log('Sidebar close button initialized:', {
+                    sidebar: sidebar,
+                    closeBtn: closeBtn,
+                    sidebarHasOpen: sidebar.classList.contains('open'),
+                    sidebarTransform: getComputedStyle(sidebar).transform
+                });
+                
+                if (mobileMenuBtn) {
+                    // Override mobile menu button to toggle sidebar
+                    mobileMenuBtn.addEventListener('click', function(e) {
+                        if (window.innerWidth <= 1024) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            // Toggle sidebar using Alpine.js if available
+                            if (window.Alpine) {
+                                try {
+                                    const rootElement = document.querySelector('[x-data]');
+                                    if (rootElement && rootElement._x_dataStack) {
+                                        const alpineData = rootElement._x_dataStack[0];
+                                        if (alpineData && typeof alpineData.sidebarOpen !== 'undefined') {
+                                            alpineData.sidebarOpen = !alpineData.sidebarOpen;
+                                            setTimeout(updateCloseButton, 50);
+                                            return;
+                                        }
+                                    }
+                                } catch (err) {
+                                    console.log('Alpine.js access failed, using class toggle');
+                                }
+                            }
+                            
+                            // Fallback: toggle class directly
+                            sidebar.classList.toggle('open');
+                            setTimeout(updateCloseButton, 50);
+                        }
+                    });
+                }
+                
+                // Close sidebar when clicking outside on mobile
+                document.addEventListener('click', function(e) {
+                    if (window.innerWidth <= 1024) {
+                        const sidebar = document.querySelector('.sidebar');
+                        const closeBtn = document.querySelector('.sidebar-close-btn');
+                        const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+                        
+                        // Don't close if clicking on close button, mobile menu button, or inside sidebar
+                        if (sidebar && 
+                            !sidebar.contains(e.target) && 
+                            e.target !== closeBtn && 
+                            !e.target.closest('.mobile-menu-btn') &&
+                            !e.target.closest('.sidebar-close-btn')) {
+                            
+                            // Try Alpine.js first
+                            if (window.Alpine) {
+                                try {
+                                    const rootElement = document.querySelector('[x-data]');
+                                    if (rootElement && rootElement._x_dataStack) {
+                                        const alpineData = rootElement._x_dataStack[0];
+                                        if (alpineData && typeof alpineData.sidebarOpen !== 'undefined') {
+                                            alpineData.sidebarOpen = false;
+                                            setTimeout(updateCloseButton, 50);
+                                            return;
+                                        }
+                                    }
+                                } catch (err) {
+                                    // Fallback
+                                }
+                            }
+                            
+                            // Fallback: remove class
+                            sidebar.classList.remove('open');
+                            setTimeout(updateCloseButton, 50);
+                        }
+                    }
+                });
+            }
+            
+            // Initialize sidebar toggle after DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initSidebarToggle);
+            } else {
+                initSidebarToggle();
+            }
+            
+            // Also initialize after Alpine.js is ready
+            if (window.Alpine) {
+                Alpine.nextTick(() => {
+                    initSidebarToggle();
+                });
+            } else {
+                document.addEventListener('alpine:init', () => {
+                    initSidebarToggle();
+                });
+            }
 
             // AI Tools Modal functionality
             const aiToolsModal = document.getElementById('aiToolsModal');
