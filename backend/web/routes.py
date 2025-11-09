@@ -1356,10 +1356,13 @@ def profil():
 
     # Sort all media items by creation date (latest first)
     media_items.sort(key=lambda x: x['created_at'], reverse=True)
+    
+    # Limit initial display to ~10 items for faster load (infinite scroll will load more)
+    initial_items = media_items[:10] if len(media_items) > 10 else media_items
 
     follower_count = len(user.followers)
     following_count = len(user.following)
-    return render_template('profil.html', user=user, media_items=media_items, follower_count=follower_count, following_count=following_count)
+    return render_template('profil.html', user=user, media_items=initial_items, follower_count=follower_count, following_count=following_count)
 
 @web_pages.route('/profil_private')
 def profil_private():
@@ -2749,7 +2752,7 @@ def api_profile_infinite():
         return jsonify({'success': False, 'error': 'Not logged in'}), 401
     
     page = request.args.get('page', 1, type=int)
-    per_page = request.args.get('per_page', 20, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
     content_type = request.args.get('type', 'all')
     
     offset = (page - 1) * per_page
