@@ -1101,12 +1101,12 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
             if not user:
                 return jsonify({'success': False, 'message': 'User tidak ditemukan'}), 404
             
-            # Check credits (nano-banana edit: 3 variations = 3x credits)
-            required_credits = 45  # 3 images × 15 credits each
+            # Check credits (edit image: 15 credits)
+            required_credits = 15  # 15 credits per edit (regardless of variations)
             if user.kredit < required_credits:
                 return jsonify({
                     'success': False,
-                    'message': f'Kredit Anda tidak cukup untuk edit 3 variasi gambar (minimal {required_credits} kredit)'
+                    'message': f'Kredit Anda tidak cukup untuk edit gambar (minimal {required_credits} kredit)'
                 }), 403
             
             # Get API key
@@ -2276,7 +2276,7 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                         "prompt": prompt,
                         "model_id": "wavespeed-ai/imagen4"
                     },
-                    'credits': 45  # 3 images × 15 credits each
+                    'credits': 15  # 15 credits per generation (regardless of variations)
                 },
                 'gpt-image-1': {
                     'url': "https://api.wavespeed.ai/api/v3/openai/gpt-image-1/text-to-image",
@@ -2305,12 +2305,12 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
             if model not in model_configs:
                 return jsonify({'success': False, 'message': f'Model tidak valid: {model}'}), 400
             
-            # Check credits (3 images = 3x credits for imagen4-ultra)
+            # Check credits (15 credits per generation regardless of variations)
             required_credits = model_configs[model]['credits']
             if user.kredit < required_credits:
                 return jsonify({
                     'success': False,
-                    'message': f'Kredit Anda tidak cukup untuk generate 3 variasi gambar dengan model {model} (minimal {required_credits} kredit)'
+                    'message': f'Kredit Anda tidak cukup untuk generate gambar dengan model {model} (minimal {required_credits} kredit)'
                 }), 403
             
             # Get model configuration
