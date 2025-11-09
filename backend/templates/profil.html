@@ -885,7 +885,7 @@
 
   /* Modern Skeleton Loading Styles */
   #skeleton-loading-profile {
-    display: block !important;
+    display: none; /* Hidden by default, shown only when loading */
   }
 
   #skeleton-loading-profile .skeleton-card {
@@ -1343,6 +1343,11 @@
 
     // Initialize infinite scroll
     initInfiniteScroll();
+    
+    // Ensure skeleton loading is hidden on initial load
+    setTimeout(() => {
+      hideSkeletonLoading();
+    }, 100);
   });
 
   // Initialize modern infinite scroll with Intersection Observer
@@ -1639,6 +1644,12 @@
     const skeleton = document.getElementById('skeleton-loading-profile');
     if (skeleton) {
       skeleton.style.display = 'none';
+      // Also remove from DOM to ensure it's completely hidden
+      setTimeout(() => {
+        if (skeleton && skeleton.style.display === 'none') {
+          skeleton.remove();
+        }
+      }, 300);
     }
   }
 
