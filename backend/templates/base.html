@@ -3549,7 +3549,7 @@
         </div>
 
         <!-- Chat Section -->
-        {% if request.path != '/ai_generate' %}
+        {% if request.path != '/ai_generate' and request.path != '/explore' %}
         <div class="chat-section">
             <div class="chat-header">
                 <i class="bi bi-chat-dots"></i>
@@ -3823,7 +3823,7 @@
                     </div>
 
                     <!-- Chat Section -->
-                    {% if request.path != '/ai_generate' %}
+                    {% if request.path != '/ai_generate' and request.path != '/explore' %}
                     <div class="mobile-nav-section">
                         <h5 class="mobile-nav-section-title">
                             <i class="bi bi-chat-dots"></i>
@@ -3898,7 +3898,7 @@
     </script>
 
     <!-- AI Assistant Widget -->
-{% if session.get('username') and request.path != '/ai_generate' %}
+{% if session.get('username') and request.path != '/ai_generate' and request.path != '/explore' %}
   <div id="ai-assistant-widget"></div>
   <link rel="stylesheet" href="{{ url_for('static', filename='assets/css/ai-assistant.css') }}">
   <script src="{{ url_for('static', filename='assets/js/ai-assistant.js') }}"></script>

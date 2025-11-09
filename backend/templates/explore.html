@@ -360,68 +360,90 @@
   }
   
 
-  /* Modern Feed Container */
+  /* Instagram Reels Style Feed Container */
   .feed-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
     width: 100vw;
     height: 100vh;
-    height: calc(var(--vh, 1vh) * 100);
+    height: 100dvh;
     max-width: 100vw;
     max-height: 100vh;
-    max-height: calc(var(--vh, 1vh) * 100);
-    padding: 20px;
-    background: transparent;
+    max-height: 100dvh;
+    background: #000;
     overflow: hidden;
     box-sizing: border-box;
     position: fixed;
     top: 0;
     left: 0;
-    margin: 0 auto;
-    flex-direction: column;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .feed-wrapper {
     width: 100%;
-    max-width: 420px;
-    height: 85vh;
-    height: calc(var(--vh, 1vh) * 85);
-    max-height: 85vh;
-    max-height: calc(var(--vh, 1vh) * 85);
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--border-radius-lg);
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    background: #000;
     overflow: hidden;
-    box-shadow: var(--shadow-strong);
     position: relative;
     box-sizing: border-box;
     contain: layout style paint;
     overscroll-behavior: contain;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    transform: translateX(0);
-    align-self: center;
+  }
+  
+  /* Desktop Mode - Smaller Container */
+  @media (min-width: 769px) {
+    .feed-container {
+      padding: 20px;
+      background: #0a0a0a;
+    }
+    
+    .feed-wrapper {
+      max-width: 480px;
+      max-height: 90vh;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+      margin: 0 auto;
+    }
+    
+    .video-feed {
+      height: 90vh;
+      max-height: 90vh;
+    }
+    
+    .video-item {
+      height: 90vh;
+      max-height: 90vh;
+      min-height: 90vh;
+    }
+    
+    .feed-nav {
+      border-radius: 20px 20px 0 0;
+    }
   }
 
-  /* Modern Navigation */
+  /* Instagram Reels Style Navigation */
   .feed-nav {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;
-    height: 70px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    border-bottom: 1px solid var(--glass-border);
+    height: 60px;
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 25px;
-    z-index: 100;
-    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+    padding: 0 20px;
+    z-index: 1000;
+    pointer-events: none;
+  }
+  
+  .feed-nav > * {
+    pointer-events: auto;
   }
 
   .feed-nav-left {
@@ -504,27 +526,58 @@
     100% { transform: scale(1); }
   }
 
-  /* Modern Video Feed */
+  /* Instagram Reels Style Video Feed - Enhanced */
   .video-feed {
-    height: 100%;
-    max-height: 100%;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
     overflow-y: auto;
     scroll-snap-type: y mandatory;
-    padding-top: 70px;
+    scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-    box-sizing: border-box;
     overscroll-behavior-y: contain;
     overscroll-behavior-x: none;
-    scroll-behavior: smooth;
-    transition: var(--transition);
+    box-sizing: border-box;
     touch-action: pan-y;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+    position: relative;
+    will-change: scroll-position;
+  }
+  
+  .video-feed::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+  
+  /* Smooth scroll indicator */
+  .video-feed::after {
+    content: '';
+    position: fixed;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 100;
+    pointer-events: none;
+  }
+  
+  .video-feed.scrolling::after {
+    opacity: 1;
   }
 
-  /* Modern Video Items */
+  /* Instagram Reels Style Video Items - Enhanced */
   .video-item {
-    height: 100%;
-    max-height: 100%;
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
     position: relative;
     scroll-snap-align: start;
     scroll-snap-stop: always;
@@ -533,51 +586,90 @@
     box-sizing: border-box;
     overflow: hidden;
     contain: layout style paint;
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-    animation: modernSlideIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    margin: 10px;
-    border-radius: var(--border-radius);
-    background: var(--glass-bg);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--shadow-soft);
+    background: #000;
+    will-change: transform;
+    transform: translateZ(0);
+    transition: opacity 0.3s ease;
   }
   
-  .video-item:nth-child(1) { animation-delay: 0.1s; }
-  .video-item:nth-child(2) { animation-delay: 0.2s; }
-  .video-item:nth-child(3) { animation-delay: 0.3s; }
-  .video-item:nth-child(4) { animation-delay: 0.4s; }
-  .video-item:nth-child(5) { animation-delay: 0.5s; }
+  .video-item.loading {
+    opacity: 0.7;
+  }
+  
+  .video-item.playing {
+    opacity: 1;
+  }
+  
+  .video-item.playing .video-info,
+  .video-item.playing .video-actions {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+  }
+  
+  /* Smooth fade-in animation for video info - only apply when not playing */
+  .video-item:not(.playing) .video-info {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  .video-item:not(.playing) .video-actions {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  
+  .video-info {
+    transition: opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s;
+  }
+  
+  .video-actions {
+    transition: opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s;
+  }
   
   .video-player {
     width: 100%;
     height: 100%;
-    max-height: 100%;
     object-fit: cover;
     background: #000;
     box-sizing: border-box;
     opacity: 0;
-    transition: var(--transition);
-    border-radius: var(--border-radius);
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: opacity;
+    transform: translateZ(0);
   }
   
   .video-player.loaded {
     opacity: 1;
   }
+  
+  .video-player[data-loading="true"] {
+    opacity: 0.5;
+  }
+  
+  .video-player.playing {
+    opacity: 1;
+  }
+  
+  /* Preload next video for smoother transitions */
+  .video-item[data-preload="true"] .video-player {
+    opacity: 0.3;
+  }
 
   @keyframes modernSlideIn {
     0% { 
       opacity: 0; 
-      transform: translateY(30px) scale(0.95);
     }
     100% { 
       opacity: 1; 
-      transform: translateY(0) scale(1);
     }
   }
+  
+  @keyframes likePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+    100% { transform: scale(1); }
+  }
 
-  /* Modern Video Overlay */
+  /* Instagram Reels Style Video Overlay - Enhanced */
   .video-overlay {
     position: absolute;
     top: 0;
@@ -586,153 +678,191 @@
     bottom: 0;
     background: linear-gradient(
       to bottom,
-      transparent 0%,
-      transparent 50%,
-      rgba(0, 0, 0, 0.4) 100%
+      rgba(0, 0, 0, 0.4) 0%,
+      transparent 25%,
+      transparent 65%,
+      rgba(0, 0, 0, 0.8) 100%
     );
     pointer-events: none;
-    border-radius: var(--border-radius);
-  }
-
-  /* Modern Video Info */
-  .video-info {
-    position: absolute;
-    bottom: 25px;
-    left: 25px;
-    right: 25px;
-    color: var(--text-primary);
-    z-index: 10;
-    opacity: 1;
-    transform: translateY(0);
-    transition: var(--transition);
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--border-radius);
-    padding: 20px;
-    box-shadow: var(--shadow-soft);
+    z-index: 1;
+    transition: opacity 0.3s ease;
   }
   
-  .video-item:hover .video-info {
-    opacity: 1;
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-strong);
+  .video-item.playing .video-overlay {
+    opacity: 0.9;
+  }
+
+  /* Instagram Reels Style Video Info - Enhanced */
+  .video-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 80px;
+    color: #fff;
+    z-index: 10;
+    padding: 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    pointer-events: none;
+    transition: opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s;
+  }
+  
+  /* Desktop - Smaller video info */
+  @media (min-width: 769px) {
+    .video-info {
+      right: 70px;
+      padding: 15px;
+      padding-bottom: calc(15px + env(safe-area-inset-bottom, 0px));
+    }
+    
+    .video-author-avatar {
+      width: 32px;
+      height: 32px;
+    }
+    
+    .video-author-info h4 {
+      font-size: 13px;
+    }
+    
+    .video-author-info p {
+      font-size: 10px;
+    }
+    
+    .video-title {
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+    
+    .video-description {
+      font-size: 12px;
+    }
+    
+    .mobile-bottom-nav {
+      display: none !important;
+    }
   }
    
   .video-author {
     display: flex;
     align-items: center;
-    gap: 15px;
-    margin-bottom: 15px;
+    gap: 12px;
+    margin-bottom: 12px;
+    pointer-events: auto;
   }
   
   .video-author-avatar {
-    width: 45px;
-    height: 45px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.5);
     object-fit: cover;
-    transition: var(--transition);
+    cursor: pointer;
+    transition: transform 0.2s ease;
   }
 
-  .video-author-avatar:hover {
-    border-color: rgba(255, 255, 255, 0.6);
-    transform: scale(1.05);
+  .video-author-avatar:active {
+    transform: scale(0.95);
   }
   
   .video-author-info h4 {
     margin: 0;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
-    color: var(--text-primary);
-    letter-spacing: -0.3px;
+    color: #fff;
+    cursor: pointer;
   }
    
   .video-author-info p {
     margin: 0;
     font-size: 12px;
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.8);
     font-weight: 400;
   }
 
   .video-title {
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 12px;
-    line-height: 1.3;
-    color: var(--text-primary);
-    letter-spacing: -0.5px;
+    font-size: 15px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    line-height: 1.4;
+    color: #fff;
+    pointer-events: auto;
   }
 
   .video-description {
     font-size: 14px;
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.9);
     line-height: 1.5;
-    max-height: 4.5em;
+    max-height: 3.5em;
     overflow: hidden;
     display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     word-wrap: break-word;
     word-break: break-word;
     font-weight: 400;
+    pointer-events: auto;
   }
   
   .video-stats {
-    margin-top: 15px;
+    margin-top: 10px;
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
+    pointer-events: auto;
   }
   
   .view-count {
-    font-size: 13px;
-    color: var(--text-muted);
-    font-weight: 500;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 400;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
   }
 
-  .view-count::before {
-    content: '👁️';
-    font-size: 12px;
-  }
-
-  /* Modern Video Actions */
+  /* Instagram Reels Style Video Actions - Enhanced with 3D Glossy Effect */
   .video-actions {
     position: absolute;
-    right: 20px;
-    bottom: 300px;
+    right: 12px;
+    bottom: 120px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 20px;
     z-index: 20;
+    align-items: center;
+    transition: transform 0.3s ease, opacity 0.3s ease;
   }
-
+  
+  .video-item.playing .video-actions {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  
   .video-action-btn {
     width: 56px;
     height: 56px;
     border-radius: 50%;
     border: none;
-    background: var(--glass-bg);
+    background: rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
-    color: var(--text-primary);
+    -webkit-backdrop-filter: blur(20px);
+    color: #fff;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: var(--transition);
-    font-size: 20px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 24px;
     position: relative;
-    transform: scale(0.9);
-    opacity: 0.9;
-    box-shadow: var(--shadow-soft);
+    box-shadow: 
+      0 4px 16px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    will-change: transform;
+    overflow: hidden;
   }
-
+  
+  /* 3D Glossy Effect */
   .video-action-btn::before {
     content: '';
     position: absolute;
@@ -740,110 +870,269 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: var(--primary-gradient);
-    opacity: 0;
-    transition: var(--transition);
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%
+    );
     border-radius: 50%;
+    pointer-events: none;
+    opacity: 0.6;
   }
-
-  .video-action-btn:hover::before {
-    opacity: 0.1;
+  
+  /* Desktop - Smaller action buttons */
+  @media (min-width: 769px) {
+    .video-actions {
+      right: 10px;
+      bottom: 100px;
+      gap: 18px;
+    }
+    
+    .video-action-btn {
+      width: 48px;
+      height: 48px;
+      font-size: 20px;
+    }
+    
+    .video-action-btn .action-icon {
+      font-size: 22px;
+    }
+    
+    .video-action-btn .action-count {
+      font-size: 10px;
+    }
   }
-
+  
   .video-action-btn:hover {
-    transform: translateY(-3px) scale(1.05);
-    opacity: 1;
-    box-shadow: var(--shadow-strong);
-    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.08);
+    background: rgba(0, 0, 0, 0.45);
+    box-shadow: 
+      0 6px 20px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.15) inset;
   }
-
+  
   .video-action-btn:active {
-    transform: translateY(0) scale(0.95);
+    transform: scale(0.92);
+    background: rgba(0, 0, 0, 0.5);
   }
   
-  .video-actions {
-    opacity: 1;
-    transform: translateX(0);
-    transition: var(--transition);
-  }
-  
-  .video-item:hover .video-actions {
-    opacity: 1;
-    transform: translateX(0);
-  }
-
   .video-action-btn.liked {
-    color: #ff6b6b;
-    background: rgba(255, 107, 107, 0.1);
-    border-color: rgba(255, 107, 107, 0.3);
+    color: #ff3040;
+    background: rgba(255, 48, 64, 0.25);
+    box-shadow: 
+      0 4px 16px rgba(255, 48, 64, 0.4),
+      0 0 0 1px rgba(255, 48, 64, 0.3) inset;
   }
-
+  
   .video-action-btn.liked::before {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.3) 0%,
+      rgba(255, 48, 64, 0.2) 50%,
+      transparent 100%
+    );
   }
-
+  
+  .video-action-btn.liked .action-icon {
+    animation: likePulse 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    filter: drop-shadow(0 2px 8px rgba(255, 48, 64, 0.6));
+  }
+  
+  /* 3D Glossy effect for icons - Instagram Reels Style */
   .video-action-btn .action-icon {
-    font-size: 22px;
-    margin-bottom: 3px;
+    font-size: 28px;
+    margin-bottom: 2px;
+    line-height: 1;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
     position: relative;
+    z-index: 2;
+    display: inline-block;
+    transform-style: preserve-3d;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateZ(0);
+  }
+  
+  /* Glossy highlight overlay for icons */
+  .video-action-btn .action-icon::before {
+    content: '';
+    position: absolute;
+    top: -25%;
+    left: -25%;
+    width: 150%;
+    height: 150%;
+    background: radial-gradient(
+      circle at 35% 35%,
+      rgba(255, 255, 255, 0.5) 0%,
+      rgba(255, 255, 255, 0.2) 30%,
+      transparent 70%
+    );
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0.7;
     z-index: 1;
   }
-
+  
+  /* Icon-specific styling - Bootstrap Icons */
+  .video-action-btn .action-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .video-action-btn .action-icon i {
+    font-size: inherit;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .video-action-btn .like-icon {
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+    font-size: 28px;
+  }
+  
+  .video-action-btn .like-icon i {
+    color: #ffffff;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .video-action-btn.liked .like-icon {
+    filter: drop-shadow(0 2px 10px rgba(255, 48, 64, 0.8));
+    animation: likeGlow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .video-action-btn.liked .like-icon i {
+    color: #ff3040;
+  }
+  
+  .video-action-btn .comment-icon {
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+    font-size: 26px;
+  }
+  
+  .video-action-btn .comment-icon i {
+    color: rgba(255, 255, 255, 0.95);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .video-action-btn .share-icon {
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4));
+    font-size: 26px;
+  }
+  
+  .video-action-btn .share-icon i {
+    color: rgba(255, 255, 255, 0.95);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .video-action-btn:hover .comment-icon i,
+  .video-action-btn:hover .share-icon i {
+    color: #ffffff;
+    transform: scale(1.05);
+  }
+  
+  .video-action-btn:hover .like-icon i {
+    transform: scale(1.05);
+  }
+  
+  .video-action-btn.liked:hover .like-icon i {
+    transform: scale(1.1);
+  }
+  
+  .video-action-btn:hover .action-icon {
+    transform: scale(1.15) translateZ(0);
+    filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.6));
+  }
+  
+  .video-action-btn.liked:hover .like-icon {
+    filter: drop-shadow(0 3px 12px rgba(255, 48, 64, 0.9));
+    transform: scale(1.2) translateZ(0);
+  }
+  
+  /* Glow animation for liked state */
+  @keyframes likeGlow {
+    0% {
+      filter: drop-shadow(0 2px 6px rgba(255, 48, 64, 0.4));
+      transform: scale(1);
+    }
+    50% {
+      filter: drop-shadow(0 4px 16px rgba(255, 48, 64, 1));
+      transform: scale(1.2);
+    }
+    100% {
+      filter: drop-shadow(0 2px 10px rgba(255, 48, 64, 0.8));
+      transform: scale(1);
+    }
+  }
+  
   .video-action-btn .action-count {
-    font-size: 11px;
-    font-weight: 600;
-    margin-top: 2px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 1px;
+    color: #ffffff;
+    line-height: 1;
+    text-shadow: 
+      0 1px 3px rgba(0, 0, 0, 0.5),
+      0 0 1px rgba(0, 0, 0, 0.3);
     position: relative;
     z-index: 1;
-    color: var(--text-secondary);
+    letter-spacing: 0.3px;
   }
 
-  /* Modern Play Button Overlay */
+  /* Instagram Reels Style Play Button Overlay - Enhanced */
   .play-overlay {
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90px;
-    height: 90px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--glass-border);
+    transform: translate(-50%, -50%) scale(0.9);
+    width: 80px;
+    height: 80px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 15;
-    opacity: 1;
-    scale: 1;
-    box-shadow: var(--shadow-soft);
+    opacity: 0;
+    pointer-events: none;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    will-change: transform, opacity;
   }
   
-  .video-item:hover .play-overlay {
+  .video-item.paused .play-overlay {
     opacity: 1;
-    scale: 1;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
   }
-
+  
   .play-overlay:hover {
-    background: var(--glass-bg);
     transform: translate(-50%, -50%) scale(1.1);
-    box-shadow: var(--shadow-strong);
-    border-color: rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.7);
   }
-
+  
+  .play-overlay:active {
+    transform: translate(-50%, -50%) scale(0.95);
+  }
+  
   .play-overlay::after {
     content: '';
     width: 0;
     height: 0;
-    border-left: 28px solid var(--text-primary);
-    border-top: 18px solid transparent;
-    border-bottom: 18px solid transparent;
+    border-left: 24px solid #fff;
+    border-top: 14px solid transparent;
+    border-bottom: 14px solid transparent;
     margin-left: 6px;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
   }
-
+  
   .play-overlay.hidden {
     display: none;
   }
@@ -925,253 +1214,157 @@
   
 
 
-  /* Modern Mobile Responsive - Full Screen */
+  /* Instagram Reels Style Mobile Responsive - Enhanced */
   @media (max-width: 768px) {
     .feed-container {
       padding: 0;
       width: 100vw;
       height: 100vh;
-      height: 100dvh; /* Dynamic viewport height for mobile */
-      max-width: 100vw;
-      max-height: 100vh;
-      max-height: 100dvh;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: fixed;
-      top: 0;
-      left: 0;
+      height: 100dvh;
     }
    
     .feed-wrapper {
-      max-width: 100%;
       width: 100%;
-      height: 100vh;
-      height: 100dvh;
-      max-height: 100vh;
-      max-height: 100dvh;
-      border-radius: 0;
-      box-shadow: none;
-      overflow: hidden;
-      overscroll-behavior: contain;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      align-self: center;
-      position: relative;
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      border: none;
+      height: 100%;
     }
     
-    .feed-nav {
-      height: 50px;
-      padding: 0 20px;
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--glass-border);
-      position: relative;
-      z-index: 1000;
-    }
+     .feed-nav {
+       height: 50px;
+       padding: 0 15px;
+       background: transparent;
+     }
     
     .feed-title {
       font-size: 18px;
-      font-weight: 700;
-    }
-    
-    .feed-nav-btn {
-      width: 40px;
-      height: 40px;
-    }
-    
-    .feed-nav-btn i {
-      font-size: 16px;
-    }
-    
-    .video-feed {
-      padding-top: 50px;
-      padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); /* Safe area for mobile + 100px margin bottom */
-      height: calc(100vh - 50px);
-      height: calc(100dvh - 50px);
-      max-height: calc(100vh - 50px);
-      max-height: calc(100dvh - 50px);
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-      scroll-behavior: smooth;
-      touch-action: pan-y;
-      margin-bottom: 100px; /* Additional margin bottom for mobile */
-    }
-    
-    .video-item {
-      margin: 8px;
-      border-radius: var(--border-radius);
-      min-height: calc(100vh - 66px);
-      min-height: calc(100dvh - 66px);
-    }
-    
-    .video-info {
-      bottom: 20px;
-      left: 20px;
-      right: 20px;
-      padding: 18px;
-      border-radius: var(--border-radius);
-      margin-bottom: env(safe-area-inset-bottom, 0px); /* Safe area for mobile */
-    }
-    
-    .video-author-avatar {
-      width: 40px;
-      height: 40px;
-    }
-    
-    .video-author-info h4 {
-      font-size: 15px;
-    }
-    
-    .video-author-info p {
-      font-size: 12px;
-    }
-    
-    .video-title {
-      font-size: 16px;
-      margin-bottom: 10px;
-    }
-    
-    .video-description {
-      font-size: 13px;
-      line-height: 1.4;
-      max-height: 4.2em;
-      -webkit-line-clamp: 3;
-      line-clamp: 3;
-    }
-
-    .video-actions {
-      right: 15px;
-      bottom: calc(300px + env(safe-area-inset-bottom, 0px)); /* Safe area for mobile + 300px margin bottom */
-      gap: 15px;
-    }
-
-    .video-action-btn {
-      width: 50px;
-      height: 50px;
-      font-size: 18px;
-    }
-
-    .video-action-btn .action-icon {
-      font-size: 20px;
-    }
-
-    .video-action-btn .action-count {
-      font-size: 10px;
-    }
-
-    .play-overlay {
-      width: 80px;
-      height: 80px;
-    }
-
-    .play-overlay::after {
-      border-left: 24px solid var(--text-primary);
-      border-top: 15px solid transparent;
-      border-bottom: 15px solid transparent;
-    }
-    
-  }
-
-  /* Modern Extra Small Mobile Devices - Full Screen */
-  @media (max-width: 480px) {
-    .feed-nav {
-      height: 45px;
-      padding: 0 15px;
-    }
-    
-    .feed-title {
-      font-size: 16px;
       font-weight: 700;
     }
     
     .feed-nav-btn {
       width: 36px;
       height: 36px;
-    }
-    
-    .feed-nav-btn i {
       font-size: 14px;
     }
     
     .video-feed {
-      padding-top: 45px;
-      padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); /* Safe area for mobile + 100px margin bottom */
-      height: calc(100vh - 45px);
-      height: calc(100dvh - 45px);
-      max-height: calc(100vh - 45px);
-      max-height: calc(100dvh - 45px);
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-      scroll-behavior: smooth;
-      touch-action: pan-y;
-      margin-bottom: 100px; /* Additional margin bottom for mobile */
+      height: 100vh;
+      height: 100dvh;
     }
     
     .video-item {
-      margin: 6px;
-      min-height: calc(100vh - 57px);
-      min-height: calc(100dvh - 57px);
+      height: 100vh;
+      height: 100dvh;
+      min-height: 100vh;
+      min-height: 100dvh;
     }
     
     .video-info {
-      bottom: 15px;
-      left: 15px;
-      right: 15px;
-      padding: 15px;
-      margin-bottom: env(safe-area-inset-bottom, 0px); /* Safe area for mobile */
+      bottom: 0;
+      left: 0;
+      right: 70px;
+      padding: 12px 15px;
+      padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+      opacity: 1 !important;
+      transform: translateY(0) !important;
+      z-index: 10;
+    }
+    
+    .video-author {
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     
     .video-author-avatar {
-      width: 35px;
-      height: 35px;
+      width: 40px;
+      height: 40px;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      flex-shrink: 0;
+    }
+    
+    .video-author-info {
+      flex: 1;
+      min-width: 0;
     }
     
     .video-author-info h4 {
-      font-size: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     
     .video-author-info p {
-      font-size: 11px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
     }
     
     .video-title {
-      font-size: 15px;
-      margin-bottom: 8px;
+      font-size: 14px;
+      margin-bottom: 4px;
+      font-weight: 500;
+      line-height: 1.3;
     }
     
     .video-description {
-      font-size: 12px;
-      max-height: 3.6em;
-      -webkit-line-clamp: 3;
-      line-clamp: 3;
+      font-size: 13px;
+      max-height: 2.5em;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      line-height: 1.4;
+      color: rgba(255, 255, 255, 0.9);
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
     }
 
-    .video-actions {
-      right: 12px;
-      bottom: calc(300px + env(safe-area-inset-bottom, 0px)); /* Safe area for mobile + 300px margin bottom */
-      gap: 12px;
-    }
+     .video-actions {
+       right: 12px;
+       bottom: calc(140px + env(safe-area-inset-bottom, 0px));
+       gap: 20px;
+       opacity: 1 !important;
+       transform: translateX(0) !important;
+       z-index: 20;
+     }
 
     .video-action-btn {
-      width: 45px;
-      height: 45px;
-      font-size: 16px;
+      width: 56px;
+      height: 56px;
+      font-size: 24px;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.12) inset;
     }
 
     .video-action-btn .action-icon {
-      font-size: 18px;
+      font-size: 28px;
+      margin-bottom: 2px;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
     }
 
     .video-action-btn .action-count {
-      font-size: 9px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #ffffff;
+      text-shadow: 
+        0 1px 3px rgba(0, 0, 0, 0.6),
+        0 0 1px rgba(0, 0, 0, 0.4);
+    }
+    
+    .video-action-btn.liked {
+      background: rgba(255, 48, 64, 0.3);
+      box-shadow: 
+        0 4px 16px rgba(255, 48, 64, 0.5),
+        0 0 0 1px rgba(255, 48, 64, 0.4) inset;
+    }
+    
+    .video-action-btn.liked .action-icon {
+      filter: drop-shadow(0 2px 8px rgba(255, 48, 64, 0.7));
     }
 
     .play-overlay {
@@ -1180,139 +1373,147 @@
     }
 
     .play-overlay::after {
-      border-left: 20px solid var(--text-primary);
+      border-left: 20px solid #fff;
       border-top: 12px solid transparent;
       border-bottom: 12px solid transparent;
     }
     
+    /* Better touch targets on mobile */
+    .video-action-btn,
+    .play-overlay,
+    .feed-nav-btn {
+      min-width: 44px;
+      min-height: 44px;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
   }
 
-  /* Modern Landscape Mobile Orientation - Full Screen */
-  @media (max-width: 768px) and (orientation: landscape) {
-    .feed-container {
-      width: 100vw;
-      height: 100vh;
-      height: 100dvh;
-      max-width: 100vw;
-      max-height: 100vh;
-      max-height: 100dvh;
-      overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    .feed-wrapper {
-      height: 100vh;
-      height: 100dvh;
-      max-height: 100vh;
-      max-height: 100dvh;
-      overflow: hidden;
-      overscroll-behavior: contain;
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      align-self: center;
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-    }
-    
+  /* Instagram Reels Style Extra Small Mobile - Enhanced */
+  @media (max-width: 480px) {
     .feed-nav {
-      height: 40px;
-      background: var(--glass-bg);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--glass-border);
+      height: 45px;
+      padding: 0 12px;
     }
     
-    .video-feed {
-      height: calc(100vh - 40px);
-      height: calc(100dvh - 40px);
-      max-height: calc(100vh - 40px);
-      max-height: calc(100dvh - 40px);
-      overflow-y: auto;
-      overscroll-behavior-y: contain;
-      -webkit-overflow-scrolling: touch;
-      touch-action: pan-y;
-      padding-top: 40px;
-      padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px)); /* Safe area for mobile + 100px margin bottom */
-      margin-bottom: 100px; /* Additional margin bottom for mobile landscape */
+    .feed-title {
+      font-size: 16px;
     }
     
-    .video-item {
-      min-height: calc(100vh - 56px);
-      min-height: calc(100dvh - 56px);
+    .feed-nav-btn {
+      width: 36px;
+      height: 36px;
+      font-size: 13px;
+      min-width: 36px;
+      min-height: 36px;
     }
     
     .video-info {
-      bottom: 15px;
-      padding: 15px;
-      margin-bottom: env(safe-area-inset-bottom, 0px); /* Safe area for mobile */
+      padding: 12px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+      right: 65px;
+      opacity: 1 !important;
+      transform: translateY(0) !important;
     }
     
-    .video-actions {
-      bottom: calc(300px + env(safe-area-inset-bottom, 0px)); /* Safe area for mobile + 300px margin bottom */
+    .video-author-avatar {
+      width: 32px;
+      height: 32px;
+    }
+    
+    .video-author-info h4 {
+      font-size: 13px;
+    }
+    
+    .video-title {
+      font-size: 13px;
+    }
+    
+    .video-description {
+      font-size: 12px;
+    }
+
+     .video-actions {
+       right: 8px;
+       bottom: calc(140px + env(safe-area-inset-bottom, 0px));
+       gap: 16px;
+       opacity: 1 !important;
+       transform: translateX(0) !important;
+     }
+
+    .video-action-btn {
+      width: 52px;
+      height: 52px;
+      font-size: 22px;
+      min-width: 52px;
+      min-height: 52px;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.12) inset;
+    }
+
+    .video-action-btn .action-icon {
+      font-size: 24px;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.5));
+    }
+
+    .video-action-btn .action-count {
+      font-size: 11px;
+      color: #ffffff;
+      text-shadow: 
+        0 1px 3px rgba(0, 0, 0, 0.6),
+        0 0 1px rgba(0, 0, 0, 0.4);
+    }
+    
+    .video-action-btn.liked {
+      background: rgba(255, 48, 64, 0.3);
+      box-shadow: 
+        0 4px 16px rgba(255, 48, 64, 0.5),
+        0 0 0 1px rgba(255, 48, 64, 0.4) inset;
+    }
+
+    .play-overlay {
+      width: 65px;
+      height: 65px;
+      min-width: 65px;
+      min-height: 65px;
+    }
+
+    .play-overlay::after {
+      border-left: 18px solid #fff;
+      border-top: 11px solid transparent;
+      border-bottom: 11px solid transparent;
     }
   }
 
-  /* Modern Scrollbar */
-  .video-feed::-webkit-scrollbar {
-    width: 6px;
+  /* Instagram Reels Style Landscape */
+  @media (max-width: 768px) and (orientation: landscape) {
+    .feed-nav {
+      height: 45px;
+    }
+    
+    .video-item {
+      height: 100vh;
+      height: 100dvh;
+    }
+    
+    .video-info {
+      padding: 12px;
+      padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    }
+    
+    .video-actions {
+      bottom: 80px;
+    }
   }
-  
-  .video-feed::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-  }
-  
-  .video-feed::-webkit-scrollbar-thumb {
-    background: var(--primary-gradient);
-    border-radius: 3px;
-    transition: var(--transition);
-  }
-  
-  .video-feed::-webkit-scrollbar-thumb:hover {
-    background: var(--secondary-gradient);
-  }
-  
+
+  /* Hide scrollbar for Instagram Reels style */
   .video-feed {
+    scrollbar-width: none;
     -ms-overflow-style: none;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(102, 126, 234, 0.6) rgba(255, 255, 255, 0.1);
-  }
-  
-  /* Modern Scroll Indicator */
-  .scroll-indicator {
-    position: fixed;
-    right: 25px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 6px;
-    height: 120px;
-    background: var(--glass-bg);
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--glass-border);
-    border-radius: 3px;
-    z-index: 1000;
-    opacity: 0;
-    transition: var(--transition);
-    box-shadow: var(--shadow-soft);
-  }
-  
-  .scroll-indicator::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 30px;
-    background: var(--primary-gradient);
-    border-radius: 3px;
-    transition: var(--transition);
-    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-  }
-  
-  .video-feed:hover + .scroll-indicator {
-    opacity: 1;
   }
 
   /* Prevent zoom on double tap */
@@ -1439,10 +1640,32 @@
     }
   }
 
-  /* Modern Performance Optimizations */
-  .video-item, .video-player, .video-info, .video-actions {
+  /* Modern Performance Optimizations - Enhanced */
+  .video-item {
     will-change: transform, opacity;
     transform: translateZ(0);
+    contain: layout style paint;
+  }
+  
+  .video-player {
+    will-change: opacity;
+    transform: translateZ(0);
+  }
+  
+  .video-info, .video-actions {
+    will-change: transform, opacity;
+  }
+  
+  /* GPU acceleration for smooth scrolling */
+  .video-feed {
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  /* Optimize repaints */
+  .video-item * {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   /* Modern Focus States */
@@ -1464,14 +1687,15 @@
     color: var(--text-primary);
   }
 
-  /* Modern Hover Effects */
-  .video-item:hover {
-    transform: translateY(-5px) scale(1.02);
-    box-shadow: var(--shadow-strong);
-  }
+  /* Modern Hover Effects - Disabled for mobile performance */
+  @media (hover: hover) and (pointer: fine) {
+    .video-item:hover {
+      transform: translateY(-2px);
+    }
 
-  .video-item:hover .video-player {
-    filter: brightness(1.1) contrast(1.05);
+    .video-item:hover .video-player {
+      filter: brightness(1.05);
+    }
   }
 
   /* Modern Loading Animation */
@@ -1558,6 +1782,88 @@
       overflow: hidden;
     }
   }
+  
+  /* Mobile Bottom Navigation Bar */
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: none;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 10px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    z-index: 1000;
+    border-radius: 20px 20px 0 0;
+  }
+  
+  @media (max-width: 768px) {
+    .mobile-bottom-nav {
+      display: flex;
+    }
+    
+    .video-info {
+      padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+    }
+    
+     .video-actions {
+       bottom: calc(140px + env(safe-area-inset-bottom, 0px));
+     }
+  }
+  
+  .mobile-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 12px;
+    position: relative;
+    min-height: 44px;
+  }
+  
+  .mobile-nav-item.active {
+    background: rgba(138, 43, 226, 0.2);
+  }
+  
+  .mobile-nav-item.active .mobile-nav-icon {
+    color: #8a2be2;
+  }
+  
+  .mobile-nav-item.compass-active {
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  .mobile-nav-item.compass-active .mobile-nav-icon {
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .mobile-nav-icon {
+    font-size: 22px;
+    color: rgba(255, 255, 255, 0.7);
+    transition: all 0.2s ease;
+    margin-bottom: 2px;
+  }
+  
+  .mobile-nav-item:active .mobile-nav-icon {
+    transform: scale(0.9);
+  }
+  
+  .mobile-nav-item.active .mobile-nav-icon {
+    color: #8a2be2;
+  }
  </style>
 
 <!-- Feed Container -->
@@ -1571,9 +1877,6 @@
         <button class="feed-nav-btn" onclick="shuffleCurrentVideos()" title="Acak Video">
           <i class="fas fa-random"></i>
         </button>
-        <button class="feed-nav-btn" onclick="goToUpgrade()" title="Upgrade">
-          <i class="fas fa-crown"></i>
-        </button>
         <button class="feed-nav-btn" onclick="goToProfile()" title="Profile">
           <i class="fas fa-user"></i>
         </button>
@@ -1586,8 +1889,92 @@
         
         <!-- Scroll indicator -->
         <div class="scroll-indicator" id="scrollIndicator"></div>
+        
+        <!-- Mobile Bottom Navigation -->
+        <div class="mobile-bottom-nav">
+          <div class="mobile-nav-item active" onclick="goToMenu()">
+            <i class="bi bi-list mobile-nav-icon"></i>
+          </div>
+          <div class="mobile-nav-item" onclick="goToHome()">
+            <i class="bi bi-house mobile-nav-icon"></i>
+          </div>
+          <div class="mobile-nav-item" onclick="goToSparkle()">
+            <i class="bi bi-stars mobile-nav-icon"></i>
+          </div>
+          <div class="mobile-nav-item compass-active" onclick="goToExplore()">
+            <i class="bi bi-compass mobile-nav-icon"></i>
+          </div>
+          <div class="mobile-nav-item" onclick="goToProfile()">
+            <i class="bi bi-person mobile-nav-icon"></i>
+          </div>
+        </div>
         </div>
       </div>
+
+  <!-- Share Modal -->
+  <div id="shareModal" class="modal fade" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark text-white border-0" style="backdrop-filter: blur(15px); background: rgba(33, 37, 41, 0.95) !important;">
+        <div class="modal-header border-0">
+          <h5 class="modal-title" id="shareModalLabel">Bagikan ke</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <!-- WhatsApp -->
+            <div class="col-6">
+              <button class="btn btn-success w-100 py-3 rounded-3" onclick="shareToWhatsApp()" style="font-weight: 600;">
+                <i class="bi bi-whatsapp fs-4"></i>
+                <div class="mt-2">WhatsApp</div>
+              </button>
+            </div>
+            <!-- Facebook -->
+            <div class="col-6">
+              <button class="btn btn-primary w-100 py-3 rounded-3" onclick="shareToFacebook()" style="font-weight: 600;">
+                <i class="bi bi-facebook fs-4"></i>
+                <div class="mt-2">Facebook</div>
+              </button>
+            </div>
+            <!-- Twitter/X -->
+            <div class="col-6">
+              <button class="btn btn-dark w-100 py-3 rounded-3" onclick="shareToTwitter()" style="font-weight: 600;">
+                <i class="bi bi-twitter-x fs-4"></i>
+                <div class="mt-2">Twitter/X</div>
+              </button>
+            </div>
+            <!-- Telegram -->
+            <div class="col-6">
+              <button class="btn btn-info w-100 py-3 rounded-3" onclick="shareToTelegram()" style="font-weight: 600;">
+                <i class="bi bi-telegram fs-4"></i>
+                <div class="mt-2">Telegram</div>
+              </button>
+            </div>
+            <!-- Instagram -->
+            <div class="col-6">
+              <button class="btn btn-danger w-100 py-3 rounded-3" onclick="shareToInstagram()" style="font-weight: 600; background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%); border: none;">
+                <i class="bi bi-instagram fs-4"></i>
+                <div class="mt-2">Instagram</div>
+              </button>
+            </div>
+            <!-- Native Share (Mobile) -->
+            <div class="col-6" id="nativeShareBtn" style="display: none;">
+              <button class="btn btn-outline-light w-100 py-3 rounded-3" onclick="useNativeShare()" style="font-weight: 600;">
+                <i class="bi bi-share-fill fs-4"></i>
+                <div class="mt-2">Share</div>
+              </button>
+            </div>
+            <!-- Copy Link -->
+            <div class="col-12">
+              <button class="btn btn-outline-light w-100 py-3 rounded-3" onclick="copyShareLink(event)" style="font-weight: 600;">
+                <i class="bi bi-link-45deg fs-4"></i>
+                <div class="mt-2">Salin Link</div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 <script>
 // Feed functionality
@@ -1966,12 +2353,26 @@ async function loadVideosFromAPI(append = false) {
       
       // Re-setup intersection observer for new videos
       if (append) {
-        setupIntersectionObserver();
+        // Small delay to ensure DOM is ready
+        setTimeout(() => {
+          setupIntersectionObserver();
+        }, 50);
       } else {
         // Setup intersection observer for initial load
         setTimeout(() => {
           setupIntersectionObserver();
-        }, 100);
+          // Auto-play first video if available
+          if (videos.length > 0) {
+            const firstVideo = videos[0].querySelector('video');
+            if (firstVideo) {
+              setTimeout(() => {
+                firstVideo.play().catch(e => {
+                  console.log('First video autoplay prevented:', e);
+                });
+              }, 300);
+            }
+          }
+        }, 200);
       }
       
       console.log(`Successfully loaded ${data.data.length} videos from API`);
@@ -2043,7 +2444,7 @@ function loadDummyVideos() {
         likes: 150,
         comments: 25,
         views: 1000,
-        shares: 10
+        shares: 0
       },
       interactions: {
         is_liked: false
@@ -2064,7 +2465,7 @@ function loadDummyVideos() {
         likes: 200,
         comments: 35,
         views: 1500,
-        shares: 15
+        shares: 0
       },
       interactions: {
         is_liked: false
@@ -2085,7 +2486,7 @@ function loadDummyVideos() {
         likes: 89,
         comments: 12,
         views: 500,
-        shares: 5
+        shares: 0
       },
       interactions: {
         is_liked: false
@@ -2128,7 +2529,18 @@ function loadDummyVideos() {
   // Setup intersection observer after a short delay
   setTimeout(() => {
     setupIntersectionObserver();
-  }, 100);
+    // Auto-play first video if available
+    if (videos.length > 0) {
+      const firstVideo = videos[0].querySelector('video');
+      if (firstVideo) {
+        setTimeout(() => {
+          firstVideo.play().catch(e => {
+            console.log('First video autoplay prevented:', e);
+          });
+        }, 300);
+      }
+    }
+  }, 200);
   
   console.log(`Loaded ${dummyVideos.length} dummy videos`);
 }
@@ -2139,11 +2551,19 @@ function createVideoElement(video, index) {
   videoContainer.className = 'video-item';
   videoContainer.id = `video-${video.id}`;
   
-  // Handle API data format - support multiple formats
-  const videoUrl = video.video_url || video.videoUrl || video.url;
-  const thumbnail = video.thumbnail_url || video.thumbnail || video.image_url || '/static/assets/image/default.jpg';
-  const title = video.title || video.caption || 'Untitled Video';
-  const caption = truncateText(video.caption || video.description || '', 300);
+   // Handle API data format - support multiple formats
+   const videoUrl = video.video_url || video.videoUrl || video.url;
+   const thumbnail = video.thumbnail_url || video.thumbnail || video.image_url || '/static/assets/image/default.jpg';
+   
+   // Filter out "AI asisten Inemi" from title
+   let rawTitle = video.title || video.caption || 'Untitled Video';
+   rawTitle = rawTitle.replace(/AI asisten Inemi/gi, '').replace(/asisten Inemi/gi, '').trim();
+   const title = rawTitle || 'Untitled Video';
+   
+   // Filter out "AI asisten Inemi" from caption/description
+   let rawCaption = video.caption || video.description || '';
+   rawCaption = rawCaption.replace(/AI asisten Inemi/gi, '').replace(/asisten Inemi/gi, '').trim();
+   const caption = truncateText(rawCaption, 300);
   
   const username = video.user?.username || video.username || video.author || 'Unknown User';
   const userAvatar = video.user?.avatar_url || video.user_avatar || video.authorAvatar || '/static/assets/image/default.jpg';
@@ -2187,17 +2607,20 @@ function createVideoElement(video, index) {
     
     <video 
       class="video-player" 
-      preload="metadata"
+      preload="none"
       poster="${thumbnail}"
       muted
       playsinline
       loop
+      data-video-id="${video.id}"
       onloadstart="showVideoLoading(${video.id})"
       onloadeddata="hideVideoLoading(${video.id}); this.classList.add('loaded')"
       oncanplay="hideVideoLoading(${video.id}); this.classList.add('loaded')"
+      oncanplaythrough="this.classList.add('loaded'); this.classList.add('ready')"
       onerror="showVideoError(${video.id})"
-      onload="hideVideoLoading(${video.id}); this.classList.add('loaded')"
       onloadedmetadata="console.log('Video ${video.id} metadata loaded')"
+      onplay="this.classList.add('playing')"
+      onpause="this.classList.remove('playing')"
     >
       <source src="${videoUrl}" type="video/mp4">
       Your browser does not support the video tag.
@@ -2224,15 +2647,21 @@ function createVideoElement(video, index) {
     
     <div class="video-actions">
       <button class="video-action-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike(${video.id}, this)">
-        <div class="action-icon">❤️</div>
+        <div class="action-icon like-icon">
+          <i class="bi ${isLiked ? 'bi-heart-fill' : 'bi-heart'}"></i>
+        </div>
         <div class="action-count">${formatNumber(likesCount)}</div>
       </button>
       <button class="video-action-btn" onclick="showComments(${video.id})">
-        <div class="action-icon">💬</div>
+        <div class="action-icon comment-icon">
+          <i class="bi bi-chat-dots"></i>
+        </div>
         <div class="action-count">${formatNumber(commentsCount)}</div>
       </button>
       <button class="video-action-btn" onclick="shareVideo(${video.id})">
-        <div class="action-icon">📤</div>
+        <div class="action-icon share-icon">
+          <i class="bi bi-send-fill"></i>
+        </div>
         <div class="action-count">${formatNumber(sharesCount)}</div>
       </button>
     </div>
@@ -2264,82 +2693,175 @@ function formatTimeAgo(dateString) {
   }
 }
 
-// Set up intersection observer for auto-play
+// Enhanced intersection observer for smooth auto-play
+let currentObserver = null;
+
 function setupIntersectionObserver() {
-  const observer = new IntersectionObserver((entries) => {
+  // Disconnect previous observer if exists
+  if (currentObserver) {
+    currentObserver.disconnect();
+  }
+  
+  currentObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
-      const video = entry.target.querySelector('video');
+      const videoItem = entry.target;
+      const video = videoItem.querySelector('video');
       if (!video) return;
       
-      if (entry.isIntersecting) {
-        // Video is in viewport - play it
-        if (video.readyState >= 2) { // HAVE_CURRENT_DATA
-          video.play().catch(e => {
-            console.log('Autoplay prevented:', e);
-            // Show play button if autoplay fails
-            const playOverlay = entry.target.querySelector('.play-overlay');
-            if (playOverlay) playOverlay.classList.remove('hidden');
-          });
-          isPlaying = true;
-        } else {
-          // Video not ready yet, wait for it to load
-          video.addEventListener('canplay', () => {
-            video.play().catch(e => console.log('Autoplay prevented:', e));
-            isPlaying = true;
-          }, { once: true });
+      if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
+        // Video is in viewport and at least 50% visible - play it
+        videoItem.classList.remove('loading');
+        videoItem.classList.add('playing');
+        
+        // Preload video if not loaded
+        if (video.readyState < 2) {
+          video.load();
+        }
+        
+        // Try to play video
+        const playPromise = video.play();
+        
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              // Video playing successfully
+              video.classList.add('playing');
+              videoItem.classList.add('playing');
+              isPlaying = true;
+              
+              // Hide play overlay
+              const playOverlay = videoItem.querySelector('.play-overlay');
+              if (playOverlay) {
+                playOverlay.classList.add('hidden');
+              }
+              
+              // Preload next video for smoother transition
+              preloadNextVideo(videoItem);
+            })
+            .catch(e => {
+              console.log('Autoplay prevented:', e);
+              // Show play button if autoplay fails
+              const playOverlay = videoItem.querySelector('.play-overlay');
+              if (playOverlay) {
+                playOverlay.classList.remove('hidden');
+                videoItem.classList.add('paused');
+              }
+            });
         }
       } else {
         // Video is out of viewport - pause it
         video.pause();
+        video.classList.remove('playing');
+        videoItem.classList.remove('playing');
+        videoItem.classList.add('loading');
         isPlaying = false;
+        
+        // Show play overlay when paused
+        const playOverlay = videoItem.querySelector('.play-overlay');
+        if (playOverlay && video.paused) {
+          playOverlay.classList.remove('hidden');
+          videoItem.classList.add('paused');
+        }
       }
     });
   }, {
-    threshold: 0.5 // Trigger when 50% of video is visible
+    threshold: [0, 0.3, 0.5, 0.7, 1], // Multiple thresholds for better detection
+    rootMargin: '0px'
   });
 
   // Observe all video containers
   videos.forEach(videoContainer => {
-    observer.observe(videoContainer);
+    currentObserver.observe(videoContainer);
   });
+  
+  console.log(`Observing ${videos.length} videos for auto-play`);
 }
 
-// Set up scroll listener for navigation
-function setupScrollListener() {
+// Preload next video for smoother scrolling
+function preloadNextVideo(currentVideoItem) {
   const feedContainer = document.getElementById('videoFeed');
-  const scrollIndicator = document.getElementById('scrollIndicator');
   if (!feedContainer) return;
   
-  let scrollTimeout;
+  const currentIndex = Array.from(feedContainer.children).indexOf(currentVideoItem);
+  const nextIndex = currentIndex + 1;
   
+  if (nextIndex < videos.length) {
+    const nextVideoItem = videos[nextIndex];
+    const nextVideo = nextVideoItem.querySelector('video');
+    
+    if (nextVideo && nextVideo.readyState === 0) {
+      // Set preload attribute and load metadata
+      nextVideo.preload = 'metadata';
+      nextVideo.load();
+      nextVideoItem.setAttribute('data-preload', 'true');
+      
+      // Remove preload flag once loaded
+      nextVideo.addEventListener('loadedmetadata', () => {
+        nextVideoItem.removeAttribute('data-preload');
+      }, { once: true });
+    }
+  }
+}
+
+// Enhanced scroll listener with better performance
+let scrollTimeout;
+let isScrolling = false;
+
+function setupScrollListener() {
+  const feedContainer = document.getElementById('videoFeed');
+  if (!feedContainer) return;
+  
+  // Add scrolling class for visual feedback
   feedContainer.addEventListener('scroll', () => {
-    // Throttle scroll events for better performance
+    if (!isScrolling) {
+      isScrolling = true;
+      feedContainer.classList.add('scrolling');
+    }
+    
+    // Clear existing timeout
     if (scrollTimeout) {
       clearTimeout(scrollTimeout);
     }
     
+    // Throttle scroll events for better performance
     scrollTimeout = setTimeout(() => {
+      isScrolling = false;
+      feedContainer.classList.remove('scrolling');
+      
       const scrollTop = feedContainer.scrollTop;
       const containerHeight = feedContainer.clientHeight;
       const scrollHeight = feedContainer.scrollHeight;
       const newIndex = Math.round(scrollTop / containerHeight);
       
-      // Update scroll indicator
-      if (scrollIndicator) {
-        const scrollProgress = scrollTop / (scrollHeight - containerHeight);
-        const indicatorHeight = Math.max(20, 100 * (containerHeight / scrollHeight));
-        const indicatorTop = scrollProgress * (100 - indicatorHeight);
-        
-        scrollIndicator.style.height = `${indicatorHeight}px`;
-        scrollIndicator.querySelector('::before')?.style.setProperty('top', `${indicatorTop}px`);
-      }
-      
       if (newIndex !== currentVideoIndex && newIndex >= 0 && newIndex < videos.length) {
         currentVideoIndex = newIndex;
-        console.log(`Now viewing video ${currentVideoIndex + 1}`);
+        console.log(`Now viewing video ${currentVideoIndex + 1} of ${videos.length}`);
+        
+        // Preload adjacent videos
+        preloadAdjacentVideos(newIndex);
       }
-    }, 100);
-  });
+    }, 150);
+  }, { passive: true });
+}
+
+// Preload adjacent videos for smoother experience
+function preloadAdjacentVideos(currentIndex) {
+  const feedContainer = document.getElementById('videoFeed');
+  if (!feedContainer) return;
+  
+  // Preload next 2 videos
+  for (let i = 1; i <= 2; i++) {
+    const nextIndex = currentIndex + i;
+    if (nextIndex < videos.length) {
+      const nextVideoItem = videos[nextIndex];
+      const nextVideo = nextVideoItem.querySelector('video');
+      
+      if (nextVideo && nextVideo.readyState === 0) {
+        nextVideo.preload = 'metadata';
+        nextVideo.load();
+      }
+    }
+  }
 }
 
 // Set up infinite scroll
@@ -2455,6 +2977,16 @@ async function toggleLike(videoId, button) {
       const countElement = button.querySelector('.action-count');
       countElement.textContent = formatNumber(data.likes_count);
       
+      // Update Bootstrap Icon
+      const iconElement = button.querySelector('.like-icon i');
+      if (iconElement) {
+        if (data.is_liked) {
+          iconElement.className = 'bi bi-heart-fill';
+        } else {
+          iconElement.className = 'bi bi-heart';
+        }
+      }
+      
       // Add animation effect
       button.style.animation = 'likePulse 0.3s ease';
       setTimeout(() => {
@@ -2483,34 +3015,154 @@ async function showComments(videoId) {
   }
 }
 
+// Store current video data for sharing
+let currentShareVideoData = null;
+
 async function shareVideo(videoId) {
   try {
-    const response = await fetch(`${API_BASE_URL}/feed/video/${videoId}/share`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-    
-    const data = await response.json();
-    
-    if (data.success) {
-      // Use Web Share API if available
-      if (navigator.share) {
-        await navigator.share({
-          title: 'Video Menarik',
-          text: 'Lihat video ini!',
-          url: window.location.href
-        });
-      } else {
-        // Fallback: copy to clipboard
-        await navigator.clipboard.writeText(window.location.href);
-        showToast('Link video telah disalin!', 'success');
-      }
+    // Get video data from DOM
+    const videoElement = document.getElementById(`video-${videoId}`);
+    if (!videoElement) {
+      showToast('Video tidak ditemukan', 'error');
+      return;
     }
+    
+    // Extract video data
+    const videoTitle = videoElement.querySelector('.video-title')?.textContent || 'Video Menarik';
+    const videoCaption = videoElement.querySelector('.video-description')?.textContent || 'Lihat video ini!';
+    const videoAuthor = videoElement.querySelector('.video-author-info h4')?.textContent || '';
+    
+    // Store video data for sharing
+    currentShareVideoData = {
+      id: videoId,
+      title: videoTitle,
+      caption: videoCaption,
+      author: videoAuthor,
+      url: `${window.location.origin}/explore#video-${videoId}`
+    };
+    
+    // Increment share count (optional API call)
+    try {
+      const response = await fetch(`${API_BASE_URL}/feed/video/${videoId}/share`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      const data = await response.json();
+      if (data.success) {
+        // Update share count in UI
+        const shareBtn = videoElement.querySelector('.video-action-btn:last-child .action-count');
+        if (shareBtn) {
+          const currentCount = parseInt(shareBtn.textContent.replace(/\D/g, '')) || 0;
+          shareBtn.textContent = formatNumber(currentCount + 1);
+        }
+      }
+    } catch (apiError) {
+      console.log('Share count update failed (non-critical):', apiError);
+    }
+    
+    // Open share modal
+    openShareModal();
   } catch (error) {
     console.error('Error sharing video:', error);
-    showToast('Gagal share video', 'error');
+    showToast('Gagal membagikan video', 'error');
+  }
+}
+
+function openShareModal() {
+  const modal = document.getElementById('shareModal');
+  if (modal) {
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+  }
+}
+
+function getShareUrl() {
+  if (currentShareVideoData) {
+    return currentShareVideoData.url;
+  }
+  return window.location.href;
+}
+
+function getShareText() {
+  if (currentShareVideoData) {
+    const title = currentShareVideoData.title || 'Video Menarik';
+    const caption = currentShareVideoData.caption || '';
+    const author = currentShareVideoData.author ? ` - ${currentShareVideoData.author}` : '';
+    return `${title}${caption ? ' - ' + caption : ''}${author}`;
+  }
+  return 'Lihat video menarik ini di Inemi!';
+}
+
+function shareToWhatsApp() {
+  const url = encodeURIComponent(getShareUrl());
+  const text = encodeURIComponent(getShareText());
+  window.open(`https://wa.me/?text=${text}%20${url}`, '_blank');
+}
+
+function shareToFacebook() {
+  const url = encodeURIComponent(getShareUrl());
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank');
+}
+
+function shareToTwitter() {
+  const url = encodeURIComponent(getShareUrl());
+  const text = encodeURIComponent(getShareText());
+  window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank');
+}
+
+function shareToTelegram() {
+  const url = encodeURIComponent(getShareUrl());
+  const text = encodeURIComponent(getShareText());
+  window.open(`https://t.me/share/url?url=${url}&text=${text}`, '_blank');
+}
+
+function shareToInstagram() {
+  // Instagram doesn't support direct sharing via URL, so copy link instead
+  copyShareLink();
+  showToast('Salin link dan bagikan di Instagram Story atau Post', 'info');
+}
+
+function copyShareLink(event) {
+  const url = getShareUrl();
+  navigator.clipboard.writeText(url).then(() => {
+    showToast('Link berhasil disalin!', 'success');
+    if (event) {
+      const button = event.target.closest('button');
+      if (button) {
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="bi bi-check-circle fs-4"></i><div class="mt-2">Tersalin!</div>';
+        button.classList.remove('btn-outline-light');
+        button.classList.add('btn-success');
+        setTimeout(() => {
+          button.innerHTML = originalText;
+          button.classList.remove('btn-success');
+          button.classList.add('btn-outline-light');
+        }, 2000);
+      }
+    }
+  }).catch(err => {
+    console.error('Failed to copy: ', err);
+    showToast('Gagal menyalin link', 'error');
+  });
+}
+
+// Use native Web Share API if available
+function useNativeShare() {
+  if (navigator.share && currentShareVideoData) {
+    navigator.share({
+      title: currentShareVideoData.title || 'Video Menarik',
+      text: getShareText(),
+      url: getShareUrl()
+    }).then(() => {
+      console.log('Shared successfully');
+    }).catch((error) => {
+      console.log('Error sharing:', error);
+    });
+  } else {
+    // Fallback to modal
+    openShareModal();
   }
 }
 
@@ -2838,13 +3490,38 @@ async function testAPIEndpoints() {
 }
 
 // Navigation functions
-function goToUpgrade() {
-  window.location.href = '/upgrade';
+function goToProfile() {
+  window.location.href = '/profile';
 }
 
-function goToProfile() {
-  alert('Profile page coming soon! 👤');
+function goToMenu() {
+  // Toggle menu or navigate to menu page
+  console.log('Menu clicked');
 }
+
+function goToHome() {
+  window.location.href = '/';
+}
+
+function goToSparkle() {
+  // Navigate to sparkle/featured page
+  console.log('Sparkle clicked');
+}
+
+function goToExplore() {
+  // Already on explore page
+  console.log('Explore clicked');
+}
+
+// Show native share button if available
+document.addEventListener('DOMContentLoaded', function() {
+  if (navigator.share) {
+    const nativeShareBtn = document.getElementById('nativeShareBtn');
+    if (nativeShareBtn) {
+      nativeShareBtn.style.display = 'block';
+    }
+  }
+});
 </script>
 
 {% endblock %}
