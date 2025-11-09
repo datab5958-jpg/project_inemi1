@@ -1152,7 +1152,7 @@
         z-index: 10;
         width: 100%;
         max-width: 100%;
-        overflow-x: hidden;
+        overflow-x: clip; /* Changed from hidden to clip - allows fixed positioned children to escape */
         overflow-y: visible;
         display: flex;
         flex-direction: column;
@@ -1308,11 +1308,13 @@
         will-change: opacity, transform, visibility;
     }
 
-    .ai-mode-dropdown-inline.open .ai-mode-dropdown-menu {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0) scale(1);
-        pointer-events: auto;
+    .ai-mode-dropdown-inline.open .ai-mode-dropdown-menu,
+    .ai-mode-dropdown-menu.show {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateY(0) scale(1) !important;
+        pointer-events: auto !important;
+        display: block !important;
     }
 
     .ai-mode-dropdown-item {
@@ -4060,14 +4062,20 @@
                 isClosing = true;
                 
                 modeDropdownInline.classList.remove('open');
+                modeDropdownMenu.classList.remove('show');
                 
-                // Wait for transition to complete before resetting position
+                // Wait for transition to complete before resetting position and moving back
                 setTimeout(() => {
                     if (!modeDropdownInline.classList.contains('open')) {
                         modeDropdownMenu.style.top = '';
                         modeDropdownMenu.style.left = '';
                         modeDropdownMenu.style.right = '';
                         modeDropdownMenu.style.bottom = '';
+                        modeDropdownMenu.style.position = '';
+                        // Move dropdown back to original parent if it was moved to body
+                        if (modeDropdownInline && modeDropdownMenu.parentElement === document.body) {
+                            modeDropdownInline.appendChild(modeDropdownMenu);
+                        }
                     }
                     isClosing = false;
                 }, 200); // Match transition duration
@@ -4082,6 +4090,11 @@
                 if (isOpen) {
                     closeDropdown();
                 } else {
+                    // Move dropdown to body to prevent clipping by parent overflow
+                    if (modeDropdownMenu.parentElement !== document.body) {
+                        document.body.appendChild(modeDropdownMenu);
+                    }
+                    
                     // Calculate position for popup (above button)
                     const btnRect = modeDropdownBtn.getBoundingClientRect();
                     const menuHeight = 300; // Approximate menu height
@@ -4100,12 +4113,19 @@
                     modeDropdownMenu.style.left = `${finalLeft}px`;
                     modeDropdownMenu.style.right = 'auto';
                     modeDropdownMenu.style.bottom = 'auto';
+                    modeDropdownMenu.style.position = 'fixed';
+                    modeDropdownMenu.style.zIndex = '10001';
                     
                     // Force reflow to ensure position is set before animation
                     void modeDropdownMenu.offsetHeight;
                     
-                    // Then trigger animation
-                    modeDropdownInline.classList.add('open');
+                    // Then trigger animation - add both class to inline and menu
+                    // Add show class first, then open class to trigger CSS transition
+                    modeDropdownMenu.classList.add('show');
+                    // Small delay to ensure show class is applied before open class
+                    setTimeout(() => {
+                        modeDropdownInline.classList.add('open');
+                    }, 10);
                 }
             });
             
@@ -4131,8 +4151,13 @@
             
             // Close dropdown when clicking outside
             document.addEventListener('click', (e) => {
-                if (modeDropdownInline && !modeDropdownInline.contains(e.target)) {
-                    if (modeDropdownInline.classList.contains('open')) {
+                // Check if click is outside both the button/container and the menu (which might be in body)
+                const clickedInsideButton = modeDropdownBtn && modeDropdownBtn.contains(e.target);
+                const clickedInsideInline = modeDropdownInline && modeDropdownInline.contains(e.target);
+                const clickedInsideMenu = modeDropdownMenu && modeDropdownMenu.contains(e.target);
+                
+                if (!clickedInsideButton && !clickedInsideInline && !clickedInsideMenu) {
+                    if (modeDropdownInline && modeDropdownInline.classList.contains('open')) {
                         closeDropdown();
                     }
                 }
@@ -4140,7 +4165,11 @@
             
             // Update menu position on window resize
             window.addEventListener('resize', () => {
-                if (modeDropdownInline.classList.contains('open') && modeDropdownBtn) {
+                if (modeDropdownInline && modeDropdownInline.classList.contains('open') && modeDropdownBtn) {
+                    // Ensure menu is in body
+                    if (modeDropdownMenu.parentElement !== document.body) {
+                        document.body.appendChild(modeDropdownMenu);
+                    }
                     const btnRect = modeDropdownBtn.getBoundingClientRect();
                     const menuHeight = 300;
                     const spacing = 8;
@@ -4151,6 +4180,7 @@
                     
                     modeDropdownMenu.style.top = `${finalTop}px`;
                     modeDropdownMenu.style.left = `${finalLeft}px`;
+                    modeDropdownMenu.style.position = 'fixed';
                 }
             });
         }
@@ -4162,6 +4192,29 @@
         const inputMenuDownloadHistory = document.getElementById('inputMenuDownloadHistory');
         const inputMenuClearHistory = document.getElementById('inputMenuClearHistory');
         
+        // Helper function to close input menu and move back to original parent
+        const closeInputMenu = () => {
+            if (inputMenu) {
+                inputMenu.classList.remove('show');
+                if (inputMenuBtn) {
+                    inputMenuBtn.classList.remove('active');
+                    const icon = inputMenuBtn.querySelector('i');
+                    if (icon) {
+                        icon.className = 'bi bi-gear';
+                    }
+                }
+                // Reset position and move back to original parent
+                inputMenu.style.top = '';
+                inputMenu.style.right = '';
+                inputMenu.style.bottom = '';
+                inputMenu.style.left = '';
+                const inputMenuWrapper = document.querySelector('.ai-input-menu-wrapper');
+                if (inputMenuWrapper && inputMenu.parentElement === document.body) {
+                    inputMenuWrapper.appendChild(inputMenu);
+                }
+            }
+        };
+        
         // Toggle input menu (popup outside card)
         if (inputMenuBtn && inputMenu) {
             console.log('[Input Menu] Button and menu found:', inputMenuBtn, inputMenu);
@@ -4170,16 +4223,16 @@
                 e.stopPropagation();
                 console.log('[Input Menu] Button clicked');
                 const isShowing = inputMenu.classList.contains('show');
-                const icon = inputMenuBtn.querySelector('i');
                 console.log('[Input Menu] Is showing:', isShowing);
                 if (isShowing) {
-                    inputMenu.classList.remove('show');
-                    inputMenuBtn.classList.remove('active');
-                    if (icon) {
-                        icon.className = 'bi bi-gear';
-                    }
+                    closeInputMenu();
                     console.log('[Input Menu] Menu hidden');
                 } else {
+                    // Move dropdown to body to prevent clipping by parent overflow
+                    if (inputMenu.parentElement !== document.body) {
+                        document.body.appendChild(inputMenu);
+                    }
+                    
                     // Calculate position for popup (above button, aligned to right)
                     const btnRect = inputMenuBtn.getBoundingClientRect();
                     const menuHeight = 400; // Approximate menu height
@@ -4196,6 +4249,7 @@
                     inputMenu.style.right = `${right}px`;
                     inputMenu.style.bottom = 'auto';
                     inputMenu.style.left = 'auto';
+                    inputMenu.style.position = 'fixed';
                     
                     inputMenu.classList.add('show');
                     inputMenuBtn.classList.add('active');
@@ -4231,14 +4285,7 @@
                     updateModeIndicators(selectedMode);
                     
                     // Close menu
-                    if (inputMenu) {
-                        inputMenu.classList.remove('show');
-                        inputMenuBtn.classList.remove('active');
-                        const icon = inputMenuBtn.querySelector('i');
-                        if (icon) {
-                            icon.className = 'bi bi-gear';
-                        }
-                    }
+                    closeInputMenu();
                 }
             });
         });
@@ -4251,14 +4298,7 @@
                 if (downloadHistoryBtn) {
                     downloadHistoryBtn.click();
                 }
-                if (inputMenu) {
-                    inputMenu.classList.remove('show');
-                    inputMenuBtn.classList.remove('active');
-                    const icon = inputMenuBtn.querySelector('i');
-                    if (icon) {
-                        icon.className = 'bi bi-gear';
-                    }
-                }
+                closeInputMenu();
             });
         }
         
@@ -4270,14 +4310,7 @@
                 if (clearHistoryBtn) {
                     clearHistoryBtn.click();
                 }
-                if (inputMenu) {
-                    inputMenu.classList.remove('show');
-                    inputMenuBtn.classList.remove('active');
-                    const icon = inputMenuBtn.querySelector('i');
-                    if (icon) {
-                        icon.className = 'bi bi-gear';
-                    }
-                }
+                closeInputMenu();
             });
         }
         
@@ -4285,17 +4318,7 @@
         document.addEventListener('click', (e) => {
             if (inputMenu && inputMenuBtn) {
                 if (!inputMenu.contains(e.target) && !inputMenuBtn.contains(e.target)) {
-                    inputMenu.classList.remove('show');
-                    inputMenuBtn.classList.remove('active');
-                    const icon = inputMenuBtn.querySelector('i');
-                    if (icon) {
-                        icon.className = 'bi bi-gear';
-                    }
-                    // Reset position
-                    inputMenu.style.top = '';
-                    inputMenu.style.right = '';
-                    inputMenu.style.bottom = '';
-                    inputMenu.style.left = '';
+                    closeInputMenu();
                 }
             }
         });
@@ -4303,6 +4326,10 @@
         // Update menu position on window resize
         window.addEventListener('resize', () => {
             if (inputMenu && inputMenu.classList.contains('show') && inputMenuBtn) {
+                // Ensure menu is in body
+                if (inputMenu.parentElement !== document.body) {
+                    document.body.appendChild(inputMenu);
+                }
                 const btnRect = inputMenuBtn.getBoundingClientRect();
                 const menuHeight = 400;
                 const spacing = 12;
@@ -4312,6 +4339,7 @@
                 
                 inputMenu.style.top = `${finalTop}px`;
                 inputMenu.style.right = `${right}px`;
+                inputMenu.style.position = 'fixed';
             }
         });
         
