@@ -682,11 +682,20 @@ def ai_chat():
 
 @web_pages.route('/login', methods=['GET', 'POST'])
 def login():
+    # Get redirect parameter if exists
+    redirect_url = request.args.get('redirect', None)
+    
     if session.get('user_id'):
+        # If already logged in, redirect to intended page or home
+        if redirect_url:
+            return redirect(redirect_url)
         return redirect(url_for('web_pages.home'))
+    
     if request.method == 'POST':
         username_or_email = request.form.get('username', '').strip()
         password = request.form.get('password', '')
+        # Get redirect from form (POST) or keep from GET
+        redirect_url = request.form.get('redirect') or redirect_url
         
         user = User.query.filter(
             or_(User.username == username_or_email, User.email == username_or_email)
@@ -694,7 +703,7 @@ def login():
         
         if not user or not user.check_password(password):
             flash('Username/email atau password salah', 'danger')
-            return render_template('login.html')
+            return render_template('login.html', redirect_url=redirect_url)
         
         session.permanent = True  # Set session sebagai permanent
         session['user_id'] = user.id
@@ -703,9 +712,13 @@ def login():
         session['avatar_url'] = user.avatar_url or '/static/assets/image/default.jpg'
         session['kredit'] = user.kredit if user.kredit is not None else 0  # Simpan kredit di session juga
         flash('Login berhasil! Selamat datang kembali, ' + user.username + '!', 'success')
+        
+        # Redirect to intended page or default to profile
+        if redirect_url:
+            return redirect(redirect_url)
         return redirect(url_for('web_pages.profil'))
     
-    return render_template('login.html')
+    return render_template('login.html', redirect_url=redirect_url)
 
 @web_pages.route('/auth/google/debug')
 def google_oauth_debug():
@@ -751,6 +764,9 @@ def google_login():
     from config import Config
     from urllib.parse import quote, urlencode
     
+    # Get redirect parameter if exists
+    redirect_url = request.args.get('redirect', None)
+    
     # Check if Google OAuth is configured
     if not Config.GOOGLE_CLIENT_ID or Config.GOOGLE_CLIENT_ID == '':
         flash('Google login belum dikonfigurasi. Silakan hubungi administrator.', 'danger')
@@ -768,12 +784,17 @@ def google_login():
     # Build redirect URI manually to ensure correct scheme
     redirect_uri = f"{scheme}://{host}/auth/google/callback"
     
+    # Store redirect_url in session for use after callback
+    if redirect_url:
+        session['oauth_redirect'] = redirect_url
+    
     # Log for debugging
     print(f"[Google OAuth] Redirect URI: {redirect_uri}")
     print(f"[Google OAuth] Request URL: {request.url}")
     print(f"[Google OAuth] Request Host: {host}")
     print(f"[Google OAuth] Request Scheme: {request.scheme}")
     print(f"[Google OAuth] Using Scheme: {scheme}")
+    print(f"[Google OAuth] Redirect after login: {redirect_url}")
     
     # Build Google OAuth URL with proper encoding
     params = {
@@ -1013,6 +1034,13 @@ def google_callback():
         session['avatar_url'] = user.avatar_url or '/static/assets/image/default.jpg'
         session['kredit'] = user.kredit if user.kredit is not None else 0
         
+        flash('Login berhasil! Selamat datang, ' + user.username + '!', 'success')
+        
+        # Check if there's a redirect URL stored in session
+        redirect_url = session.pop('oauth_redirect', None)
+        if redirect_url:
+            return redirect(redirect_url)
+        
         return redirect(url_for('web_pages.profil'))
         
     except Exception as e:
@@ -1020,6 +1048,263 @@ def google_callback():
         import traceback
         traceback.print_exc()
         flash('Terjadi kesalahan saat login dengan Google. Silakan coba lagi.', 'danger')
+        return redirect(url_for('web_pages.login'))
+
+@web_pages.route('/auth/github')
+def github_login():
+    """Initiate GitHub OAuth login"""
+    from config import Config
+    from urllib.parse import urlencode
+    
+    # Get redirect parameter if exists
+    redirect_url = request.args.get('redirect', None)
+    
+    # Check if GitHub OAuth is configured
+    github_client_id = Config.GITHUB_CLIENT_ID
+    github_client_secret = Config.GITHUB_CLIENT_SECRET
+    
+    # Debug: Print configuration status
+    print(f"[GitHub OAuth] Client ID: {'Set' if github_client_id else 'Not Set'}")
+    print(f"[GitHub OAuth] Client Secret: {'Set' if github_client_secret else 'Not Set'}")
+    
+    if not github_client_id or github_client_id == '' or github_client_id == 'your-github-client-id-here':
+        flash('GitHub login belum dikonfigurasi. Silakan tambahkan GITHUB_CLIENT_ID dan GITHUB_CLIENT_SECRET ke file .env', 'danger')
+        return redirect(url_for('web_pages.login'))
+    
+    if not github_client_secret or github_client_secret == '' or github_client_secret == 'your-github-client-secret-here':
+        flash('GitHub Client Secret belum dikonfigurasi. Silakan tambahkan GITHUB_CLIENT_SECRET ke file .env', 'danger')
+        return redirect(url_for('web_pages.login'))
+    
+    # Build redirect URI based on current request
+    # GitHub OAuth App hanya mendukung satu callback URL, jadi kita perlu menggunakan
+    # URL yang konsisten. Untuk development, gunakan localhost. Untuk production, 
+    # gunakan domain production.
+    host = request.host
+    scheme = request.scheme
+    
+    # Force HTTPS for production domains
+    if 'inemi.id' in host or 'inemi.com' in host:
+        scheme = 'https'
+        # Untuk production, gunakan domain production
+        redirect_uri = f"{scheme}://{host}/auth/github/callback"
+    else:
+        # Untuk development/local, selalu gunakan localhost (konsisten)
+        # Ini memastikan callback URL di GitHub hanya perlu satu: http://localhost:5000/auth/github/callback
+        redirect_uri = "http://localhost:5000/auth/github/callback"
+    
+    # Debug: Print redirect URI
+    print(f"[GitHub OAuth] Request Host: {host}")
+    print(f"[GitHub OAuth] Redirect URI: {redirect_uri}")
+    
+    # Store redirect_url in session for use after callback
+    session.permanent = True
+    if redirect_url:
+        session['oauth_redirect'] = redirect_url
+    
+    # Build GitHub OAuth URL with secure state token
+    import secrets
+    state_token = secrets.token_urlsafe(32)
+    session['github_oauth_state'] = state_token
+    session['github_oauth_redirect_uri'] = redirect_uri  # Store redirect_uri for verification
+    
+    # Debug: Print state token
+    print(f"[GitHub OAuth] State token stored: {state_token[:20]}...")
+    print(f"[GitHub OAuth] Session ID: {session.get('_id', 'No session ID')}")
+    
+    params = {
+        'client_id': Config.GITHUB_CLIENT_ID,
+        'redirect_uri': redirect_uri,
+        'scope': 'user:email read:user',
+        'state': state_token
+    }
+    
+    github_auth_url = 'https://github.com/login/oauth/authorize?' + urlencode(params)
+    
+    return redirect(github_auth_url)
+
+@web_pages.route('/auth/github/callback')
+def github_callback():
+    """Handle GitHub OAuth callback"""
+    from config import Config
+    import requests
+    
+    code = request.args.get('code')
+    error = request.args.get('error')
+    state = request.args.get('state')
+    
+    # Debug: Print received parameters
+    print(f"[GitHub OAuth Callback] Code: {code[:20] if code else 'None'}...")
+    print(f"[GitHub OAuth Callback] State received: {state}")
+    print(f"[GitHub OAuth Callback] Session ID: {session.get('_id', 'No session ID')}")
+    print(f"[GitHub OAuth Callback] Session keys: {list(session.keys())}")
+    
+    # Verify state token
+    stored_state = session.get('github_oauth_state')
+    stored_redirect_uri = session.get('github_oauth_redirect_uri')
+    
+    print(f"[GitHub OAuth Callback] Stored state: {stored_state[:20] if stored_state else 'None'}...")
+    
+    if not stored_state:
+        flash('Session expired atau tidak valid. Silakan coba login lagi.', 'danger')
+        return redirect(url_for('web_pages.login'))
+    
+    if stored_state != state:
+        print(f"[GitHub OAuth Callback] State mismatch! Stored: {stored_state[:20]}..., Received: {state}")
+        flash('Invalid state parameter. Silakan coba login lagi.', 'danger')
+        # Clear invalid state
+        session.pop('github_oauth_state', None)
+        session.pop('github_oauth_redirect_uri', None)
+        return redirect(url_for('web_pages.login'))
+    
+    # Clear state after verification
+    session.pop('github_oauth_state', None)
+    session.pop('github_oauth_redirect_uri', None)
+    
+    # Handle OAuth errors
+    if error:
+        error_description = request.args.get('error_description', 'Unknown error')
+        flash(f'Gagal login dengan GitHub: {error_description}', 'danger')
+        return redirect(url_for('web_pages.login'))
+    
+    if not code:
+        flash('Kode autentikasi tidak ditemukan. Silakan coba lagi.', 'danger')
+        return redirect(url_for('web_pages.login'))
+    
+    try:
+        # Build redirect URI based on current request
+        # Use stored redirect_uri if available (dari session), otherwise build from request
+        host = request.host
+        scheme = request.scheme
+        
+        # Force HTTPS for production domains
+        if 'inemi.id' in host or 'inemi.com' in host:
+            scheme = 'https'
+            # Untuk production, gunakan domain production
+            redirect_uri = stored_redirect_uri if stored_redirect_uri else f"{scheme}://{host}/auth/github/callback"
+        else:
+            # Untuk development/local, selalu gunakan localhost (konsisten dengan github_login)
+            redirect_uri = stored_redirect_uri if stored_redirect_uri else "http://localhost:5000/auth/github/callback"
+        
+        print(f"[GitHub OAuth Callback] Request Host: {host}")
+        print(f"[GitHub OAuth Callback] Using redirect URI: {redirect_uri}")
+        
+        # Exchange code for access token
+        token_url = 'https://github.com/login/oauth/access_token'
+        token_data = {
+            'client_id': Config.GITHUB_CLIENT_ID,
+            'client_secret': Config.GITHUB_CLIENT_SECRET,
+            'code': code,
+            'redirect_uri': redirect_uri
+        }
+        
+        headers = {'Accept': 'application/json'}
+        token_response = requests.post(token_url, data=token_data, headers=headers, timeout=10)
+        
+        if token_response.status_code != 200:
+            print(f"GitHub token error: {token_response.status_code} - {token_response.text}")
+            flash('Gagal mendapatkan token dari GitHub. Silakan coba lagi.', 'danger')
+            return redirect(url_for('web_pages.login'))
+        
+        token_json = token_response.json()
+        
+        if 'access_token' not in token_json:
+            error_msg = token_json.get('error_description', token_json.get('error', 'Unknown error'))
+            print(f"GitHub OAuth error: {error_msg}")
+            flash(f'Gagal mendapatkan token dari GitHub: {error_msg}', 'danger')
+            return redirect(url_for('web_pages.login'))
+        
+        access_token = token_json['access_token']
+        
+        # Get user info from GitHub
+        user_info_url = 'https://api.github.com/user'
+        headers = {
+            'Authorization': f'Bearer {access_token}',
+            'Accept': 'application/vnd.github.v3+json'
+        }
+        user_response = requests.get(user_info_url, headers=headers)
+        
+        if user_response.status_code != 200:
+            print(f"GitHub API error: {user_response.status_code} - {user_response.text}")
+            flash('Gagal mendapatkan informasi pengguna dari GitHub. Silakan coba lagi.', 'danger')
+            return redirect(url_for('web_pages.login'))
+        
+        user_data = user_response.json()
+        
+        # Get user email (may require additional scope)
+        email = user_data.get('email', '')
+        if not email:
+            # Try to get email from emails endpoint
+            emails_url = 'https://api.github.com/user/emails'
+            emails_response = requests.get(emails_url, headers=headers)
+            if emails_response.status_code == 200:
+                emails_data = emails_response.json()
+                if emails_data and len(emails_data) > 0:
+                    # Get primary email or first email
+                    primary_email = next((e for e in emails_data if e.get('primary')), emails_data[0])
+                    email = primary_email.get('email', '')
+        
+        username = user_data.get('login', '')
+        avatar_url = user_data.get('avatar_url', '/static/assets/image/default.jpg')
+        name = user_data.get('name', username)
+        
+        if not username or not email:
+            flash('Gagal mendapatkan informasi pengguna dari GitHub. Silakan coba lagi.', 'danger')
+            return redirect(url_for('web_pages.login'))
+        
+        # Check if user exists
+        user = User.query.filter_by(email=email).first()
+        
+        if not user:
+            # Create new user
+            # Sanitize username to ensure it's valid
+            safe_username = sanitize_text(username)
+            if not safe_username or len(safe_username) < 3:
+                safe_username = f"user_{email.split('@')[0][:15]}"
+            
+            # Ensure username is unique
+            base_username = safe_username
+            counter = 1
+            while User.query.filter_by(username=safe_username).first():
+                safe_username = f"{base_username}{counter}"
+                counter += 1
+            
+            user = User(
+                username=safe_username,
+                email=email,
+                avatar_url=avatar_url,
+                role='free',
+                kredit=100
+            )
+            db.session.add(user)
+            db.session.commit()
+        
+        # Update avatar if changed
+        if user.avatar_url != avatar_url:
+            user.avatar_url = avatar_url
+            db.session.commit()
+        
+        # Set session
+        session.permanent = True
+        session['user_id'] = user.id
+        session['username'] = user.username
+        session['role'] = user.role
+        session['avatar_url'] = user.avatar_url or '/static/assets/image/default.jpg'
+        session['kredit'] = user.kredit if user.kredit is not None else 0
+        
+        flash('Login berhasil! Selamat datang, ' + user.username + '!', 'success')
+        
+        # Check if there's a redirect URL stored in session
+        redirect_url = session.pop('oauth_redirect', None)
+        if redirect_url:
+            return redirect(redirect_url)
+        
+        return redirect(url_for('web_pages.profil'))
+        
+    except Exception as e:
+        print(f"GitHub OAuth error: {e}")
+        import traceback
+        traceback.print_exc()
+        flash('Terjadi kesalahan saat login dengan GitHub. Silakan coba lagi.', 'danger')
         return redirect(url_for('web_pages.login'))
 
 @web_pages.route('/lokal')
@@ -1146,113 +1431,119 @@ def user_profile(username):
 
 @web_pages.route('/register', methods=['GET', 'POST'])
 def register():
-    if session.get('user_id'):
-        return redirect(url_for('web_pages.home'))
-    if request.method == 'POST':
-        username = sanitize_text(request.form.get('username'))
-        email = sanitize_text(request.form.get('email'))
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        agree_terms = request.form.get('agreeTerms')
+    # Registrasi dinonaktifkan - hanya login dengan Google yang tersedia
+    flash('Registrasi dinonaktifkan. Silakan login dengan Google untuk melanjutkan.', 'info')
+    return redirect(url_for('web_pages.login'))
+    
+    # Kode di bawah ini tidak akan pernah dieksekusi (disabled)
+    if False:  # Disabled
+        if session.get('user_id'):
+            return redirect(url_for('web_pages.home'))
+        if request.method == 'POST':
+            username = sanitize_text(request.form.get('username'))
+            email = sanitize_text(request.form.get('email'))
+            password = request.form.get('password')
+            confirm_password = request.form.get('confirm_password')
+            agree_terms = request.form.get('agreeTerms')
 
-        # Validation
-        if not username or not email or not password or not confirm_password:
-            flash('Mohon isi semua field yang diperlukan.', 'danger')
-            return render_template('register.html')
-        if len(username) < 3:
-            flash('Username minimal 3 karakter.', 'danger')
-            return render_template('register.html')
-        if len(username) > 20:
-            flash('Username maksimal 20 karakter.', 'danger')
-            return render_template('register.html')
-        if ' ' in username:
-            flash('Username tidak boleh mengandung spasi.', 'danger')
-            return render_template('register.html')
-        username_pattern = re.compile(r'^[a-zA-Z0-9_]+$')
-        if not username_pattern.match(username):
-            flash('Username hanya boleh mengandung huruf, angka, dan underscore (_).', 'danger')
-            return render_template('register.html')
-        if username[0].isdigit():
-            flash('Username tidak boleh dimulai dengan angka.', 'danger')
-            return render_template('register.html')
-        if '<' in username or '>' in username or '"' in username or "'" in username:
-            flash('Username tidak boleh mengandung karakter khusus yang berbahaya.', 'danger')
-            return render_template('register.html')
-        if 'javascript:' in username.lower() or 'data:' in username.lower():
-            flash('Username tidak boleh mengandung script atau data URL.', 'danger')
-            return render_template('register.html')
-        if 'http://' in username.lower() or 'https://' in username.lower():
-            flash('Username tidak boleh mengandung URL.', 'danger')
-            return render_template('register.html')
-        if 'admin' in username.lower() or 'root' in username.lower() or 'system' in username.lower():
-            flash('Username tidak boleh mengandung kata yang dilarang.', 'danger')
-            return render_template('register.html')
-        if len(password) < 8:
-            flash('Password minimal 8 karakter.', 'danger')
-            return render_template('register.html')
-        if len(password) > 50:
-            flash('Password maksimal 50 karakter.', 'danger')
-            return render_template('register.html')
-        if not re.search(r'[A-Z]', password):
-            flash('Password harus mengandung minimal 1 huruf besar.', 'danger')
-            return render_template('register.html')
-        if not re.search(r'[a-z]', password):
-            flash('Password harus mengandung minimal 1 huruf kecil.', 'danger')
-            return render_template('register.html')
-        if not re.search(r'\d', password):
-            flash('Password harus mengandung minimal 1 angka.', 'danger')
-            return render_template('register.html')
-        if '<' in password or '>' in password or '"' in password or "'" in password:
-            flash('Password tidak boleh mengandung karakter khusus yang berbahaya.', 'danger')
-            return render_template('register.html')
-        if 'javascript:' in password.lower() or 'data:' in password.lower():
-            flash('Password tidak boleh mengandung script atau data URL.', 'danger')
-            return render_template('register.html')
-        if 'http://' in password.lower() or 'https://' in password.lower():
-            flash('Password tidak boleh mengandung URL.', 'danger')
-            return render_template('register.html')
-        if len(email) > 100:
-            flash('Email maksimal 100 karakter.', 'danger')
-            return render_template('register.html')
-        email_pattern = re.compile(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
-        if not email_pattern.match(email):
-            flash('Format email tidak valid.', 'danger')
-            return render_template('register.html')
-        if '<' in email or '>' in email or '"' in email or "'" in email:
-            flash('Email tidak boleh mengandung karakter khusus yang berbahaya.', 'danger')
-            return render_template('register.html')
-        if 'javascript:' in email.lower() or 'data:' in email.lower():
-            flash('Email tidak boleh mengandung script atau data URL.', 'danger')
-            return render_template('register.html')
-        if 'http://' in email.lower() or 'https://' in email.lower():
-            flash('Email tidak boleh mengandung URL.', 'danger')
-            return render_template('register.html')
-        if 'admin' in username.lower() or 'root' in username.lower() or 'system' in username.lower():
-            flash('Username tidak boleh mengandung kata yang dilarang.', 'danger')
-            return render_template('register.html')
-        if password != confirm_password:
-            flash('Password dan konfirmasi password tidak cocok.', 'danger')
-            return render_template('register.html')
-        if not agree_terms:
-            flash('Anda harus menyetujui Terms & Conditions.', 'danger')
-            return render_template('register.html')
+            # Validation
+            if not username or not email or not password or not confirm_password:
+                flash('Mohon isi semua field yang diperlukan.', 'danger')
+                return render_template('register.html')
+            if len(username) < 3:
+                flash('Username minimal 3 karakter.', 'danger')
+                return render_template('register.html')
+            if len(username) > 20:
+                flash('Username maksimal 20 karakter.', 'danger')
+                return render_template('register.html')
+            if ' ' in username:
+                flash('Username tidak boleh mengandung spasi.', 'danger')
+                return render_template('register.html')
+            username_pattern = re.compile(r'^[a-zA-Z0-9_]+$')
+            if not username_pattern.match(username):
+                flash('Username hanya boleh mengandung huruf, angka, dan underscore (_).', 'danger')
+                return render_template('register.html')
+            if username[0].isdigit():
+                flash('Username tidak boleh dimulai dengan angka.', 'danger')
+                return render_template('register.html')
+            if '<' in username or '>' in username or '"' in username or "'" in username:
+                flash('Username tidak boleh mengandung karakter khusus yang berbahaya.', 'danger')
+                return render_template('register.html')
+            if 'javascript:' in username.lower() or 'data:' in username.lower():
+                flash('Username tidak boleh mengandung script atau data URL.', 'danger')
+                return render_template('register.html')
+            if 'http://' in username.lower() or 'https://' in username.lower():
+                flash('Username tidak boleh mengandung URL.', 'danger')
+                return render_template('register.html')
+            if 'admin' in username.lower() or 'root' in username.lower() or 'system' in username.lower():
+                flash('Username tidak boleh mengandung kata yang dilarang.', 'danger')
+                return render_template('register.html')
+            if len(password) < 8:
+                flash('Password minimal 8 karakter.', 'danger')
+                return render_template('register.html')
+            if len(password) > 50:
+                flash('Password maksimal 50 karakter.', 'danger')
+                return render_template('register.html')
+            if not re.search(r'[A-Z]', password):
+                flash('Password harus mengandung minimal 1 huruf besar.', 'danger')
+                return render_template('register.html')
+            if not re.search(r'[a-z]', password):
+                flash('Password harus mengandung minimal 1 huruf kecil.', 'danger')
+                return render_template('register.html')
+            if not re.search(r'\d', password):
+                flash('Password harus mengandung minimal 1 angka.', 'danger')
+                return render_template('register.html')
+            if '<' in password or '>' in password or '"' in password or "'" in password:
+                flash('Password tidak boleh mengandung karakter khusus yang berbahaya.', 'danger')
+                return render_template('register.html')
+            if 'javascript:' in password.lower() or 'data:' in password.lower():
+                flash('Password tidak boleh mengandung script atau data URL.', 'danger')
+                return render_template('register.html')
+            if 'http://' in password.lower() or 'https://' in password.lower():
+                flash('Password tidak boleh mengandung URL.', 'danger')
+                return render_template('register.html')
+            if len(email) > 100:
+                flash('Email maksimal 100 karakter.', 'danger')
+                return render_template('register.html')
+            email_pattern = re.compile(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+            if not email_pattern.match(email):
+                flash('Format email tidak valid.', 'danger')
+                return render_template('register.html')
+            if '<' in email or '>' in email or '"' in email or "'" in email:
+                flash('Email tidak boleh mengandung karakter khusus yang berbahaya.', 'danger')
+                return render_template('register.html')
+            if 'javascript:' in email.lower() or 'data:' in email.lower():
+                flash('Email tidak boleh mengandung script atau data URL.', 'danger')
+                return render_template('register.html')
+            if 'http://' in email.lower() or 'https://' in email.lower():
+                flash('Email tidak boleh mengandung URL.', 'danger')
+                return render_template('register.html')
+            if 'admin' in username.lower() or 'root' in username.lower() or 'system' in username.lower():
+                flash('Username tidak boleh mengandung kata yang dilarang.', 'danger')
+                return render_template('register.html')
+            if password != confirm_password:
+                flash('Password dan konfirmasi password tidak cocok.', 'danger')
+                return render_template('register.html')
+            if not agree_terms:
+                flash('Anda harus menyetujui Terms & Conditions.', 'danger')
+                return render_template('register.html')
 
-        # Check if username or email already exists
-        if User.query.filter_by(username=username).first():
-            flash('Username sudah digunakan. Silakan pilih username lain.', 'danger')
-            return render_template('register.html')
-        if User.query.filter_by(email=email).first():
-            flash('Email sudah terdaftar. Silakan gunakan email lain.', 'danger')
-            return render_template('register.html')
+            # Check if username or email already exists
+            if User.query.filter_by(username=username).first():
+                flash('Username sudah digunakan. Silakan pilih username lain.', 'danger')
+                return render_template('register.html')
+            if User.query.filter_by(email=email).first():
+                flash('Email sudah terdaftar. Silakan gunakan email lain.', 'danger')
+                return render_template('register.html')
 
-        # Create user
-        user = User(username=username, email=email, avatar_url='/static/assets/image/default.jpg', role='free', kredit=100)
-        user.set_password(password)
-        db.session.add(user)
-        db.session.commit()
-        flash('Registrasi berhasil! Akun Anda telah dibuat. Silakan login untuk melanjutkan.', 'success')
-        return redirect(url_for('web_pages.login'))
-    return render_template('register.html')
+            # Create user
+            user = User(username=username, email=email, avatar_url='/static/assets/image/default.jpg', role='free', kredit=100)
+            user.set_password(password)
+            db.session.add(user)
+            db.session.commit()
+            flash('Registrasi berhasil! Akun Anda telah dibuat. Silakan login untuk melanjutkan.', 'success')
+            return redirect(url_for('web_pages.login'))
+        return render_template('register.html')
 
 @web_pages.route('/saran')
 def saran():
