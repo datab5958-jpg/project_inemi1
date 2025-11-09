@@ -4351,6 +4351,41 @@
                 updateModeIndicators(mode);
             });
         }
+        
+        // Initialize mode from URL parameter (if provided)
+        {% if initial_mode %}
+        const initialMode = '{{ initial_mode }}';
+        // Map landing page modes to ai_generate modes
+        const modeMap = {
+            'image': 'image_generate',
+            'video': 'video_generate',
+            'music': 'music_generate',
+            'edit': 'image_edit'
+        };
+        const mappedMode = modeMap[initialMode] || initialMode;
+        
+        if (mappedMode && mappedMode !== 'auto') {
+            // Set mode select value
+            if (modeSelect) {
+                modeSelect.value = mappedMode;
+            }
+            // Update all indicators
+            updateModeIndicators(mappedMode);
+            
+            // Show toast notification
+            setTimeout(() => {
+                if (window.showToast) {
+                    const modeLabels = {
+                        'image_generate': 'Gambar',
+                        'image_edit': 'Edit',
+                        'video_generate': 'Video',
+                        'music_generate': 'Musik'
+                    };
+                    window.showToast(`Mode: ${modeLabels[mappedMode] || mappedMode}`, 'info', 'Mode Selected');
+                }
+            }, 500);
+        }
+        {% endif %}
 
         // Inline Mode Dropdown (inside input)
         const modeDropdownInline = document.getElementById('modeDropdownInline');

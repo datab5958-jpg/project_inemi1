@@ -58,7 +58,9 @@ def _build_public_url(relative_path: str) -> str:
 
 @ai_generate_bp.route('/ai_generate', methods=['GET'])
 def ai_generate_page():
-    return render_template('ai_generate.html')
+    # Get mode parameter from URL if exists
+    mode = request.args.get('mode', 'auto')
+    return render_template('ai_generate.html', initial_mode=mode)
 
 
 @ai_generate_bp.route('/api/ai_generate/check-session', methods=['GET'])

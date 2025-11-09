@@ -41,6 +41,11 @@ class Config:
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID') or ''
     GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET') or ''
     GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI') or 'http://localhost:5000/auth/google/callback'
+    
+    # GitHub OAuth Configuration
+    GITHUB_CLIENT_ID = os.environ.get('GITHUB_CLIENT_ID') or ''
+    GITHUB_CLIENT_SECRET = os.environ.get('GITHUB_CLIENT_SECRET') or ''
+    GITHUB_REDIRECT_URI = os.environ.get('GITHUB_REDIRECT_URI') or 'http://localhost:5000/auth/github/callback'
 
 class DevelopmentConfig(Config):
     """Development configuration"""
