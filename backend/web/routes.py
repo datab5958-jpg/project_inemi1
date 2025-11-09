@@ -341,14 +341,15 @@ def old_home():
     if 'user_id' not in session:
         return redirect(url_for('web_pages.login'))
     
-    # Get initial media items for the home page (first 20 items)
-    # This will be enhanced by infinite scroll
-    images = Image.query.order_by(Image.created_at.desc()).limit(7).all()
-    videos = Video.query.order_by(Video.created_at.desc()).limit(7).all()
+    # Get initial media items for the home page (20 items like Instagram)
+    # Distribution: ~7 images, ~7 videos, ~6-7 music (total ~20 items)
+    # Take more items initially to compensate for filtering
+    images = Image.query.order_by(Image.created_at.desc()).limit(15).all()
+    videos = Video.query.order_by(Video.created_at.desc()).limit(15).all()
     
     # Temporary fix for missing genre/mode columns
     try:
-        songs = Song.query.order_by(Song.created_at.desc()).limit(6).all()
+        songs = Song.query.order_by(Song.created_at.desc()).limit(15).all()
     except Exception as e:
         # If genre/mode columns don't exist, use raw SQL to get only existing columns
         from sqlalchemy import text
@@ -359,7 +360,7 @@ def old_home():
                    is_favorite, whitelist_reason, view_count, created_at, updated_at
             FROM songs 
             ORDER BY created_at DESC 
-            LIMIT 6
+            LIMIT 50
         """))
         songs = []
         for row in result:
@@ -390,6 +391,22 @@ def old_home():
     # Combine all media with type indicators
     all_media = []
     
+    # Statistics for debugging
+    stats = {
+        'images_queried': len(images),
+        'videos_queried': len(videos),
+        'songs_queried': len(songs),
+        'images_deactivated': 0,
+        'videos_deactivated': 0,
+        'songs_deactivated': 0,
+        'images_no_url': 0,
+        'videos_no_url': 0,
+        'songs_no_url': 0,
+        'images_added': 0,
+        'videos_added': 0,
+        'songs_added': 0
+    }
+    
     def is_deactivated(content_type: str, content_id: str, obj=None) -> bool:
         if obj is not None and hasattr(obj, 'is_active') and obj.is_active is not None:
             return not bool(obj.is_active)
@@ -398,6 +415,11 @@ def old_home():
 
     for image in images:
         if is_deactivated('image', str(image.id), image):
+            stats['images_deactivated'] += 1
+            continue
+        # Skip if image_url is empty or None
+        if not image.image_url or (isinstance(image.image_url, str) and image.image_url.strip() == ''):
+            stats['images_no_url'] += 1
             continue
         likes_count = Like.query.filter_by(content_type='image', content_id=str(image.id)).count()
         comments_count = Comment.query.filter_by(content_type='image', content_id=str(image.id)).count()
@@ -411,9 +433,15 @@ def old_home():
             'likes_count': likes_count,
             'comments_count': comments_count
         })
+        stats['images_added'] += 1
     
     for video in videos:
         if is_deactivated('video', str(video.id), video):
+            stats['videos_deactivated'] += 1
+            continue
+        # Skip if video_url is empty or None
+        if not video.video_url or (isinstance(video.video_url, str) and video.video_url.strip() == ''):
+            stats['videos_no_url'] += 1
             continue
         likes_count = Like.query.filter_by(content_type='video', content_id=str(video.id)).count()
         comments_count = Comment.query.filter_by(content_type='video', content_id=str(video.id)).count()
@@ -427,9 +455,15 @@ def old_home():
             'likes_count': likes_count,
             'comments_count': comments_count
         })
+        stats['videos_added'] += 1
     
     for song in songs:
         if is_deactivated('song', str(song.id), song):
+            stats['songs_deactivated'] += 1
+            continue
+        # Skip if audio_url is empty or None
+        if not song.audio_url or (isinstance(song.audio_url, str) and song.audio_url.strip() == ''):
+            stats['songs_no_url'] += 1
             continue
         likes_count = Like.query.filter_by(content_type='song', content_id=song.id).count()
         comments_count = Comment.query.filter_by(content_type='song', content_id=song.id).count()
@@ -445,11 +479,63 @@ def old_home():
             'likes_count': likes_count,
             'comments_count': comments_count
         })
+        stats['songs_added'] += 1
     
-    # Sort by creation date to ensure newest first
-    all_media.sort(key=lambda x: x['created_at'], reverse=True)
+    # Separate by type for balanced distribution
+    images_list = [item for item in all_media if item['type'] == 'image']
+    videos_list = [item for item in all_media if item['type'] == 'video']
+    music_list = [item for item in all_media if item['type'] == 'music']
     
-    return render_template('home.html', media_items=all_media)
+    # Calculate balanced distribution: ~7 images, ~7 videos, ~6 music (total ~20)
+    items_per_type = 7
+    total_target = 20
+    
+    # Take items from each type (already sorted by created_at desc)
+    selected_images = images_list[:items_per_type]
+    selected_videos = videos_list[:items_per_type]
+    selected_music = music_list[:min(items_per_type, len(music_list))]
+    
+    # Combine and sort by created_at to maintain chronological order
+    initial_items = selected_images + selected_videos + selected_music
+    initial_items.sort(key=lambda x: x['created_at'], reverse=True)
+    
+    # If we have less than 20 items, fill with remaining items from all types
+    if len(initial_items) < total_target:
+        remaining = []
+        remaining.extend(images_list[items_per_type:])
+        remaining.extend(videos_list[items_per_type:])
+        remaining.extend(music_list[items_per_type:])
+        remaining.sort(key=lambda x: x['created_at'], reverse=True)
+        
+        # Add remaining items up to 20 total
+        needed = total_target - len(initial_items)
+        initial_items.extend(remaining[:needed])
+        initial_items.sort(key=lambda x: x['created_at'], reverse=True)
+    
+    # Limit to exactly 20 items
+    initial_items = initial_items[:total_target]
+    
+    # Count types in initial display
+    initial_types = {'image': 0, 'video': 0, 'music': 0}
+    for item in initial_items:
+        item_type = item.get('type', 'unknown')
+        if item_type in initial_types:
+            initial_types[item_type] += 1
+    
+    # Count types in all valid items
+    all_types = {'image': len(images_list), 'video': len(videos_list), 'music': len(music_list)}
+    
+    print(f"""
+    📊 Home Page Statistics:
+    - Queried: {stats['images_queried']} images, {stats['videos_queried']} videos, {stats['songs_queried']} songs
+    - Deactivated: {stats['images_deactivated']} images, {stats['videos_deactivated']} videos, {stats['songs_deactivated']} songs
+    - No URL: {stats['images_no_url']} images, {stats['videos_no_url']} videos, {stats['songs_no_url']} songs
+    - Added: {stats['images_added']} images, {stats['videos_added']} videos, {stats['songs_added']} songs
+    - Total valid items: {len(all_media)} (Images: {all_types['image']}, Videos: {all_types['video']}, Music: {all_types['music']})
+    - Initial display: {len(initial_items)} items (Images: {initial_types['image']}, Videos: {initial_types['video']}, Music: {initial_types['music']})
+    """)
+    
+    return render_template('home.html', media_items=initial_items)
 
 @web_pages.route('/home/musik')
 def home_musik():

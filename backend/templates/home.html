@@ -2341,7 +2341,7 @@ window.toggleMobileNotifications = function() {
         <div class="masonry-card" data-tag="{{ item.type }}" data-content-type="{{ item.type }}" data-content-id="{{ item.id }}">
           {% if item.type == 'video_iklan' %}
           <div style="position: relative;" onclick="window.location.href='/post_video_iklan/{{ item.id }}'">
-            <video class="masonry-video" muted loop style="height:{{ [220, 400] | random }}px;">
+            <video class="masonry-video" muted loop autoplay playsinline style="height:{{ [220, 400] | random }}px;">
               <source src="/static/results/{{ item.video_url.decode('utf-8') }}" type="video/mp4">
               Your browser does not support the video tag.
             </video>
@@ -2374,10 +2374,24 @@ window.toggleMobileNotifications = function() {
   <!-- Modern Skeleton Loading -->
   <div id="skeleton-loading" style="display: none; padding: 20px;">
     <div class="skeleton-grid">
-      <div class="skeleton-card"></div>
-      <div class="skeleton-card"></div>
-      <div class="skeleton-card"></div>
-      <div class="skeleton-card"></div>
+      <div class="skeleton-card">
+        <div class="skeleton-shimmer"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-shimmer"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-shimmer"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-shimmer"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-shimmer"></div>
+      </div>
+      <div class="skeleton-card">
+        <div class="skeleton-shimmer"></div>
+      </div>
     </div>
   </div>
   
@@ -2397,7 +2411,7 @@ window.toggleMobileNotifications = function() {
         <div class="masonry-card" data-tag="{{ item.type }}" data-content-type="{{ item.type }}" data-content-id="{{ item.id }}">
           {% if item.type == 'video' %}
           <div style="position: relative;" onclick="window.location.href='/post_video/{{ item.id }}'">
-            <video class="masonry-video" muted loop style="height:{{ [220, 400] | random }}px;">
+            <video class="masonry-video" muted loop autoplay playsinline style="height:{{ [220, 400] | random }}px;">
               <source src="{{ item.url }}" type="video/mp4">
               Your browser does not support the video tag.
             </video>
@@ -2471,6 +2485,20 @@ window.toggleMobileNotifications = function() {
       }
     });
 
+    // Track initial loaded items to prevent duplicates
+    const initialCards = document.querySelectorAll('.masonry-card');
+    initialCards.forEach(card => {
+      const likeBtn = card.querySelector('.masonry-likes');
+      if (likeBtn) {
+        const contentId = likeBtn.getAttribute('data-content-id');
+        if (contentId) {
+          loadedItems.add(String(contentId)); // Convert to string for consistency
+        }
+      }
+    });
+    
+    console.log(`📦 Initial items loaded: ${initialCards.length}, tracked: ${loadedItems.size}`);
+
     // Initialize infinite scroll
     initInfiniteScroll();
     
@@ -2511,75 +2539,230 @@ window.toggleMobileNotifications = function() {
   function initInfiniteScroll() {
     const container = document.getElementById('masonry-container');
     if (!container) {
-      console.log('Masonry container not found, infinite scroll not initialized');
+      console.error('❌ Masonry container not found, infinite scroll not initialized');
+      return;
+    }
+    
+    const masonryItems = document.getElementById('masonry-items');
+    if (!masonryItems) {
+      console.error('❌ Masonry items container not found');
       return;
     }
     
     console.log('🚀 Modern infinite scroll initialized');
+    console.log(`📊 Initial state: currentPage=${currentPage}, isLoading=${isLoading}, hasMore=${hasMore}, loadedItems=${loadedItems.size}`);
     
-    // Create intersection observer for better performance
-    const loadTrigger = document.createElement('div');
+    // Check if load-trigger already exists
+    let loadTrigger = document.getElementById('load-trigger');
+    if (loadTrigger) {
+      loadTrigger.remove(); // Remove existing trigger
+    }
+    
+    // Create intersection observer trigger
+    loadTrigger = document.createElement('div');
     loadTrigger.id = 'load-trigger';
-    loadTrigger.style.height = '20px';
-    loadTrigger.style.width = '100%';
-    loadTrigger.style.position = 'relative';
-    loadTrigger.style.zIndex = '1';
-    container.appendChild(loadTrigger);
+    loadTrigger.style.cssText = 'height: 50px; width: 100%; position: relative; z-index: 1; margin: 20px 0;';
+    masonryItems.appendChild(loadTrigger);
+    
+    console.log('✅ Load trigger created and added to masonry-items');
     
     // Intersection Observer API - Much more efficient than scroll events
+    let lastLoadTime = 0;
+    const MIN_LOAD_INTERVAL = 1000; // Minimum 1 second between loads
+    
     intersectionObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
-        if (entry.isIntersecting && !isLoading && hasMore) {
+        const now = Date.now();
+        const timeSinceLastLoad = now - lastLoadTime;
+        
+        console.log(`👁️ Intersection Observer: isIntersecting=${entry.isIntersecting}, isLoading=${isLoading}, hasMore=${hasMore}, timeSinceLastLoad=${timeSinceLastLoad}ms`);
+        
+        if (entry.isIntersecting && !isLoading && hasMore && timeSinceLastLoad >= MIN_LOAD_INTERVAL) {
           console.log('🎯 Load trigger detected, loading more items...');
-          loadMoreItemsSmooth();
+          lastLoadTime = now;
+          // Unobserve temporarily to prevent multiple triggers
+          intersectionObserver.unobserve(loadTrigger);
+          loadMoreItemsSmooth().then(() => {
+            // Re-observe after loading completes
+            if (hasMore && loadTrigger.parentNode) {
+              setTimeout(() => {
+                intersectionObserver.observe(loadTrigger);
+                console.log('🔄 Re-enabled Intersection Observer after load');
+              }, 500);
+            }
+          }).catch(err => {
+            console.error('Error in loadMoreItemsSmooth:', err);
+            // Re-observe even on error
+            if (loadTrigger.parentNode) {
+              setTimeout(() => {
+                intersectionObserver.observe(loadTrigger);
+              }, 500);
+            }
+          });
+        } else if (!hasMore) {
+          console.log('⛔ Infinite scroll stopped: hasMore=false');
+        } else if (isLoading) {
+          console.log('⏳ Already loading, skipping...');
+        } else if (timeSinceLastLoad < MIN_LOAD_INTERVAL) {
+          console.log(`⏱️ Too soon since last load (${timeSinceLastLoad}ms < ${MIN_LOAD_INTERVAL}ms)`);
         }
       });
     }, {
       root: null,
-      rootMargin: '100px', // Start loading 100px before trigger
-      threshold: 0.1
+      rootMargin: '200px', // Start loading 200px before trigger (more aggressive)
+      threshold: 0.01 // Trigger even if only 1% visible
     });
     
     intersectionObserver.observe(loadTrigger);
+    console.log('✅ Intersection Observer started, observing load-trigger');
+    
+    // Also add scroll event listener as fallback (disabled for now to avoid conflicts)
+    // let scrollTimeout;
+    // window.addEventListener('scroll', function() {
+    //   clearTimeout(scrollTimeout);
+    //   scrollTimeout = setTimeout(() => {
+    //     if (isLoading || !hasMore) return;
+    //     
+    //     const triggerRect = loadTrigger.getBoundingClientRect();
+    //     const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+    //     
+    //     // Check if trigger is near viewport (within 300px)
+    //     if (triggerRect.top <= windowHeight + 300) {
+    //       console.log('📜 Scroll fallback: Load trigger near viewport, loading more...');
+    //       loadMoreItemsSmooth();
+    //     }
+    //   }, 100);
+    // }, { passive: true });
   }
   
   // Smooth loading with skeleton animation
   async function loadMoreItemsSmooth() {
-    if (isLoading || !hasMore) {
+    // Double check to prevent race conditions
+    if (isLoading) {
+      console.log('⏸️ Already loading, skipping duplicate call');
       return;
     }
     
+    if (!hasMore) {
+      console.log('⛔ No more items to load (hasMore=false)');
+      return;
+    }
+    
+    console.log(`🚀 Starting load for page ${currentPage + 1}`);
     isLoading = true;
-    currentPage++;
+    const pageToLoad = currentPage + 1;
+    currentPage = pageToLoad;
+    
+    // Set timeout to reset isLoading if stuck (safety net)
+    const loadingTimeout = setTimeout(() => {
+      if (isLoading) {
+        console.error('⚠️ Loading timeout! Resetting isLoading flag');
+        isLoading = false;
+        hideSkeletonLoading();
+      }
+    }, 30000); // 30 second timeout
     
     // Show skeleton loading instead of spinner
-    showSkeletonLoading();
+    try {
+      showSkeletonLoading();
+    } catch (e) {
+      console.error('Error showing skeleton:', e);
+    }
     
     try {
       const contentType = getCurrentContentType();
-      const response = await fetch(`/gallery/infinite?page=${currentPage}&per_page=20&type=${contentType}`);
-      const data = await response.json();
+      const apiUrl = `/api/gallery/infinite?page=${pageToLoad}&per_page=20&type=${contentType}`;
+      console.log(`🔄 Loading page ${pageToLoad} (${contentType}), per_page: 20`);
+      console.log(`🌐 API URL: ${apiUrl}`);
       
-      if (data.success && data.items.length > 0) {
-        // Filter out already loaded items
-        const newItems = data.items.filter(item => !loadedItems.has(item.id));
+      const response = await fetch(apiUrl, {
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`❌ HTTP ${response.status}: ${errorText}`);
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      console.log(`📦 API Response:`, {
+        success: data.success,
+        itemsCount: data.items ? data.items.length : 0,
+        hasMore: data.has_more,
+        page: data.page,
+        perPage: data.per_page
+      });
+      
+      if (data.success && data.items && data.items.length > 0) {
+        // Filter out already loaded items (convert ID to string for consistency)
+        const newItems = data.items.filter(item => {
+          const itemId = String(item.id);
+          const isNew = !loadedItems.has(itemId);
+          if (!isNew) {
+            console.log(`🔄 Skipping duplicate item: ${itemId}`);
+          }
+          return isNew;
+        });
+        
+        console.log(`📥 Page ${pageToLoad}: Received ${data.items.length} items, ${newItems.length} new items (${data.items.length - newItems.length} duplicates skipped)`);
         
         if (newItems.length > 0) {
           // Add to loading queue for smooth animation
           loadingQueue.push(...newItems);
-          await processLoadingQueue();
+          try {
+            await processLoadingQueue();
+          } catch (e) {
+            console.error('Error processing loading queue:', e);
+          }
+          
+          // Re-observe load trigger after new items are added
+          try {
+            const loadTrigger = document.getElementById('load-trigger');
+            if (loadTrigger && intersectionObserver) {
+              intersectionObserver.unobserve(loadTrigger);
+              intersectionObserver.observe(loadTrigger);
+              console.log('🔄 Re-observed load trigger after adding new items');
+            }
+          } catch (e) {
+            console.error('Error re-observing trigger:', e);
+          }
+        } else {
+          console.log(`⚠️ No new items on page ${pageToLoad}, all items already loaded`);
+          // If no new items but has_more is true, try next page
+          if (data.has_more) {
+            console.log('⏭️ Trying next page...');
+            // Don't increment currentPage here, let the next call handle it
+            setTimeout(() => {
+              if (!isLoading) {
+                loadMoreItemsSmooth();
+              }
+            }, 500);
+          }
         }
         
         hasMore = data.has_more;
+        console.log(`📊 Has more: ${hasMore}, Total loaded so far: ${loadedItems.size}`);
       } else {
+        console.log(`❌ No items returned or error:`, data);
         hasMore = false;
       }
     } catch (error) {
-      console.error('Error loading more items:', error);
+      console.error('❌ Error loading more items:', error);
+      console.error('Stack:', error.stack);
       hasMore = false;
     } finally {
+      clearTimeout(loadingTimeout);
       isLoading = false;
-      hideSkeletonLoading();
+      try {
+        hideSkeletonLoading();
+      } catch (e) {
+        console.error('Error hiding skeleton:', e);
+      }
+      console.log(`✅ Loading completed. isLoading=${isLoading}, hasMore=${hasMore}, page=${currentPage}`);
     }
   }
   
@@ -2587,8 +2770,9 @@ window.toggleMobileNotifications = function() {
   async function processLoadingQueue() {
     while (loadingQueue.length > 0) {
       const item = loadingQueue.shift();
-      if (!loadedItems.has(item.id)) {
-        loadedItems.add(item.id);
+      const itemId = String(item.id); // Convert to string for consistency
+      if (!loadedItems.has(itemId)) {
+        loadedItems.add(itemId);
         await appendItemWithAnimation(item);
         // Small delay for smooth animation
         await new Promise(resolve => setTimeout(resolve, 50));
@@ -2599,14 +2783,25 @@ window.toggleMobileNotifications = function() {
   // Append item with smooth fade-in animation
   async function appendItemWithAnimation(item) {
     const masonryItems = document.getElementById('masonry-items');
-    if (!masonryItems) return;
+    if (!masonryItems) {
+      console.error('❌ masonry-items not found in appendItemWithAnimation');
+      return;
+    }
     
     const card = createMasonryCard(item);
     card.style.opacity = '0';
     card.style.transform = 'translateY(20px)';
     card.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
     
-    masonryItems.appendChild(card);
+    // Get load trigger before inserting
+    const loadTrigger = document.getElementById('load-trigger');
+    
+    // Insert card before load trigger (or at end if no trigger)
+    if (loadTrigger && loadTrigger.parentNode === masonryItems) {
+      masonryItems.insertBefore(card, loadTrigger);
+    } else {
+      masonryItems.appendChild(card);
+    }
     
     // Trigger animation
     requestAnimationFrame(() => {
@@ -2614,8 +2809,15 @@ window.toggleMobileNotifications = function() {
       card.style.transform = 'translateY(0)';
     });
     
+    // Ensure load-trigger stays at the end after insertion
+    if (loadTrigger && loadTrigger.parentNode === masonryItems) {
+      masonryItems.appendChild(loadTrigger);
+    }
+    
     // Re-add like functionality
     addLikeFunctionality();
+    
+    console.log(`✅ Added item ${item.id} (${item.type}), total loaded: ${loadedItems.size}`);
   }
   
   // Get current content type based on active filter
@@ -2631,10 +2833,35 @@ window.toggleMobileNotifications = function() {
   
   // Show skeleton loading animation
   function showSkeletonLoading() {
-    const skeleton = document.getElementById('skeleton-loading');
-    if (skeleton) {
-      skeleton.style.display = 'block';
+    const container = document.getElementById('masonry-container');
+    if (!container) return;
+    
+    // Check if skeleton already exists
+    let skeleton = document.getElementById('skeleton-loading');
+    if (!skeleton) {
+      // Create skeleton if it doesn't exist
+      skeleton = document.createElement('div');
+      skeleton.id = 'skeleton-loading';
+      skeleton.className = 'masonry'; // Use masonry class for same styling
+      skeleton.innerHTML = `
+        <div class="skeleton-card"><div class="skeleton-shimmer"></div></div>
+        <div class="skeleton-card"><div class="skeleton-shimmer"></div></div>
+        <div class="skeleton-card"><div class="skeleton-shimmer"></div></div>
+        <div class="skeleton-card"><div class="skeleton-shimmer"></div></div>
+        <div class="skeleton-card"><div class="skeleton-shimmer"></div></div>
+        <div class="skeleton-card"><div class="skeleton-shimmer"></div></div>
+      `;
+      
+      // Insert before load-trigger or at the end
+      const loadTrigger = document.getElementById('load-trigger');
+      if (loadTrigger) {
+        container.insertBefore(skeleton, loadTrigger);
+      } else {
+        container.appendChild(skeleton);
+      }
     }
+    
+    skeleton.style.display = 'block';
   }
   
   // Hide skeleton loading animation
@@ -2674,7 +2901,7 @@ window.toggleMobileNotifications = function() {
     if (item.type === 'video') {
       content = `
         <div style="position: relative;" onclick="window.location.href='/post_video/${item.id}'">
-          <video class="masonry-video" muted loop style="height:${randomHeight}px;" loading="lazy" preload="metadata" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <video class="masonry-video" muted loop autoplay playsinline style="height:${randomHeight}px;" loading="lazy" preload="metadata" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <source src="${item.url}" type="video/mp4">
             Your browser does not support the video tag.
           </video>
@@ -2690,7 +2917,7 @@ window.toggleMobileNotifications = function() {
     } else if (item.type === 'video_iklan') {
       content = `
         <div style="position: relative;" onclick="window.location.href='/post_video_iklan/${item.id}'">
-          <video class="masonry-video" muted loop style="height:${randomHeight}px;" loading="lazy" preload="metadata" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <video class="masonry-video" muted loop autoplay playsinline style="height:${randomHeight}px;" loading="lazy" preload="metadata" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
             <source src="/static/results/${item.url}" type="video/mp4">
             Your browser does not support the video tag.
           </video>
@@ -2888,6 +3115,61 @@ window.toggleMobileNotifications = function() {
       clearInterval(refreshInterval);
     }
   });
+  
+  // Ensure videos autoplay
+  function ensureVideoAutoplay() {
+    const videos = document.querySelectorAll('.masonry-video');
+    videos.forEach(video => {
+      video.muted = true;
+      video.setAttribute('autoplay', '');
+      video.setAttribute('playsinline', '');
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {});
+      }
+    });
+  }
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    ensureVideoAutoplay();
+  });
+  
+  if ('IntersectionObserver' in window) {
+    const videoObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const video = entry.target;
+          if (video.paused) {
+            video.muted = true;
+            video.play().catch(() => {});
+          }
+        }
+      });
+    }, { threshold: 0.5 });
+    
+    document.querySelectorAll('.masonry-video').forEach(video => {
+      videoObserver.observe(video);
+    });
+    
+    const masonryContainer = document.getElementById('masonry-items');
+    if (masonryContainer) {
+      const mutationObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach((node) => {
+            if (node.nodeType === 1) {
+              const videos = node.querySelectorAll ? node.querySelectorAll('.masonry-video') : [];
+              videos.forEach(video => {
+                videoObserver.observe(video);
+                video.muted = true;
+                video.play().catch(() => {});
+              });
+            }
+          });
+        });
+      });
+      mutationObserver.observe(masonryContainer, { childList: true, subtree: true });
+    }
+  }
 </script>
 
 <!-- Load notification system -->
@@ -2921,50 +3203,87 @@ window.toggleMobileNotifications = function() {
 }
 
 /* Modern Skeleton Loading Styles */
-.skeleton-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-  padding: 20px 0;
+#skeleton-loading.skeleton-loading {
+  display: block !important;
+}
+
+#skeleton-loading .skeleton-card {
+  display: inline-block;
+  width: 100%;
+  break-inside: avoid;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 768px) {
+  #skeleton-loading .skeleton-card {
+    margin-bottom: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #skeleton-loading .skeleton-card {
+    margin-bottom: 0.4rem;
+  }
 }
 
 .skeleton-card {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.5s infinite;
-  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(35, 35, 58, 0.8) 0%, rgba(26, 26, 46, 0.9) 100%);
+  border-radius: 1.8rem;
   height: 300px;
   position: relative;
   overflow: hidden;
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-.skeleton-card::before {
-  content: '';
+.skeleton-shimmer {
   position: absolute;
   top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  animation: skeleton-shimmer 1.5s infinite;
-}
-
-@keyframes skeleton-loading {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(99, 102, 241, 0.2) 50%,
+    rgba(139, 92, 246, 0.3) 100%,
+    transparent 100%
+  );
+  animation: skeleton-shimmer 2s infinite;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes skeleton-shimmer {
   0% {
-    transform: translateX(-100%);
+    left: -100%;
   }
   100% {
-    transform: translateX(100%);
+    left: 100%;
   }
+}
+
+.skeleton-card:nth-child(1) .skeleton-shimmer {
+  animation-delay: 0s;
+}
+
+.skeleton-card:nth-child(2) .skeleton-shimmer {
+  animation-delay: 0.2s;
+}
+
+.skeleton-card:nth-child(3) .skeleton-shimmer {
+  animation-delay: 0.4s;
+}
+
+.skeleton-card:nth-child(4) .skeleton-shimmer {
+  animation-delay: 0.6s;
+}
+
+.skeleton-card:nth-child(5) .skeleton-shimmer {
+  animation-delay: 0.8s;
+}
+
+.skeleton-card:nth-child(6) .skeleton-shimmer {
+  animation-delay: 1s;
 }
 
 /* Smooth item animations */
@@ -3278,6 +3597,7 @@ html {
   }
 }
 </style>
+
 
 
 
