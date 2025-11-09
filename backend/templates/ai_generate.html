@@ -1213,6 +1213,20 @@
         min-width: 0;
         overflow: visible;
         min-height: 60px;
+        flex-wrap: nowrap; /* Jangan wrap elemen */
+    }
+    
+    /* Pastikan tombol tidak shrink */
+    .ai-prompt-wrapper .ai-attach-btn,
+    .ai-prompt-wrapper .ai-mode-dropdown-inline,
+    .ai-prompt-wrapper .ai-send-btn {
+        flex-shrink: 0;
+    }
+    
+    /* Textarea harus bisa grow tapi tidak mendorong tombol */
+    .ai-prompt-wrapper .ai-prompt-input {
+        flex: 1;
+        min-width: 0;
     }
 
     .ai-prompt-wrapper:focus-within {
@@ -1255,7 +1269,7 @@
     .ai-mode-dropdown-btn {
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 6px;
         padding: 8px 14px;
         background: rgba(76, 126, 255, 0.1);
         border: 1px solid rgba(76, 126, 255, 0.3);
@@ -1265,6 +1279,14 @@
         font-weight: 500;
         cursor: pointer;
         transition: all 200ms;
+        white-space: nowrap;
+        flex-shrink: 0;
+        min-width: fit-content;
+    }
+    
+    .ai-mode-dropdown-btn .ai-mode-dropdown-text {
+        overflow: hidden;
+        text-overflow: ellipsis;
         white-space: nowrap;
     }
 
@@ -1423,12 +1445,7 @@
         padding: 8px;
     }
 
-    @media (max-width: 768px) {
-        .ai-attachment-list {
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 10px;
-        }
-    }
+    /* Attachment list mobile - akan di-override oleh mobile optimization di bawah */
 
     .ai-attachment-item {
         position: relative;
@@ -2532,6 +2549,7 @@
         overflow-x: hidden;
         overflow-y: auto;
         padding: 4px 0;
+        box-sizing: border-box;
     }
 
     .ai-prompt-input::placeholder {
@@ -3450,17 +3468,139 @@
         opacity: 0.3;
     }
 
+    /* ============================================
+       MOBILE OPTIMIZATION - RAPIH, RESPONSIF, LUAS
+       ============================================ */
+    
     /* Mobile adjustments for input menu */
     @media (max-width: 768px) {
-        .ai-input-area {
-            padding: 12px;
+        /* Container - Lebih luas dengan padding optimal */
+        .ai-container {
+            padding: 8px 10px 12px;
+            min-height: calc(100vh - 60px);
         }
         
+        /* Main chat area - Full width tanpa margin */
+        .ai-main {
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        /* Chat area - Border radius lebih kecil untuk mobile */
+        .ai-chat-area {
+            border-radius: 12px;
+            min-height: 300px;
+        }
+        
+        /* Chat stream - Padding optimal */
+        .ai-chat-stream {
+            padding: 12px 10px 16px;
+        }
+        
+        /* Message bubble - Lebih luas, padding optimal */
+        .ai-message-bubble {
+            max-width: 92%;
+            padding: 12px 14px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        /* Empty hero - Padding lebih compact */
+        .ai-empty-hero {
+            padding: 20px 12px 24px;
+        }
+        
+        /* Feature cards - Lebih compact tapi tetap nyaman */
+        .ai-feature-cards {
+            gap: 8px;
+            padding-bottom: 8px;
+        }
+        
+        .ai-feature-card {
+            min-width: 160px;
+            max-width: 180px;
+            padding: 14px 16px;
+        }
+        
+        /* Input area - Lebih luas dengan padding optimal */
+        .ai-input-area {
+            padding: 12px 10px;
+            margin-top: 12px;
+            border-radius: 12px;
+        }
+        
+        /* Prompt wrapper - Lebih compact tapi tetap luas */
+        .ai-prompt-wrapper {
+            padding: 12px 14px;
+            gap: 8px;
+            min-height: 56px;
+            border-radius: 14px;
+            align-items: flex-start; /* Pastikan tombol tetap di atas */
+            flex-wrap: nowrap; /* Jangan wrap tombol */
+        }
+        
+        /* Pastikan semua tombol tetap di posisi yang benar */
+        .ai-prompt-wrapper .ai-attach-btn,
+        .ai-prompt-wrapper .ai-mode-dropdown-inline,
+        .ai-prompt-wrapper .ai-send-btn {
+            flex-shrink: 0;
+            align-self: flex-start;
+            margin-top: 2px; /* Sedikit offset untuk alignment */
+        }
+        
+        /* Textarea harus flex-grow dan tidak mendorong tombol */
+        .ai-prompt-wrapper .ai-prompt-input {
+            flex: 1;
+            min-width: 0;
+            max-width: 100%;
+            align-self: stretch;
+            margin: 0;
+        }
+        
+        /* Input buttons - Ukuran optimal untuk touch */
+        .ai-attach-btn,
+        .ai-send-btn {
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+            font-size: 18px;
+        }
+        
+        /* Mode dropdown button - Lebih compact */
+        .ai-mode-dropdown-btn {
+            padding: 7px 10px;
+            font-size: 12px;
+            max-width: 80px; /* Batasi lebar maksimal */
+            overflow: hidden;
+        }
+        
+        .ai-mode-dropdown-btn .ai-mode-dropdown-text {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 50px;
+        }
+        
+        /* Prompt input - Font size optimal */
+        .ai-prompt-input {
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        
+        /* Input bottom row - Layout lebih rapi */
         .ai-input-bottom-row {
             margin-top: 10px;
             gap: 8px;
+            flex-wrap: wrap;
         }
-
+        
+        /* Drop hint - Lebih compact */
+        .ai-drop-hint {
+            font-size: 12px;
+            padding: 6px 10px;
+        }
+        
+        /* Input menu button */
         .ai-input-menu-btn {
             width: 36px;
             height: 36px;
@@ -3489,38 +3629,203 @@
             font-size: 14px;
             width: 18px;
         }
-    }
-    
-    /* Extra small mobile */
-    @media (max-width: 480px) {
-        .ai-prompt-wrapper {
-            padding: 10px 8px;
-            gap: 4px;
-            min-height: 48px;
+        
+        /* Quality indicator - Layout vertikal di mobile */
+        .ai-prompt-quality {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            padding: 10px 12px;
+            margin-top: 10px;
         }
         
-        .ai-attach-btn {
-            width: 32px;
-            height: 32px;
-            min-width: 32px;
-            font-size: 16px;
+        .ai-prompt-quality-score {
+            width: 100%;
+            justify-content: space-between;
         }
         
-        .ai-mode-dropdown-btn {
-            padding: 5px 8px;
+        .ai-prompt-enhance-btn {
+            width: 100%;
+            justify-content: center;
+            margin-left: 0;
+            margin-top: 4px;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+        
+        /* Contextual suggestions - Full width di mobile */
+        .ai-contextual-suggestions {
+            margin-top: 10px;
+            gap: 8px;
+        }
+        
+        .ai-suggestion-chip {
+            padding: 8px 14px;
+            font-size: 12px;
+        }
+        
+        /* Error predictions - Full width */
+        .ai-error-predictions {
+            margin-top: 10px;
+        }
+        
+        .ai-error-item {
+            padding: 12px;
+            font-size: 13px;
+        }
+        
+        /* Attachment preview - Grid lebih compact */
+        .ai-attachment-preview {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+        }
+        
+        .ai-attachment-list {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+            padding: 6px;
+        }
+        
+        /* Drop zone - Lebih compact */
+        .ai-drop-zone {
+            padding: 16px 12px;
+            margin-bottom: 10px;
+        }
+        
+        .ai-drop-zone-text {
+            font-size: 13px;
+        }
+        
+        /* Variations grid - Sudah 1 kolom, tambah spacing */
+        .ai-variations-grid {
+            grid-template-columns: 1fr !important; /* Mobile: 1 kolom vertikal */
+            gap: 16px;
+            margin: 12px 0;
+        }
+        
+        /* Image variation - Lebih compact */
+        .ai-image-variation {
+            border-radius: 12px;
+        }
+        
+        /* Image variation actions - Lebih compact di mobile */
+        .ai-variation-actions {
+            padding: 8px;
+            gap: 6px;
+        }
+        
+        .ai-variation-actions button {
+            width: 36px;
+            height: 36px;
+            font-size: 14px;
+        }
+        
+        /* Variation number - Lebih compact */
+        .ai-variation-number {
+            top: 8px;
+            left: 8px;
+            padding: 4px 10px;
             font-size: 11px;
         }
         
-        .ai-prompt-input {
-            font-size: 14px;
-            min-height: 26px;
+        /* Music card - Lebih compact */
+        .ai-music-card {
+            padding: 12px;
+        }
+    }
+    
+    /* Extra small mobile (≤480px) */
+    @media (max-width: 480px) {
+        /* Container - Padding minimal tapi tetap nyaman */
+        .ai-container {
+            padding: 6px 8px 10px;
         }
         
+        /* Chat stream - Padding lebih kecil */
+        .ai-chat-stream {
+            padding: 10px 8px 14px;
+        }
+        
+        /* Message bubble - Lebih compact */
+        .ai-message-bubble {
+            max-width: 94%;
+            padding: 10px 12px;
+            font-size: 13px;
+        }
+        
+        /* Prompt wrapper - Lebih compact */
+        .ai-prompt-wrapper {
+            padding: 10px 12px;
+            gap: 6px;
+            min-height: 52px;
+            align-items: flex-start;
+            flex-wrap: nowrap;
+        }
+        
+        /* Pastikan tombol tetap di posisi yang benar di extra small */
+        .ai-prompt-wrapper .ai-attach-btn,
+        .ai-prompt-wrapper .ai-mode-dropdown-inline,
+        .ai-prompt-wrapper .ai-send-btn {
+            flex-shrink: 0;
+            align-self: flex-start;
+            margin-top: 1px;
+        }
+        
+        .ai-prompt-wrapper .ai-prompt-input {
+            flex: 1;
+            min-width: 0;
+            max-width: 100%;
+            align-self: stretch;
+        }
+        
+        /* Input buttons - Sedikit lebih kecil */
+        .ai-attach-btn,
         .ai-send-btn {
-            width: 32px;
-            height: 32px;
-            min-width: 32px;
-            font-size: 15px;
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            font-size: 17px;
+        }
+        
+        /* Mode dropdown - Lebih compact */
+        .ai-mode-dropdown-btn {
+            padding: 6px 8px;
+            font-size: 11px;
+            max-width: 70px;
+            overflow: hidden;
+        }
+        
+        .ai-mode-dropdown-btn .ai-mode-dropdown-text {
+            max-width: 40px;
+        }
+        
+        /* Prompt input */
+        .ai-prompt-input {
+            font-size: 14px;
+            min-height: 24px;
+        }
+        
+        /* Input area - Padding lebih kecil */
+        .ai-input-area {
+            padding: 10px 8px;
+        }
+        
+        /* Quality indicator - Tetap vertikal */
+        .ai-prompt-quality {
+            padding: 8px 10px;
+        }
+        
+        /* Feature cards - Lebih kecil */
+        .ai-feature-card {
+            min-width: 140px;
+            max-width: 160px;
+            padding: 12px 14px;
+        }
+        
+        /* Attachment list - Grid lebih kecil */
+        .ai-attachment-list {
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 6px;
         }
     }
 </style>
