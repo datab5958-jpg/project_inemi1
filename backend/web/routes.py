@@ -1427,9 +1427,19 @@ def user_profile(username):
     following_count = len(user.following)
     is_following = False
     if 'user_id' in session:
-        current_user = db.session.get(User, session['user_id'])
-        is_following = current_user.is_following(user) if current_user.id != user.id else False
-        print(f"DEBUG: Is following: {current_user.username} is following {user.username}? {is_following}")
+        try:
+            current_user = db.session.get(User, session['user_id'])
+            if current_user and current_user.id != user.id:
+                # Check if current user is following this user using Follow query
+                existing_follow = Follow.query.filter_by(
+                    follower_id=current_user.id,
+                    following_id=user.id
+                ).first()
+                is_following = existing_follow is not None
+                print(f"DEBUG: Is following: {current_user.username} is following {user.username}? {is_following}")
+        except Exception as e:
+            print(f"DEBUG: Error checking follow status: {e}")
+            is_following = False
     return render_template('profil_user_lain.html', user=user, media_items=media_items, follower_count=follower_count, following_count=following_count, is_following=is_following)
 
 @web_pages.route('/register', methods=['GET', 'POST'])
