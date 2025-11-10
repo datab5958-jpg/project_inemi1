@@ -1562,12 +1562,12 @@
 
     .ai-mode-dropdown-menu {
         position: fixed;
-        width: 220px;
-        max-height: 300px;
+        width: 320px;
+        max-height: 400px;
         background: var(--bg-card);
         border: 1px solid var(--border-neon);
-        border-radius: 12px;
-        padding: 6px;
+        border-radius: 16px;
+        padding: 8px;
         box-shadow: 
             0 12px 32px rgba(0, 0, 0, 0.5),
             0 0 0 1px rgba(76, 126, 255, 0.2),
@@ -1576,6 +1576,7 @@
         z-index: 10001;
         opacity: 0;
         visibility: hidden;
+        /* Desktop: default transform (will be positioned by JS relative to button) */
         transform: translateY(8px) scale(0.95);
         transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
                     visibility 200ms cubic-bezier(0.4, 0, 0.2, 1),
@@ -1597,31 +1598,138 @@
 
     .ai-mode-dropdown-item {
         display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 10px 12px;
-        border-radius: 8px;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 12px;
         cursor: pointer;
         transition: all 150ms;
         color: var(--text-secondary);
         font-size: 13px;
+        margin-bottom: 4px;
+        position: relative;
+    }
+
+    .ai-mode-dropdown-item:last-child {
+        margin-bottom: 0;
     }
 
     .ai-mode-dropdown-item:hover {
-        background: rgba(76, 126, 255, 0.1);
+        background: rgba(76, 126, 255, 0.08);
         color: var(--text-primary);
     }
 
     .ai-mode-dropdown-item.active {
-        background: rgba(76, 126, 255, 0.15);
-        color: var(--accent-neon);
-        border: 1px solid var(--accent-neon);
+        background: rgba(76, 126, 255, 0.12);
+        border: 1px solid rgba(76, 126, 255, 0.3);
     }
 
-    .ai-mode-dropdown-item i {
-        font-size: 16px;
-        width: 20px;
-        text-align: center;
+    .ai-mode-item-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .ai-mode-item-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .ai-mode-item-title {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-primary);
+        line-height: 1.4;
+    }
+
+    .ai-mode-dropdown-item.active .ai-mode-item-title {
+        color: var(--accent-neon);
+    }
+
+    .ai-mode-item-desc {
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.4;
+        opacity: 0.8;
+    }
+
+    /* Badge untuk Model AI */
+    .ai-mode-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        text-transform: uppercase;
+        flex-shrink: 0;
+        line-height: 1.2;
+    }
+
+    /* Badge "Model Paling Bagus" */
+    .ai-mode-badge-best {
+        background: linear-gradient(135deg, rgba(76, 126, 255, 0.2), rgba(168, 85, 247, 0.2));
+        color: var(--accent-neon);
+        border: 1px solid rgba(76, 126, 255, 0.4);
+        box-shadow: 0 2px 8px rgba(76, 126, 255, 0.15);
+    }
+
+    /* Badge "New" */
+    .ai-mode-badge-new {
+        background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(251, 146, 60, 0.2));
+        color: #f59e0b;
+        border: 1px solid rgba(236, 72, 153, 0.4);
+        box-shadow: 0 2px 8px rgba(236, 72, 153, 0.15);
+        animation: pulse-badge 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-badge {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+    }
+
+    /* Badge Model Name */
+    .ai-mode-badge-model {
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text-secondary);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .ai-mode-dropdown-item:hover .ai-mode-badge-model {
+        background: rgba(255, 255, 255, 0.12);
+        color: var(--text-primary);
+        border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .ai-mode-check {
+        font-size: 18px;
+        color: var(--accent-neon);
+        flex-shrink: 0;
+        margin-top: 2px;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: opacity 150ms, transform 150ms;
+    }
+
+    .ai-mode-dropdown-item.active .ai-mode-check {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    .ai-mode-dropdown-item i:not(.ai-mode-check) {
+        display: none; /* Hide old icons */
     }
 
     /* Input Bottom Row (contains drop hint and menu button) */
@@ -3768,21 +3876,40 @@
         pointer-events: auto;
     }
 
+    /* Input Menu Header */
+    .ai-input-menu-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid rgba(76, 126, 255, 0.2);
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .ai-input-menu-header i {
+        font-size: 18px;
+        color: var(--accent-neon);
+    }
+
     .ai-input-menu-item {
         display: flex !important;
         align-items: center;
         gap: 12px;
-        padding: 12px 14px;
-        border-radius: 10px;
+        padding: 14px 16px;
+        border-radius: 12px;
         cursor: pointer;
         transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
         color: var(--text-secondary);
-        margin-bottom: 4px;
+        margin-bottom: 6px;
         position: relative;
         width: 100%;
         flex-shrink: 0;
         visibility: visible !important;
         opacity: 1 !important;
+        border: 1px solid transparent;
     }
 
     .ai-input-menu-item:last-child {
@@ -3793,19 +3920,18 @@
         background: rgba(76, 126, 255, 0.1);
         color: var(--text-primary);
         transform: translateX(4px);
-    }
-
-    .ai-input-menu-item.active {
-        background: rgba(76, 126, 255, 0.15);
-        color: var(--accent-neon);
-        border: 1px solid var(--accent-neon);
-        box-shadow: 0 0 12px rgba(76, 126, 255, 0.3);
+        box-shadow: 0 2px 8px rgba(76, 126, 255, 0.15);
     }
 
     .ai-input-menu-item i {
         font-size: 18px;
         width: 22px;
         text-align: center;
+        transition: transform 200ms;
+    }
+
+    .ai-input-menu-item:hover i {
+        transform: scale(1.1);
     }
 
     .ai-input-menu-item span {
@@ -3814,11 +3940,38 @@
         font-weight: 500;
     }
 
-    .ai-input-menu-divider {
-        height: 1px;
-        background: var(--border-neon);
-        margin: 8px 0;
-        opacity: 0.3;
+    /* Success Item (Download) */
+    .ai-input-menu-item.success {
+        color: #6bcf7f;
+        border-color: rgba(107, 207, 127, 0.2);
+    }
+
+    .ai-input-menu-item.success:hover {
+        background: rgba(107, 207, 127, 0.15);
+        color: #6bcf7f;
+        border-color: rgba(107, 207, 127, 0.4);
+        box-shadow: 0 2px 8px rgba(107, 207, 127, 0.2);
+    }
+
+    .ai-input-menu-item.success i {
+        color: #6bcf7f;
+    }
+
+    /* Danger Item (Delete) */
+    .ai-input-menu-item.danger {
+        color: #ff6b6b;
+        border-color: rgba(255, 107, 107, 0.2);
+    }
+
+    .ai-input-menu-item.danger:hover {
+        background: rgba(255, 107, 107, 0.15);
+        color: #ff6b6b;
+        border-color: rgba(255, 107, 107, 0.4);
+        box-shadow: 0 2px 8px rgba(255, 107, 107, 0.2);
+    }
+
+    .ai-input-menu-item.danger i {
+        color: #ff6b6b;
     }
 
     /* ============================================
@@ -4007,20 +4160,47 @@
             left: auto;
         }
         
-        /* Optimize dropdown menu for mobile */
+        /* Optimize dropdown menu for mobile - Centered on screen */
         .ai-mode-dropdown-menu {
-            width: 200px;
-            max-height: 280px;
+            width: 280px;
+            max-height: 350px;
+            /* Center horizontally and vertically */
+            top: 50% !important;
+            left: 50% !important;
+            right: auto !important;
+            bottom: auto !important;
+            transform: translate(-50%, -50%) translateY(8px) scale(0.95) !important;
+        }
+
+        .ai-mode-dropdown-inline.open .ai-mode-dropdown-menu,
+        .ai-mode-dropdown-menu.show {
+            transform: translate(-50%, -50%) translateY(0) scale(1) !important;
         }
         
         .ai-mode-dropdown-item {
-            padding: 10px;
+            padding: 12px 14px;
             font-size: 13px;
         }
-        
-        .ai-mode-dropdown-item i {
-            font-size: 14px;
-            width: 18px;
+
+        .ai-mode-item-title {
+            font-size: 13px;
+        }
+
+        .ai-mode-item-desc {
+            font-size: 11px;
+        }
+
+        .ai-mode-check {
+            font-size: 16px;
+        }
+
+        .ai-mode-badge {
+            font-size: 9px;
+            padding: 2px 6px;
+        }
+
+        .ai-mode-item-header {
+            gap: 6px;
         }
         
         /* Quality indicator - Layout vertikal di mobile */
@@ -4412,32 +4592,68 @@
                         </button>
                         <div class="ai-mode-dropdown-menu" id="modeDropdownMenu">
                             <div class="ai-mode-dropdown-item active" data-mode="" data-label="Auto">
-                                <i class="bi bi-magic"></i>
-                                <span>Auto</span>
+                                <div class="ai-mode-item-content">
+                                    <div class="ai-mode-item-header">
+                                        <div class="ai-mode-item-title">Auto</div>
+                                        <span class="ai-mode-badge ai-mode-badge-best">Model Paling Bagus</span>
+                                    </div>
+                                    <div class="ai-mode-item-desc">Pemilihan model terbaik berdasarkan use case.</div>
+                                </div>
+                                <i class="bi bi-check-circle-fill ai-mode-check"></i>
                             </div>
                             <div class="ai-mode-dropdown-item" data-mode="image_generate" data-label="Gambar">
-                                <i class="bi bi-image"></i>
-                                <span>Gambar</span>
+                                <div class="ai-mode-item-content">
+                                    <div class="ai-mode-item-header">
+                                        <div class="ai-mode-item-title">Gambar</div>
+                                        <span class="ai-mode-badge ai-mode-badge-model">Imagen4-Ultra</span>
+                                    </div>
+                                    <div class="ai-mode-item-desc">Generate gambar dengan AI berkualitas tinggi.</div>
+                                </div>
                             </div>
                             <div class="ai-mode-dropdown-item" data-mode="image_edit" data-label="Edit">
-                                <i class="bi bi-pencil"></i>
-                                <span>Edit</span>
+                                <div class="ai-mode-item-content">
+                                    <div class="ai-mode-item-header">
+                                        <div class="ai-mode-item-title">Edit</div>
+                                        <span class="ai-mode-badge ai-mode-badge-model">Nano-Banana</span>
+                                    </div>
+                                    <div class="ai-mode-item-desc">Edit dan perbaiki gambar dengan AI.</div>
+                                </div>
                             </div>
                             <div class="ai-mode-dropdown-item" data-mode="image_to_video" data-label="G→V">
-                                <i class="bi bi-camera-video"></i>
-                                <span>G→V</span>
+                                <div class="ai-mode-item-content">
+                                    <div class="ai-mode-item-header">
+                                        <div class="ai-mode-item-title">G→V</div>
+                                        <span class="ai-mode-badge ai-mode-badge-model">Sora-2</span>
+                                    </div>
+                                    <div class="ai-mode-item-desc">Konversi gambar menjadi video animasi.</div>
+                                </div>
                             </div>
                             <div class="ai-mode-dropdown-item" data-mode="video_generate" data-label="Video">
-                                <i class="bi bi-camera-reels"></i>
-                                <span>Video</span>
+                                <div class="ai-mode-item-content">
+                                    <div class="ai-mode-item-header">
+                                        <div class="ai-mode-item-title">Video</div>
+                                        <span class="ai-mode-badge ai-mode-badge-model">Sora-2</span>
+                                    </div>
+                                    <div class="ai-mode-item-desc">Generate video dengan AI dari teks.</div>
+                                </div>
                             </div>
                             <div class="ai-mode-dropdown-item" data-mode="music_generate" data-label="Musik">
-                                <i class="bi bi-music-note-beamed"></i>
-                                <span>Musik</span>
+                                <div class="ai-mode-item-content">
+                                    <div class="ai-mode-item-header">
+                                        <div class="ai-mode-item-title">Musik</div>
+                                        <span class="ai-mode-badge ai-mode-badge-model">Suno V4.5+</span>
+                                    </div>
+                                    <div class="ai-mode-item-desc">Generate musik dan audio dengan AI.</div>
+                                </div>
                             </div>
                             <div class="ai-mode-dropdown-item" data-mode="video_face_swap" data-label="Video Face Swap">
-                                <i class="bi bi-person-badge"></i>
-                                <span>Video Face Swap</span>
+                                <div class="ai-mode-item-content">
+                                    <div class="ai-mode-item-header">
+                                        <div class="ai-mode-item-title">Video Face Swap</div>
+                                        <span class="ai-mode-badge ai-mode-badge-new">New</span>
+                                    </div>
+                                    <div class="ai-mode-item-desc">Tukar wajah dalam video dengan AI.</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -4486,34 +4702,17 @@
                         <i class="bi bi-gear"></i>
                     </button>
                     
-                    <!-- Input Menu Dropdown (positioned relative to menu button) -->
+                    <!-- Input Menu Dropdown (Settings Menu) -->
                     <div class="ai-input-menu" id="inputMenu">
-                        <div class="ai-input-menu-item active" data-mode="" id="inputMenuChat">
-                            <i class="bi bi-chat-dots"></i>
-                            <span>Chat</span>
+                        <div class="ai-input-menu-header">
+                            <i class="bi bi-gear"></i>
+                            <span>Pengaturan</span>
                         </div>
-                        <div class="ai-input-menu-item" data-mode="image_generate" id="inputMenuImage">
-                            <i class="bi bi-image"></i>
-                            <span>Gambar</span>
-                        </div>
-                        <div class="ai-input-menu-item" data-mode="video_generate" id="inputMenuVideo">
-                            <i class="bi bi-camera-reels"></i>
-                            <span>Video</span>
-                        </div>
-                        <div class="ai-input-menu-item" data-mode="music_generate" id="inputMenuMusic">
-                            <i class="bi bi-music-note-beamed"></i>
-                            <span>Musik</span>
-                        </div>
-                        <div class="ai-input-menu-item" data-mode="video_face_swap" id="inputMenuFaceSwap">
-                            <i class="bi bi-person-badge"></i>
-                            <span>Video Face Swap</span>
-                        </div>
-                        <div class="ai-input-menu-divider"></div>
-                        <div class="ai-input-menu-item" id="inputMenuDownloadHistory">
+                        <div class="ai-input-menu-item success" id="inputMenuDownloadHistory">
                             <i class="bi bi-download"></i>
                             <span>Download Riwayat Chat</span>
                         </div>
-                        <div class="ai-input-menu-item" id="inputMenuClearHistory">
+                        <div class="ai-input-menu-item danger" id="inputMenuClearHistory">
                             <i class="bi bi-trash"></i>
                             <span>Hapus Riwayat Chat</span>
                         </div>
@@ -4787,11 +4986,8 @@
                 c.classList.toggle('active', c.dataset.mode === mode);
             });
             
-            // Update input menu items
-            const inputMenuItems = document.querySelectorAll('.ai-input-menu-item[data-mode]');
-            inputMenuItems.forEach(item => {
-                item.classList.toggle('active', item.dataset.mode === mode);
-            });
+            // Input menu items for mode selection have been removed
+            // Mode selection is now handled by Auto dropdown only
             
             // Update inline dropdown
             const modeDropdownText = document.getElementById('modeDropdownText');
@@ -4910,11 +5106,13 @@
                 // Wait for transition to complete before resetting position and moving back
                 setTimeout(() => {
                     if (!modeDropdownInline.classList.contains('open')) {
+                        // Reset all position styles
                         modeDropdownMenu.style.top = '';
                         modeDropdownMenu.style.left = '';
                         modeDropdownMenu.style.right = '';
                         modeDropdownMenu.style.bottom = '';
                         modeDropdownMenu.style.position = '';
+                        // Transform will be reset by CSS
                         // Move dropdown back to original parent if it was moved to body
                         if (modeDropdownInline && modeDropdownMenu.parentElement === document.body) {
                             modeDropdownInline.appendChild(modeDropdownMenu);
@@ -4938,26 +5136,42 @@
                         document.body.appendChild(modeDropdownMenu);
                     }
                     
-                    // Calculate position for popup (above button)
-                    const btnRect = modeDropdownBtn.getBoundingClientRect();
-                    const menuHeight = 300; // Approximate menu height
-                    const spacing = 8; // Space between button and menu
+                    // Check if mobile (screen width <= 768px)
+                    const isMobile = window.innerWidth <= 768;
                     
-                    // Position menu above button, aligned to left
-                    const top = btnRect.top - menuHeight - spacing;
-                    const left = btnRect.left;
-                    
-                    // Ensure menu doesn't go off screen
-                    const finalTop = Math.max(20, top);
-                    const finalLeft = Math.max(20, Math.min(left, window.innerWidth - 240));
-                    
-                    // Set position first
-                    modeDropdownMenu.style.top = `${finalTop}px`;
-                    modeDropdownMenu.style.left = `${finalLeft}px`;
-                    modeDropdownMenu.style.right = 'auto';
-                    modeDropdownMenu.style.bottom = 'auto';
-                    modeDropdownMenu.style.position = 'fixed';
-                    modeDropdownMenu.style.zIndex = '10001';
+                    if (isMobile) {
+                        // Mobile: Center dropdown on screen (horizontal and vertical)
+                        modeDropdownMenu.style.top = '50%';
+                        modeDropdownMenu.style.left = '50%';
+                        modeDropdownMenu.style.right = 'auto';
+                        modeDropdownMenu.style.bottom = 'auto';
+                        modeDropdownMenu.style.position = 'fixed';
+                        modeDropdownMenu.style.zIndex = '10001';
+                        // Transform will be handled by CSS
+                    } else {
+                        // Desktop: Position relative to button (above button)
+                        const btnRect = modeDropdownBtn.getBoundingClientRect();
+                        const menuHeight = 400; // Approximate menu height
+                        const spacing = 24; // Space between button and menu (increased to ensure no overlap)
+                        
+                        // Position menu above button with clear spacing, aligned to left
+                        // Calculate from top of button minus menu height minus spacing
+                        const top = btnRect.top - menuHeight - spacing;
+                        const left = btnRect.left;
+                        
+                        // Ensure menu doesn't go off screen
+                        const finalTop = Math.max(20, top);
+                        const finalLeft = Math.max(20, Math.min(left, window.innerWidth - 320));
+                        
+                        // Set position first
+                        modeDropdownMenu.style.top = `${finalTop}px`;
+                        modeDropdownMenu.style.left = `${finalLeft}px`;
+                        modeDropdownMenu.style.right = 'auto';
+                        modeDropdownMenu.style.bottom = 'auto';
+                        modeDropdownMenu.style.position = 'fixed';
+                        modeDropdownMenu.style.zIndex = '10001';
+                        modeDropdownMenu.style.transform = 'translateY(8px) scale(0.95)';
+                    }
                     
                     // Force reflow to ensure position is set before animation
                     void modeDropdownMenu.offsetHeight;
@@ -5013,17 +5227,31 @@
                     if (modeDropdownMenu.parentElement !== document.body) {
                         document.body.appendChild(modeDropdownMenu);
                     }
-                    const btnRect = modeDropdownBtn.getBoundingClientRect();
-                    const menuHeight = 300;
-                    const spacing = 8;
-                    const top = btnRect.top - menuHeight - spacing;
-                    const left = btnRect.left;
-                    const finalTop = Math.max(20, top);
-                    const finalLeft = Math.max(20, Math.min(left, window.innerWidth - 240));
                     
-                    modeDropdownMenu.style.top = `${finalTop}px`;
-                    modeDropdownMenu.style.left = `${finalLeft}px`;
-                    modeDropdownMenu.style.position = 'fixed';
+                    const isMobile = window.innerWidth <= 768;
+                    
+                    if (isMobile) {
+                        // Mobile: Keep centered
+                        modeDropdownMenu.style.top = '50%';
+                        modeDropdownMenu.style.left = '50%';
+                        modeDropdownMenu.style.right = 'auto';
+                        modeDropdownMenu.style.bottom = 'auto';
+                        modeDropdownMenu.style.position = 'fixed';
+                    } else {
+                        // Desktop: Position relative to button
+                        const btnRect = modeDropdownBtn.getBoundingClientRect();
+                        const menuHeight = 400; // Approximate menu height
+                        const spacing = 24; // Space between button and menu (increased to ensure no overlap)
+                        const top = btnRect.top - menuHeight - spacing;
+                        const left = btnRect.left;
+                        const finalTop = Math.max(20, top);
+                        const finalLeft = Math.max(20, Math.min(left, window.innerWidth - 320));
+                        
+                        modeDropdownMenu.style.top = `${finalTop}px`;
+                        modeDropdownMenu.style.left = `${finalLeft}px`;
+                        modeDropdownMenu.style.position = 'fixed';
+                        modeDropdownMenu.style.transform = 'translateY(0) scale(1)';
+                    }
                 }
                 
                 // Update mode indicators on resize untuk memastikan tampilan mobile/desktop konsisten
@@ -5084,7 +5312,7 @@
                     
                     // Calculate position for popup (above button, aligned to right)
                     const btnRect = inputMenuBtn.getBoundingClientRect();
-                    const menuHeight = 400; // Approximate menu height
+                    const menuHeight = 180; // Reduced height since we only have 2 items now
                     const spacing = 12; // Space between button and menu
                     
                     // Position menu above button, aligned to right
@@ -5112,32 +5340,8 @@
             console.error('[Input Menu] Button or menu not found:', inputMenuBtn, inputMenu);
         }
         
-        // Handle menu item clicks
-        inputMenuItems.forEach(item => {
-            item.addEventListener('click', (e) => {
-                e.stopPropagation();
-                
-                // Handle mode selection
-                if (item.dataset.mode !== undefined) {
-                    // Remove active from all items
-                    inputMenuItems.forEach(m => m.classList.remove('active'));
-                    // Add active to clicked item
-                    item.classList.add('active');
-                    
-                    // Update mode select
-                    const selectedMode = item.dataset.mode || '';
-                    if (modeSelect) {
-                        modeSelect.value = selectedMode;
-                    }
-                    
-                    // Update all mode indicators (including inline dropdown)
-                    updateModeIndicators(selectedMode);
-                    
-                    // Close menu
-                    closeInputMenu();
-                }
-            });
-        });
+        // Handle menu item clicks (only for download and clear history)
+        // Mode selection items have been removed as they're already in Auto dropdown
         
         // Handle download history
         if (inputMenuDownloadHistory) {
@@ -5180,7 +5384,7 @@
                     document.body.appendChild(inputMenu);
                 }
                 const btnRect = inputMenuBtn.getBoundingClientRect();
-                const menuHeight = 400;
+                const menuHeight = 180; // Reduced height since we only have 2 items now
                 const spacing = 12;
                 const top = btnRect.top - menuHeight - spacing;
                 const right = window.innerWidth - btnRect.right;
