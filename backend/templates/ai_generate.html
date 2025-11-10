@@ -738,6 +738,13 @@
         place-items: center;
         font-size: 16px;
         flex-shrink: 0;
+        transform-style: preserve-3d;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+    }
+
+    .ai-message:hover .ai-message-avatar {
+        transform: translateZ(10px) rotateY(10deg) scale(1.1);
     }
 
     .ai-message.user .ai-message-avatar {
@@ -746,10 +753,41 @@
         box-shadow: 0 0 12px rgba(76, 126, 255, 0.3);
     }
 
+    .ai-message.user:hover .ai-message-avatar {
+        box-shadow: 0 0 20px rgba(76, 126, 255, 0.5);
+    }
+
     .ai-message.assistant .ai-message-avatar {
         background: var(--bg-bubble-ai);
         color: var(--accent-neon);
         box-shadow: 0 0 12px rgba(76, 126, 255, 0.3);
+    }
+
+    .ai-message.assistant:hover .ai-message-avatar {
+        box-shadow: 0 0 20px rgba(76, 126, 255, 0.5);
+    }
+
+    /* 3D Perspective Container for Messages */
+    .ai-chat-stream {
+        perspective: 1000px;
+        transform-style: preserve-3d;
+    }
+
+    .ai-message {
+        transform-style: preserve-3d;
+        animation: messageSlideIn3D 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        opacity: 0;
+    }
+
+    @keyframes messageSlideIn3D {
+        0% {
+            opacity: 0;
+            transform: translateY(20px) translateZ(-50px) rotateX(10deg);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) translateZ(0) rotateX(0deg);
+        }
     }
 
     .ai-message-bubble {
@@ -764,6 +802,30 @@
         word-wrap: break-word;
         overflow-wrap: break-word;
         overflow: visible; /* Allow actions to overflow */
+        transform-style: preserve-3d;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+    }
+
+    .ai-message-bubble::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(76, 126, 255, 0.1), rgba(168, 85, 247, 0.1));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .ai-message-bubble:hover {
+        transform: translateY(-2px) translateZ(10px) rotateX(2deg);
+    }
+
+    .ai-message-bubble:hover::before {
+        opacity: 1;
     }
 
     .ai-message.user .ai-message-bubble {
@@ -773,7 +835,16 @@
         box-shadow: 
             0 8px 32px rgba(0, 0, 0, 0.4),
             inset 0 1px 0 rgba(255, 255, 255, 0.05),
-            0 0 20px rgba(76, 126, 255, 0.1);
+            0 0 20px rgba(76, 126, 255, 0.1),
+            0 0 0 1px rgba(76, 126, 255, 0.1);
+    }
+
+    .ai-message.user .ai-message-bubble:hover {
+        box-shadow: 
+            0 12px 40px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1),
+            0 0 30px rgba(76, 126, 255, 0.2),
+            0 0 0 1px rgba(76, 126, 255, 0.3);
     }
 
     .ai-message.assistant .ai-message-bubble {
@@ -783,7 +854,16 @@
         box-shadow: 
             0 8px 32px rgba(0, 0, 0, 0.4),
             inset 0 1px 0 rgba(255, 255, 255, 0.05),
-            0 0 25px rgba(76, 126, 255, 0.15);
+            0 0 25px rgba(76, 126, 255, 0.15),
+            0 0 0 1px rgba(76, 126, 255, 0.15);
+    }
+
+    .ai-message.assistant .ai-message-bubble:hover {
+        box-shadow: 
+            0 12px 40px rgba(0, 0, 0, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1),
+            0 0 35px rgba(76, 126, 255, 0.25),
+            0 0 0 1px rgba(76, 126, 255, 0.3);
     }
 
     .ai-message-meta {
@@ -910,6 +990,20 @@
         display: flex;
         align-items: center;
         gap: 6px;
+        animation: labelSlideIn3D 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        opacity: 0;
+        transform-style: preserve-3d;
+    }
+
+    @keyframes labelSlideIn3D {
+        0% {
+            opacity: 0;
+            transform: translateX(-20px) translateZ(-30px) rotateY(-10deg);
+        }
+        100% {
+            opacity: 1;
+            transform: translateX(0) translateZ(0) rotateY(0deg);
+        }
     }
 
     .ai-media-grid {
@@ -947,28 +1041,65 @@
         }
     }
 
+    /* 3D Perspective for Variations Grid */
+    .ai-variations-grid {
+        perspective: 1200px;
+        transform-style: preserve-3d;
+    }
+
     .ai-image-variation {
         position: relative;
         border-radius: 14px;
         overflow: hidden;
         background: rgba(255, 255, 255, 0.05);
         border: 2px solid rgba(255, 255, 255, 0.1);
-        transition: all 0.3s ease;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         display: flex;
         flex-direction: column;
         width: 100%;
+        transform-style: preserve-3d;
+        animation: cardFlipIn3D 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        opacity: 0;
+        will-change: transform;
+    }
+
+    /* Stagger animation for multiple cards */
+    .ai-image-variation:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .ai-image-variation:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .ai-image-variation:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    @keyframes cardFlipIn3D {
+        0% {
+            opacity: 0;
+            transform: translateY(30px) translateZ(-100px) rotateX(15deg) rotateY(-5deg);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) translateZ(0) rotateX(0deg) rotateY(0deg);
+        }
     }
 
     .ai-image-variation:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 32px rgba(76, 126, 255, 0.3);
+        transform: translateY(-8px) translateZ(20px) rotateX(-5deg) rotateY(2deg) scale(1.02);
+        box-shadow: 
+            0 20px 50px rgba(76, 126, 255, 0.4),
+            0 0 40px rgba(76, 126, 255, 0.2),
+            inset 0 0 30px rgba(76, 126, 255, 0.1);
         border-color: var(--accent-neon);
     }
 
     /* Disable hover effect on mobile */
     @media (max-width: 768px) {
         .ai-image-variation:hover {
-            transform: none;
+            transform: translateY(0) translateZ(0) rotateX(0deg) rotateY(0deg) scale(1);
         }
     }
 
@@ -981,6 +1112,13 @@
         object-fit: cover;
         aspect-ratio: 1 / 1; /* Square images for consistency */
         background: rgba(0, 0, 0, 0.2);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        transform-style: preserve-3d;
+        will-change: transform;
+    }
+
+    .ai-image-variation:hover img {
+        transform: scale(1.05) translateZ(10px);
     }
 
     /* Mobile: allow natural aspect ratio */
@@ -1005,6 +1143,13 @@
         backdrop-filter: blur(10px);
         z-index: 1;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        transform-style: preserve-3d;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .ai-image-variation:hover .ai-variation-number {
+        transform: translateZ(15px) scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     }
 
     /* Download Button Overlay - Pojok Kanan Atas */
@@ -1022,22 +1167,26 @@
         display: grid;
         place-items: center;
         font-size: 18px;
-        transition: all 0.2s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         backdrop-filter: blur(10px);
         z-index: 2;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         text-decoration: none;
+        transform-style: preserve-3d;
+        will-change: transform;
     }
 
     .ai-variation-download:hover {
         background: rgba(76, 126, 255, 0.4);
         border-color: var(--accent-neon);
-        transform: scale(1.1);
-        box-shadow: 0 6px 16px rgba(76, 126, 255, 0.5);
+        transform: translateZ(15px) scale(1.15) rotateY(5deg);
+        box-shadow: 
+            0 8px 20px rgba(76, 126, 255, 0.6),
+            0 0 30px rgba(76, 126, 255, 0.4);
     }
 
     .ai-variation-download:active {
-        transform: scale(0.95);
+        transform: translateZ(5px) scale(1.05) rotateY(0deg);
     }
 
     @media (max-width: 768px) {
@@ -1077,11 +1226,38 @@
         border-radius: 10px;
         color: var(--text-primary);
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         display: grid;
         place-items: center;
         font-size: 18px;
         flex: 0 0 auto;
+        transform-style: preserve-3d;
+        will-change: transform;
+        position: relative;
+    }
+
+    .ai-variation-actions button::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 10px;
+        background: linear-gradient(135deg, rgba(76, 126, 255, 0.3), rgba(168, 85, 247, 0.3));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
+    }
+
+    .ai-variation-actions button:hover {
+        transform: translateZ(10px) scale(1.1) rotateY(5deg);
+        box-shadow: 0 6px 20px rgba(76, 126, 255, 0.4);
+    }
+
+    .ai-variation-actions button:hover::before {
+        opacity: 1;
+    }
+
+    .ai-variation-actions button:active {
+        transform: translateZ(5px) scale(1.05) rotateY(0deg);
     }
 
     .ai-variation-actions button:first-child {
@@ -1120,6 +1296,11 @@
         }
     }
 
+    .ai-media-grid {
+        transform-style: preserve-3d;
+        perspective: 1000px;
+    }
+
     .ai-media-grid img,
     .ai-media-grid video {
         width: 100%;
@@ -1133,17 +1314,32 @@
             inset 0 1px 0 rgba(255, 255, 255, 0.1);
         object-fit: contain;
         cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         background: rgba(0, 0, 0, 0.2);
+        transform-style: preserve-3d;
+        will-change: transform;
+        animation: mediaSlideIn3D 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        opacity: 0;
+    }
+
+    @keyframes mediaSlideIn3D {
+        0% {
+            opacity: 0;
+            transform: translateY(20px) translateZ(-50px) rotateX(10deg);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) translateZ(0) rotateX(0deg);
+        }
     }
 
     .ai-media-grid img:hover,
     .ai-media-grid video:hover {
-        transform: translateY(-4px) scale(1.02);
+        transform: translateY(-6px) translateZ(15px) rotateX(-3deg) scale(1.03);
         border-color: rgba(76, 126, 255, 0.5);
         box-shadow: 
-            0 16px 48px rgba(0, 0, 0, 0.5),
-            0 0 30px rgba(76, 126, 255, 0.3),
+            0 20px 60px rgba(0, 0, 0, 0.6),
+            0 0 40px rgba(76, 126, 255, 0.4),
             inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
 
@@ -1152,29 +1348,71 @@
         gap: 8px;
         margin-top: 10px;
         flex-wrap: wrap;
+        transform-style: preserve-3d;
+        animation: actionsSlideIn3D 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        opacity: 0;
+    }
+
+    @keyframes actionsSlideIn3D {
+        0% {
+            opacity: 0;
+            transform: translateY(15px) translateZ(-20px) rotateX(5deg);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) translateZ(0) rotateX(0deg);
+        }
     }
 
     .ai-result-actions a,
     .ai-result-actions button {
-        padding: 6px 12px;
+        padding: 8px 14px;
         font-size: 12px;
-        border-radius: 8px;
+        border-radius: 10px;
         border: 1px solid var(--border-neon);
         background: rgba(76, 126, 255, 0.1);
         color: var(--text-primary);
         cursor: pointer;
-        transition: all 150ms;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         text-decoration: none;
         display: inline-flex;
         align-items: center;
         gap: 6px;
+        transform-style: preserve-3d;
+        will-change: transform;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ai-result-actions a::before,
+    .ai-result-actions button::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(76, 126, 255, 0.2), rgba(168, 85, 247, 0.2));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: -1;
     }
 
     .ai-result-actions a:hover,
     .ai-result-actions button:hover {
         background: rgba(76, 126, 255, 0.2);
         border-color: var(--accent-neon);
-        transform: translateY(-1px);
+        transform: translateY(-3px) translateZ(10px) rotateX(-3deg);
+        box-shadow: 
+            0 8px 20px rgba(76, 126, 255, 0.3),
+            0 0 15px rgba(76, 126, 255, 0.2);
+    }
+
+    .ai-result-actions a:hover::before,
+    .ai-result-actions button:hover::before {
+        opacity: 1;
+    }
+
+    .ai-result-actions a:active,
+    .ai-result-actions button:active {
+        transform: translateY(-1px) translateZ(5px) rotateX(0deg);
     }
 
     /* Music Card - Keren dan Rapi */
