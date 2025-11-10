@@ -738,8 +738,27 @@ window.toggleMobileNotifications = function() {
     font-size: 1rem;
   }
   @keyframes pulse {
-    0%, 100% { opacity: 0.7; }
-    50% { opacity: 1; }
+    0%, 100% { 
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% { 
+      opacity: 0.9;
+      transform: scale(1.05);
+    }
+  }
+
+  @keyframes badgePulse {
+    0%, 100% { 
+      opacity: 1;
+      transform: scale(1);
+      box-shadow: 0 2px 8px rgba(255, 107, 107, 0.5);
+    }
+    50% { 
+      opacity: 0.9;
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(255, 107, 107, 0.8);
+    }
   }
   @media (max-width: 600px) {
     .scroll-hint {
@@ -955,22 +974,23 @@ window.toggleMobileNotifications = function() {
   /* --- NAVBAR - Modern Futuristic Design --- */
   .leonardo-navbar {
     width: 100%;
-    background: rgba(15, 15, 15, 0.85);
-    backdrop-filter: blur(25px);
+    background: rgba(14, 11, 44, 0.95);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
     box-shadow: 
-      0 8px 32px rgba(0, 0, 0, 0.3),
-      0 0 0 1px rgba(102, 126, 234, 0.1);
+      0 8px 32px rgba(0, 0, 0, 0.4),
+      0 0 0 1px rgba(168, 85, 247, 0.15);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.2rem 2.5vw 1.2rem 2.5vw;
+    padding: 1rem 2.5vw;
     position: sticky;
     top: 0;
-    z-index: 100;
-    border-bottom: 1px solid rgba(102, 126, 234, 0.3);
+    z-index: 1000;
+    border-bottom: 1px solid rgba(168, 85, 247, 0.2);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .leonardo-navbar::before {
@@ -981,9 +1001,9 @@ window.toggleMobileNotifications = function() {
     right: 0;
     bottom: 0;
     background: linear-gradient(135deg, 
-      rgba(102, 126, 234, 0.05) 0%, 
-      rgba(240, 147, 251, 0.05) 50%, 
-      rgba(78, 205, 196, 0.05) 100%);
+      rgba(168, 85, 247, 0.08) 0%, 
+      rgba(236, 72, 153, 0.08) 50%, 
+      rgba(168, 85, 247, 0.05) 100%);
     opacity: 0;
     transition: opacity 0.4s ease;
   }
@@ -1001,9 +1021,9 @@ window.toggleMobileNotifications = function() {
     height: 2px;
     background: linear-gradient(90deg, 
       transparent 0%, 
-      rgba(102, 126, 234, 0.8) 25%, 
-      rgba(240, 147, 251, 0.8) 50%, 
-      rgba(78, 205, 196, 0.8) 75%, 
+      rgba(168, 85, 247, 0.8) 25%, 
+      rgba(236, 72, 153, 0.8) 50%, 
+      rgba(168, 85, 247, 0.8) 75%, 
       transparent 100%);
     transform: scaleX(0);
     transform-origin: left;
@@ -1015,37 +1035,49 @@ window.toggleMobileNotifications = function() {
   }
 
   .leonardo-navbar-logo {
-    font-size: 1.8rem;
+    font-size: 1.75rem;
     font-weight: 900;
     color: #fff;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: 0.75rem;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     z-index: 2;
+    text-shadow: 0 2px 10px rgba(168, 85, 247, 0.3);
   }
 
   .leonardo-navbar-logo:hover {
-    transform: scale(1.05);
-    text-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
+    transform: scale(1.03);
+    text-shadow: 0 0 25px rgba(168, 85, 247, 0.7);
   }
 
   .leonardo-navbar-logo img {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    filter: drop-shadow(0 0 10px rgba(102, 126, 234, 0.3));
+    filter: drop-shadow(0 0 12px rgba(168, 85, 247, 0.5));
+    height: 2.2rem;
+    width: auto;
   }
 
   .leonardo-navbar-logo:hover img {
-    filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.6));
-    transform: scale(1.1);
+    filter: drop-shadow(0 0 20px rgba(168, 85, 247, 0.8));
+    transform: scale(1.08) rotate(2deg);
+  }
+
+  .leonardo-navbar-logo span {
+    background: linear-gradient(135deg, #fff 0%, #e0e7ff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-weight: 900;
+    letter-spacing: 2px;
   }
 
   .leonardo-navbar-menu {
     display: flex;
     align-items: center;
-    gap: 1.7rem;
+    gap: 1rem;
     position: relative;
     z-index: 2;
   }
@@ -1105,23 +1137,24 @@ window.toggleMobileNotifications = function() {
   }
 
   .leonardo-navbar-cta {
-    background: linear-gradient(135deg, #667eea, #f093fb, #4ecdc4);
+    background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
     color: #fff;
     font-weight: 700;
     border-radius: 50px;
-    padding: 0.8rem 2.5rem;
+    padding: 0.75rem 2rem;
     border: none;
-    font-size: 1.08rem;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
     box-shadow: 
-      0 8px 25px rgba(102, 126, 234, 0.4),
+      0 8px 25px rgba(168, 85, 247, 0.4),
       0 0 0 1px rgba(255, 255, 255, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
     text-decoration: none;
-    margin-left: 1.5rem;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
     backdrop-filter: blur(10px);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
   .leonardo-navbar-cta::before {
@@ -1140,64 +1173,87 @@ window.toggleMobileNotifications = function() {
   }
 
   .leonardo-navbar-cta:hover {
-    background: linear-gradient(135deg, #f093fb, #4ecdc4, #667eea);
+    background: linear-gradient(135deg, #c084fc 0%, #f472b6 100%);
     color: #fff;
     box-shadow: 
-      0 15px 40px rgba(240, 147, 251, 0.5),
+      0 12px 35px rgba(168, 85, 247, 0.6),
       0 0 0 1px rgba(255, 255, 255, 0.2),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    transform: translateY(-3px) scale(1.05);
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    transform: translateY(-2px) scale(1.03);
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.7);
   }
 
-  /* Notification Bell in Mobile Navbar */
-  .notification-bell-mobile {
+  .leonardo-navbar-cta:active {
+    transform: translateY(0) scale(1);
+  }
+
+  /* Notification Bell in Header Navbar */
+  .leonardo-navbar-menu .notification-bell-mobile {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin-right: 0.5rem;
   }
 
-  .notification-icon-mobile {
+  .leonardo-navbar-menu .notification-icon-mobile {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 45px;
-    height: 45px;
-    background: linear-gradient(90deg, #6366f1, #ec4899);
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
     border-radius: 50%;
     color: white;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+    box-shadow: 
+      0 4px 15px rgba(168, 85, 247, 0.4),
+      0 0 0 1px rgba(255, 255, 255, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.15);
   }
 
-  .notification-icon-mobile:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.5);
+  .leonardo-navbar-menu .notification-icon-mobile:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 
+      0 8px 25px rgba(168, 85, 247, 0.6),
+      0 0 0 1px rgba(255, 255, 255, 0.2),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    background: linear-gradient(135deg, #c084fc 0%, #f472b6 100%);
   }
 
-  .notification-icon-mobile i {
-    font-size: 1.2rem;
+  .leonardo-navbar-menu .notification-icon-mobile:active {
+    transform: translateY(0) scale(0.98);
   }
 
-  .notification-badge-mobile {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: #ff4757;
+  .leonardo-navbar-menu .notification-icon-mobile i {
+    font-size: 1.15rem;
     color: white;
-    border-radius: 50%;
-    width: 22px;
-    height: 22px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  .leonardo-navbar-menu .notification-badge-mobile {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    border-radius: 12px;
+    min-width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
-    font-weight: 600;
-    border: 2px solid #1a1a2e;
-    animation: pulse 2s infinite;
+    font-size: 0.65rem;
+    font-weight: 700;
+    border: 2px solid rgba(14, 11, 44, 0.95);
+    animation: badgePulse 2s infinite;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.5);
+    padding: 0 5px;
+    line-height: 1;
+    z-index: 11;
   }
 
   /* Ensure notification bell is clickable */
@@ -1279,13 +1335,71 @@ window.toggleMobileNotifications = function() {
     }
   }
   @media (max-width: 900px) {
-    .leonardo-navbar-menu { gap: 0.7rem; }
-    .leonardo-navbar-cta { padding: 0.5rem 1.2rem; font-size: 1rem; }
+    .leonardo-navbar-menu { gap: 0.8rem; }
+    .leonardo-navbar-menu .notification-icon-mobile {
+      width: 40px;
+      height: 40px;
+    }
+    .leonardo-navbar-menu .notification-icon-mobile i {
+      font-size: 1.05rem;
+    }
+    .leonardo-navbar-cta { padding: 0.65rem 1.5rem; font-size: 0.95rem; }
+  }
+  @media (max-width: 768px) {
+    .leonardo-navbar { 
+      padding: 0.9rem 1.5vw; 
+      flex-wrap: nowrap;
+    }
+    .leonardo-navbar-logo { 
+      font-size: 1.3rem; 
+      gap: 0.5rem;
+    }
+    .leonardo-navbar-logo img {
+      height: 1.8rem;
+    }
+    .leonardo-navbar-menu { 
+      gap: 0.6rem; 
+      flex-shrink: 0;
+    }
+    .leonardo-navbar-menu .notification-icon-mobile {
+      width: 38px;
+      height: 38px;
+    }
+    .leonardo-navbar-menu .notification-icon-mobile i {
+      font-size: 1rem;
+    }
+    .leonardo-navbar-cta { 
+      padding: 0.6rem 1.3rem; 
+      font-size: 0.9rem; 
+    }
   }
   @media (max-width: 600px) {
-    .leonardo-navbar { align-items: flex-start; padding: 1rem 1vw; }
-    .leonardo-navbar-menu {flex-direction:raw; gap: 0.5rem; }
-    .leonardo-navbar-cta { margin-left: 0; margin-top: 0.7rem; }
+    .leonardo-navbar { 
+      padding: 0.8rem 1vw; 
+      align-items: center;
+    }
+    .leonardo-navbar-logo {
+      font-size: 1.1rem;
+      gap: 0.4rem;
+    }
+    .leonardo-navbar-logo img {
+      height: 1.6rem;
+    }
+    .leonardo-navbar-menu { 
+      gap: 0.5rem; 
+      flex-wrap: nowrap;
+    }
+    .leonardo-navbar-menu .notification-icon-mobile {
+      width: 36px;
+      height: 36px;
+    }
+    .leonardo-navbar-menu .notification-icon-mobile i {
+      font-size: 0.95rem;
+    }
+    .leonardo-navbar-cta { 
+      padding: 0.55rem 1.1rem; 
+      font-size: 0.85rem; 
+    }
   }
 
   /* --- MENU GENERATE ala Leonardo AI --- */

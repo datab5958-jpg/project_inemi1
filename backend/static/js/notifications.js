@@ -422,14 +422,28 @@ class NotificationSystem {
             }
             
             // Load notifications from API
-            const response = await fetch('/api/notifications');
+            const response = await fetch('/api/notifications?limit=50', {
+                credentials: 'same-origin',
+                headers: {
+                    'Accept': 'application/json',
+                }
+            });
+            
+            // Check if response is ok
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error(`HTTP ${response.status}: ${errorText}`);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             const data = await response.json();
             
             console.log('Notifications response:', data);
             
             if (data.success) {
                 this.notifications = data.notifications || [];
-                console.log('Loaded notifications:', this.notifications);
+                this.notificationCount = data.unread_count || 0;
+                console.log('Loaded notifications:', this.notifications.length, 'Unread:', this.notificationCount);
                 this.updateNotificationBadge();
                 
                 // Clear any loading state and render notifications immediately
@@ -439,12 +453,27 @@ class NotificationSystem {
             } else {
                 console.error('Failed to load notifications:', data.error);
                 this.clearLoadingState();
-                this.renderErrorState('Gagal memuat notifikasi');
+                this.renderErrorState(data.error || 'Gagal memuat notifikasi');
             }
         } catch (error) {
             console.error('Error fetching notifications:', error);
             this.clearLoadingState();
-            this.renderErrorState('Terjadi kesalahan saat memuat notifikasi');
+            
+            // Check if it's a network error or server error
+            if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
+                this.renderErrorState('Tidak dapat terhubung ke server. Periksa koneksi internet Anda.');
+            } else if (error.message && error.message.includes('HTTP 401')) {
+                this.renderErrorState('Anda harus login untuk melihat notifikasi.');
+            } else if (error.message && error.message.includes('HTTP 500')) {
+                this.renderErrorState('Terjadi kesalahan pada server. Silakan coba lagi nanti.');
+            } else {
+                this.renderErrorState('Terjadi kesalahan saat memuat notifikasi. Silakan coba lagi.');
+            }
+            
+            // Still render empty state if we have no notifications
+            if (this.notifications.length === 0) {
+                this.renderNotifications(); // This will show empty state
+            }
         }
     }
     

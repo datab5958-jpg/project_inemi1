@@ -228,7 +228,7 @@ def api_feed_videos():
                         'likes': likes_count,
                         'comments': comments_count,
                         'views': video.view_count or 0,
-                        'shares': random.randint(5, 50)  # Mock share count
+                        'shares': 0  # Share count starts from 0, will be updated when user shares
                     },
                     'interactions': {
                         'is_liked': is_liked,
@@ -392,7 +392,7 @@ def api_feed_videos_cursor():
                         'likes': likes_count,
                         'comments': comments_count,
                         'views': video.view_count or 0,
-                        'shares': random.randint(5, 50)
+                        'shares': 0  # Share count starts from 0, will be updated when user shares
                     },
                     'interactions': {
                         'is_liked': is_liked,
@@ -619,7 +619,8 @@ def api_feed_video_detail(video_id):
             
             comments_data.append({
                 'id': comment.id,
-                'comment': comment.comment,
+                'comment': comment.text,  # Use 'text' field from Comment model
+                'text': comment.text,  # Also include as 'text' for compatibility
                 'user': {
                     'id': comment_user.id,
                     'username': comment_user.username,
@@ -646,7 +647,7 @@ def api_feed_video_detail(video_id):
                 'likes': likes_count,
                 'comments': comments_count,
                 'views': video.view_count or 0,
-                'shares': random.randint(5, 50)
+                'shares': 0  # Share count starts from 0, will be updated when user shares
             },
             'interactions': {
                 'is_liked': is_liked,
@@ -919,7 +920,7 @@ def create_dummy_videos(page, per_page):
             'thumbnail': f"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg",
             'likes': random.randint(100, 5000),
             'comments': random.randint(10, 500),
-            'shares': random.randint(5, 200),
+            'shares': 0,  # Share count starts from 0
             'bookmarks': random.randint(3, 100),
             'author': f"Creator {i}",
             'authorAvatar': f"https://images.unsplash.com/photo-{random.randint(1000000000000, 9999999999999)}?w=100&h=100&fit=crop&crop=face",
@@ -985,26 +986,50 @@ def api_video_like(video_id):
 def api_video_comment(video_id):
     """API endpoint to add a comment to a video"""
     if 'user_id' not in session:
-        return jsonify({'error': 'Unauthorized'}), 401
+        return jsonify({'success': False, 'error': 'Unauthorized'}), 401
     
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({'success': False, 'error': 'Invalid request data'}), 400
+        
         comment_text = data.get('comment', '').strip()
         
         if not comment_text:
-            return jsonify({'error': 'Comment cannot be empty'}), 400
+            return jsonify({'success': False, 'error': 'Comment cannot be empty'}), 400
         
         current_user_id = session.get('user_id')
+        if not current_user_id:
+            return jsonify({'success': False, 'error': 'User not found in session'}), 401
         
-        # Add new comment
+        # Add new comment with explicit current timestamp
+        # Use datetime.now() to ensure we get the actual current time
+        from datetime import datetime, timezone
+        current_time = datetime.now(timezone.utc)
+        
+        # If timezone is not available, use datetime.utcnow() and add timezone
+        if current_time.tzinfo is None:
+            current_time = datetime.utcnow().replace(tzinfo=timezone.utc)
+        
         new_comment = Comment(
             user_id=current_user_id,
             content_type='video',
             content_id=str(video_id),
-            comment=comment_text
+            text=comment_text,  # Use 'text' field, not 'comment'
+            created_at=current_time  # Explicitly set current time
         )
         db.session.add(new_comment)
         db.session.commit()
+        
+        # Refresh to get the actual created_at from database
+        db.session.refresh(new_comment)
+        
+        # Always use current_time for response, not database value (in case DB has wrong time)
+        # Format timestamp for response (always use current time, not DB value)
+        comment_timestamp = current_time.isoformat()
+        
+        # Debug: log timestamp to verify it's correct
+        print(f"Comment created - ID: {new_comment.id}, current_time (used): {comment_timestamp}, DB created_at: {new_comment.created_at.isoformat() if new_comment.created_at else 'None'}")
         
         # Get updated comments count
         comments_count = db.session.query(Comment).filter_by(
@@ -1012,32 +1037,50 @@ def api_video_comment(video_id):
             content_id=str(video_id)
         ).count()
         
+        # Get user info for response
+        user = db.session.query(User).filter_by(id=current_user_id).first()
+        user_avatar = user.avatar_url if user else None
+        if user_avatar and not user_avatar.startswith('http'):
+            user_avatar = f"/static/{user_avatar}"
+        
         return jsonify({
             'success': True,
             'comments_count': comments_count,
             'comment': {
                 'id': new_comment.id,
                 'comment': comment_text,
-                'user_id': current_user_id,
-                'created_at': new_comment.created_at.isoformat() if new_comment.created_at else None
+                'text': comment_text,  # Also include as 'text' for compatibility
+                'user': {
+                    'id': current_user_id,
+                    'username': user.username if user else 'Unknown',
+                    'avatar_url': user_avatar or '/static/assets/image/default.jpg'
+                },
+                'created_at': comment_timestamp  # Use current timestamp
             }
         })
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        import traceback
+        print(f"Error in api_video_comment: {str(e)}")
+        print(traceback.format_exc())
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @explore_api.route('/api/feed/video/<int:video_id>/share', methods=['POST'])
 def api_video_share(video_id):
     """API endpoint to share a video"""
     try:
-        # For now, just increment share count (you can implement actual sharing logic later)
-        # This is a simple implementation - you might want to track actual shares
+        # Get video to verify it exists
+        video = db.session.query(Video).filter_by(id=video_id).first()
+        if not video:
+            return jsonify({'error': 'Video not found'}), 404
         
+        # For now, return 0 as base count (will be incremented on frontend)
+        # TODO: Implement Share model to track actual shares in database
         return jsonify({
             'success': True,
             'message': 'Video shared successfully',
-            'shares_count': random.randint(1, 100)  # Mock share count
+            'shares_count': 0  # Start from 0, will be incremented on frontend
         })
         
     except Exception as e:
@@ -1060,15 +1103,32 @@ def api_video_comments(video_id):
         comments_data = []
         for comment in comments:
             user = db.session.query(User).filter_by(id=comment.user_id).first()
+            # Format avatar URL
+            user_avatar = user.avatar_url if user else None
+            if user_avatar and not user_avatar.startswith('http'):
+                user_avatar = f"/static/{user_avatar}"
+            
+            # Ensure created_at is properly formatted
+            created_at_str = None
+            if comment.created_at:
+                # If created_at is timezone-naive, assume UTC
+                if comment.created_at.tzinfo is None:
+                    from datetime import timezone
+                    created_at = comment.created_at.replace(tzinfo=timezone.utc)
+                else:
+                    created_at = comment.created_at
+                created_at_str = created_at.isoformat()
+            
             comments_data.append({
                 'id': comment.id,
-                'comment': comment.comment,
+                'comment': comment.text,  # Use 'text' field from Comment model
+                'text': comment.text,  # Also include as 'text' for compatibility
                 'user': {
                     'id': user.id if user else None,
                     'username': user.username if user else 'Unknown',
-                    'avatar_url': user.avatar_url if user else '/static/assets/image/default.jpg'
+                    'avatar_url': user_avatar or '/static/assets/image/default.jpg'
                 },
-                'created_at': comment.created_at.isoformat() if comment.created_at else None
+                'created_at': created_at_str
             })
         
         # Get total comments count
@@ -1144,7 +1204,7 @@ def api_video_stats(video_id):
             'video_id': video_id,
             'likes': likes_count,
             'comments': comments_count,
-            'shares': random.randint(10, 100),  # Mock share count
+            'shares': 0,  # Share count starts from 0, will be updated when user shares
             'views': video.view_count or 0,
             'author': {
                 'id': user.id if user else None,

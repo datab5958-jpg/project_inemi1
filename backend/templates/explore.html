@@ -553,7 +553,12 @@
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
     position: relative;
-    will-change: scroll-position;
+    /* Performance optimizations */
+    contain: layout style paint;
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
   
   .video-feed::-webkit-scrollbar {
@@ -2333,7 +2338,6 @@ async function initFeed() {
       <div>
         <div class="spinner" style="width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #fff; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
         <p>Memuat video feed...</p>
-        <p style="font-size: 12px; opacity: 0.7; margin-top: 10px;">Mencoba koneksi ke API...</p>
       </div>
     </div>
   `;
@@ -2768,25 +2772,83 @@ function createVideoElement(video, index) {
   return videoContainer;
 }
 
-// Format time ago
+// Format time ago (real-time, Bahasa Indonesia)
 function formatTimeAgo(dateString) {
-  const now = new Date();
-  const date = new Date(dateString);
-  const diffInSeconds = Math.floor((now - date) / 1000);
+  if (!dateString) return 'Baru saja';
   
-  if (diffInSeconds < 60) {
-    return 'Just now';
-  } else if (diffInSeconds < 3600) {
-    const minutes = Math.floor(diffInSeconds / 60);
-    return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
-  } else if (diffInSeconds < 86400) {
-    const hours = Math.floor(diffInSeconds / 3600);
-    return `${hours} hour${hours > 1 ? 's' : ''} ago`;
-  } else if (diffInSeconds < 2592000) {
-    const days = Math.floor(diffInSeconds / 86400);
-    return `${days} day${days > 1 ? 's' : ''} ago`;
-  } else {
-    return date.toLocaleDateString();
+  try {
+    const now = new Date();
+    const date = new Date(dateString);
+    
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      console.warn('Invalid date string:', dateString);
+      return 'Baru saja';
+    }
+    
+    // Check if date is in the future (more than 1 minute ahead)
+    // This handles cases where server time is wrong
+    const diffInSeconds = Math.floor((now - date) / 1000);
+    
+    // If date is in the future or less than 1 minute ago, show "Baru saja"
+    if (diffInSeconds < 0) {
+      console.warn('Date is in the future:', dateString, 'Current time:', now.toISOString());
+      return 'Baru saja';
+    }
+    
+    // If less than 1 minute, always show "Baru saja"
+    if (diffInSeconds < 60) {
+      return 'Baru saja';
+    } else if (diffInSeconds < 3600) {
+      const minutes = Math.floor(diffInSeconds / 60);
+      return `${minutes} menit yang lalu`;
+    } else if (diffInSeconds < 86400) {
+      const hours = Math.floor(diffInSeconds / 3600);
+      return `${hours} jam yang lalu`;
+    } else if (diffInSeconds < 2592000) {
+      const days = Math.floor(diffInSeconds / 86400);
+      return `${days} hari yang lalu`;
+    } else if (diffInSeconds < 31536000) {
+      const months = Math.floor(diffInSeconds / 2592000);
+      return `${months} bulan yang lalu`;
+    } else {
+      const years = Math.floor(diffInSeconds / 31536000);
+      return `${years} tahun yang lalu`;
+    }
+  } catch (error) {
+    console.error('Error formatting time:', error, 'dateString:', dateString);
+    return 'Baru saja';
+  }
+}
+
+// Update comment timestamps in real-time
+function updateCommentTimestamps() {
+  const commentTimes = document.querySelectorAll('.comment-time');
+  commentTimes.forEach(element => {
+    const timestamp = element.dataset.timestamp;
+    if (timestamp) {
+      element.textContent = formatTimeAgo(timestamp);
+    }
+  });
+}
+
+// Start auto-update for comment timestamps (every 10 seconds for real-time feel)
+let commentTimestampInterval = null;
+function startCommentTimestampUpdater() {
+  if (commentTimestampInterval) {
+    clearInterval(commentTimestampInterval);
+  }
+  // Update every 10 seconds for more real-time feel
+  commentTimestampInterval = setInterval(updateCommentTimestamps, 10000);
+  
+  // Also update immediately
+  updateCommentTimestamps();
+}
+
+function stopCommentTimestampUpdater() {
+  if (commentTimestampInterval) {
+    clearInterval(commentTimestampInterval);
+    commentTimestampInterval = null;
   }
 }
 
@@ -2862,7 +2924,7 @@ function setupIntersectionObserver() {
       }
     });
   }, {
-    threshold: [0, 0.3, 0.5, 0.7, 1], // Multiple thresholds for better detection
+    threshold: [0.5], // Single threshold for better performance
     rootMargin: '0px'
   });
 
@@ -2900,80 +2962,102 @@ function preloadNextVideo(currentVideoItem) {
   }
 }
 
-// Enhanced scroll listener with better performance
+// Enhanced scroll listener with better performance - Optimized
 let scrollTimeout;
 let isScrolling = false;
+let scrollRAF = null;
+let lastScrollTop = 0;
 
 function setupScrollListener() {
   const feedContainer = document.getElementById('videoFeed');
   if (!feedContainer) return;
   
-  // Add scrolling class for visual feedback
+  // Use requestAnimationFrame for smooth scroll handling
   feedContainer.addEventListener('scroll', () => {
-    if (!isScrolling) {
-      isScrolling = true;
-      feedContainer.classList.add('scrolling');
+    // Cancel previous RAF if exists
+    if (scrollRAF) {
+      cancelAnimationFrame(scrollRAF);
     }
     
-    // Clear existing timeout
+    // Use RAF for visual feedback (smooth)
+    scrollRAF = requestAnimationFrame(() => {
+      if (!isScrolling) {
+        isScrolling = true;
+        feedContainer.classList.add('scrolling');
+      }
+    });
+    
+    // Throttle heavy operations (use longer timeout for better performance)
     if (scrollTimeout) {
       clearTimeout(scrollTimeout);
     }
     
-    // Throttle scroll events for better performance
     scrollTimeout = setTimeout(() => {
       isScrolling = false;
       feedContainer.classList.remove('scrolling');
       
       const scrollTop = feedContainer.scrollTop;
       const containerHeight = feedContainer.clientHeight;
-      const scrollHeight = feedContainer.scrollHeight;
-      const newIndex = Math.round(scrollTop / containerHeight);
       
-      if (newIndex !== currentVideoIndex && newIndex >= 0 && newIndex < videos.length) {
-        currentVideoIndex = newIndex;
-        console.log(`Now viewing video ${currentVideoIndex + 1} of ${videos.length}`);
+      // Only update if scroll position changed significantly (reduce calculations)
+      if (Math.abs(scrollTop - lastScrollTop) > containerHeight * 0.1) {
+        lastScrollTop = scrollTop;
+        const newIndex = Math.round(scrollTop / containerHeight);
         
-        // Preload adjacent videos
-        preloadAdjacentVideos(newIndex);
+        if (newIndex !== currentVideoIndex && newIndex >= 0 && newIndex < videos.length) {
+          currentVideoIndex = newIndex;
+          
+          // Preload adjacent videos (only next 1 video for better performance)
+          preloadAdjacentVideos(newIndex);
+        }
       }
-    }, 150);
+    }, 200); // Increased throttle time for better performance
   }, { passive: true });
 }
 
-// Preload adjacent videos for smoother experience
+// Preload adjacent videos for smoother experience - Optimized
 function preloadAdjacentVideos(currentIndex) {
-  const feedContainer = document.getElementById('videoFeed');
-  if (!feedContainer) return;
-  
-  // Preload next 2 videos
-  for (let i = 1; i <= 2; i++) {
-    const nextIndex = currentIndex + i;
-    if (nextIndex < videos.length) {
-      const nextVideoItem = videos[nextIndex];
-      const nextVideo = nextVideoItem.querySelector('video');
-      
-      if (nextVideo && nextVideo.readyState === 0) {
-        nextVideo.preload = 'metadata';
-        nextVideo.load();
+  // Only preload next 1 video to reduce memory usage
+  const nextIndex = currentIndex + 1;
+  if (nextIndex < videos.length && nextIndex < videos.length) {
+    const nextVideoItem = videos[nextIndex];
+    const nextVideo = nextVideoItem.querySelector('video');
+    
+    if (nextVideo && nextVideo.readyState === 0 && nextVideo.preload === 'none') {
+      nextVideo.preload = 'metadata';
+      // Use requestIdleCallback if available for non-critical preloading
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+          nextVideo.load();
+        }, { timeout: 1000 });
+      } else {
+        setTimeout(() => nextVideo.load(), 100);
       }
     }
   }
 }
 
-// Set up infinite scroll
+// Set up infinite scroll - Optimized with throttling
+let infiniteScrollTimeout;
 function setupInfiniteScroll() {
   const feedContainer = document.getElementById('videoFeed');
   if (!feedContainer) return;
   
   feedContainer.addEventListener('scroll', () => {
-    const { scrollTop, scrollHeight, clientHeight } = feedContainer;
-    const threshold = 100; // Load more when 100px from bottom
-    
-    if (scrollHeight - scrollTop - clientHeight < threshold && hasMoreVideos && !isLoading) {
-      loadVideosFromAPI(true);
+    // Throttle infinite scroll check
+    if (infiniteScrollTimeout) {
+      clearTimeout(infiniteScrollTimeout);
     }
-  });
+    
+    infiniteScrollTimeout = setTimeout(() => {
+      const { scrollTop, scrollHeight, clientHeight } = feedContainer;
+      const threshold = 200; // Increased threshold for better UX
+      
+      if (scrollHeight - scrollTop - clientHeight < threshold && hasMoreVideos && !isLoading) {
+        loadVideosFromAPI(true);
+      }
+    }, 300); // Throttle to reduce API calls
+  }, { passive: true });
 }
 
 
@@ -3099,16 +3183,20 @@ async function toggleLike(videoId, button) {
 
 async function showComments(videoId) {
   try {
-    const response = await fetch(`${API_BASE_URL}/feed/video/${videoId}/comments?page=1&per_page=10`);
+    const response = await fetch(`${API_BASE_URL}/feed/video/${videoId}/comments?page=1&per_page=50`);
     const data = await response.json();
     
     if (data.success) {
       // Create modal for comments
-      createCommentsModal(videoId, data.comments);
+      createCommentsModal(videoId, data.comments || []);
+    } else {
+      showToast('Gagal memuat komentar', 'error');
     }
   } catch (error) {
     console.error('Error loading comments:', error);
     showToast('Gagal memuat komentar', 'error');
+    // Still show modal with empty comments
+    createCommentsModal(videoId, []);
   }
 }
 
@@ -3138,7 +3226,8 @@ async function shareVideo(videoId) {
       url: `${window.location.origin}/explore#video-${videoId}`
     };
     
-    // Increment share count (optional API call)
+    // Increment share count in UI (client-side only for now)
+    // API call is optional - just for tracking purposes
     try {
       const response = await fetch(`${API_BASE_URL}/feed/video/${videoId}/share`, {
         method: 'POST',
@@ -3146,17 +3235,17 @@ async function shareVideo(videoId) {
           'Content-Type': 'application/json',
         }
       });
-      const data = await response.json();
-      if (data.success) {
-        // Update share count in UI
-        const shareBtn = videoElement.querySelector('.video-action-btn:last-child .action-count');
-        if (shareBtn) {
-          const currentCount = parseInt(shareBtn.textContent.replace(/\D/g, '')) || 0;
-          shareBtn.textContent = formatNumber(currentCount + 1);
-        }
-      }
+      // API call succeeded, but we increment locally regardless
     } catch (apiError) {
-      console.log('Share count update failed (non-critical):', apiError);
+      // API call failed, but we still increment locally
+      console.log('Share API call failed (non-critical):', apiError);
+    }
+    
+    // Always increment share count in UI
+    const shareBtn = videoElement.querySelector('.video-action-btn:last-child .action-count');
+    if (shareBtn) {
+      const currentCount = parseInt(shareBtn.textContent.replace(/\D/g, '')) || 0;
+      shareBtn.textContent = formatNumber(currentCount + 1);
     }
     
     // Open share modal
@@ -3281,23 +3370,55 @@ function createCommentsModal(videoId, comments) {
         <button class="close-btn" onclick="closeCommentsModal()">×</button>
       </div>
       <div class="modal-body">
-        <div class="comments-list">
-          ${comments.map(comment => `
+        <div class="comments-list" id="commentsList">
+          ${comments && comments.length > 0 ? comments.map(comment => {
+            // Check if we have a stored timestamp for this comment (from when it was created)
+            let timestamp = commentTimestamps.get(comment.id);
+            
+            if (!timestamp) {
+              // No stored timestamp, use server timestamp
+              timestamp = comment.created_at || new Date().toISOString();
+              
+              // Validate timestamp - only replace if invalid or in the future
+              const serverTime = new Date(timestamp);
+              const now = new Date();
+              
+              // Only replace timestamp if it's invalid or in the future (not if it's old)
+              // Old timestamps are valid and should be used as-is
+              if (isNaN(serverTime.getTime()) || serverTime > now) {
+                // Invalid or future timestamp, use current time as fallback
+                timestamp = new Date().toISOString();
+                console.warn('Invalid or future timestamp detected, using current time:', {
+                  comment_id: comment.id,
+                  server_timestamp: comment.created_at,
+                  using: timestamp
+                });
+              } else {
+                // Valid server timestamp, store it for future reference
+                commentTimestamps.set(comment.id, serverTime.getTime());
+              }
+            } else {
+              // Use stored timestamp (convert from milliseconds to ISO string)
+              timestamp = new Date(timestamp).toISOString();
+            }
+            
+            return `
             <div class="comment-item">
-              <img src="${comment.user.avatar_url}" alt="${comment.user.username}" class="comment-avatar">
+              <img src="${comment.user?.avatar_url || '/static/assets/image/default.jpg'}" alt="${comment.user?.username || 'User'}" class="comment-avatar" onerror="this.src='/static/assets/image/default.jpg'">
               <div class="comment-content">
                 <div class="comment-header">
-                  <span class="comment-username">${comment.user.username}</span>
-                  <span class="comment-time">${formatTimeAgo(comment.created_at)}</span>
+                  <span class="comment-username">${comment.user?.username || 'User'}</span>
+                  <span class="comment-time" data-timestamp="${timestamp}">${formatTimeAgo(timestamp)}</span>
                 </div>
-                <div class="comment-text">${comment.comment}</div>
+                <div class="comment-text">${comment.comment || comment.text || ''}</div>
               </div>
             </div>
-          `).join('')}
+          `;
+          }).join('') : '<div class="no-comments">Belum ada komentar. Jadilah yang pertama berkomentar!</div>'}
         </div>
         <div class="comment-input">
-          <input type="text" placeholder="Tulis komentar..." id="commentInput">
-          <button onclick="addComment(${videoId})">Kirim</button>
+          <input type="text" placeholder="Tulis komentar..." id="commentInput" onkeypress="handleCommentKeyPress(event, ${videoId})">
+          <button onclick="addComment(${videoId})" id="commentSubmitBtn">Kirim</button>
         </div>
       </div>
     </div>
@@ -3409,6 +3530,14 @@ function createCommentsModal(videoId, comments) {
       color: #fff;
       font-size: 14px;
       line-height: 1.4;
+      word-wrap: break-word;
+    }
+    
+    .no-comments {
+      text-align: center;
+      color: #999;
+      padding: 40px 20px;
+      font-size: 14px;
     }
     
     .comment-input {
@@ -3426,6 +3555,11 @@ function createCommentsModal(videoId, comments) {
       padding: 10px 15px;
       color: #fff;
       font-size: 14px;
+      outline: none;
+    }
+    
+    .comment-input input:focus {
+      background: #404040;
     }
     
     .comment-input button {
@@ -3436,11 +3570,24 @@ function createCommentsModal(videoId, comments) {
       color: #fff;
       font-size: 14px;
       cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .comment-input button:hover {
+      background: #ff5252;
+    }
+    
+    .comment-input button:disabled {
+      background: #666;
+      cursor: not-allowed;
     }
   `;
   
   document.head.appendChild(style);
   document.body.appendChild(modal);
+  
+  // Start auto-update timestamps for comments
+  startCommentTimestampUpdater();
   
   // Focus on input
   setTimeout(() => {
@@ -3450,17 +3597,36 @@ function createCommentsModal(videoId, comments) {
 }
 
 function closeCommentsModal() {
+  // Stop timestamp updater when modal closes
+  stopCommentTimestampUpdater();
+  
   const modal = document.querySelector('.comments-modal');
   if (modal) {
     modal.remove();
   }
 }
 
+// Handle Enter key press in comment input
+function handleCommentKeyPress(event, videoId) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    addComment(videoId);
+  }
+}
+
 async function addComment(videoId) {
   const input = document.getElementById('commentInput');
+  const submitBtn = document.getElementById('commentSubmitBtn');
   const comment = input.value.trim();
   
-  if (!comment) return;
+  if (!comment) {
+    showToast('Komentar tidak boleh kosong', 'error');
+    return;
+  }
+  
+  // Disable button and input while submitting
+  if (submitBtn) submitBtn.disabled = true;
+  if (input) input.disabled = true;
   
   try {
     const response = await fetch(`${API_BASE_URL}/feed/video/${videoId}/comment`, {
@@ -3476,12 +3642,169 @@ async function addComment(videoId) {
     if (data.success) {
       input.value = '';
       showToast('Komentar berhasil ditambahkan!', 'success');
-      // Refresh comments
-      showComments(videoId);
+      
+      // Update comment count in video actions
+      const videoElement = document.getElementById(`video-${videoId}`);
+      if (videoElement) {
+        const commentBtn = videoElement.querySelector('.video-action-btn:nth-child(2) .action-count');
+        if (commentBtn) {
+          const currentCount = parseInt(commentBtn.textContent.replace(/\D/g, '')) || 0;
+          commentBtn.textContent = formatNumber(currentCount + 1);
+        }
+      }
+      
+      // Add new comment directly to the list with real-time timestamp
+      const commentsList = document.getElementById('commentsList');
+      if (commentsList && data.comment) {
+        // Always use current client time for new comments (not server time which might be wrong)
+        // This ensures "Baru saja" is displayed correctly
+        const commentTimestamp = new Date();
+        const commentTimestampISO = commentTimestamp.toISOString();
+        
+        // Store the timestamp in memory so it persists even after refresh
+        if (data.comment.id) {
+          commentTimestamps.set(data.comment.id, commentTimestamp.getTime());
+          console.log('Stored comment timestamp:', {
+            comment_id: data.comment.id,
+            timestamp: commentTimestampISO,
+            timestamp_ms: commentTimestamp.getTime()
+          });
+        }
+        
+        console.log('Adding new comment:', {
+          comment_id: data.comment.id,
+          server_timestamp: data.comment.created_at,
+          client_timestamp: commentTimestampISO,
+          comment_text: data.comment.comment || data.comment.text
+        });
+        
+        // Create new comment element
+        const newCommentHTML = `
+          <div class="comment-item">
+            <img src="${data.comment.user?.avatar_url || '/static/assets/image/default.jpg'}" alt="${data.comment.user?.username || 'User'}" class="comment-avatar" onerror="this.src='/static/assets/image/default.jpg'">
+            <div class="comment-content">
+              <div class="comment-header">
+                <span class="comment-username">${data.comment.user?.username || 'User'}</span>
+                <span class="comment-time" data-timestamp="${commentTimestampISO}">Baru saja</span>
+              </div>
+              <div class="comment-text">${data.comment.comment || data.comment.text || ''}</div>
+            </div>
+          </div>
+        `;
+        
+        // Remove "no comments" message if exists
+        const noCommentsMsg = commentsList.querySelector('.no-comments');
+        if (noCommentsMsg) {
+          noCommentsMsg.remove();
+        }
+        
+        // Add new comment at the top of the list (newest first)
+        commentsList.insertAdjacentHTML('afterbegin', newCommentHTML);
+        
+        // Scroll to top to show new comment
+        commentsList.scrollTop = 0;
+        
+        // Update timestamp immediately and start auto-update
+        updateCommentTimestamps();
+        startCommentTimestampUpdater();
+      } else {
+        // Fallback: refresh comments list
+        await refreshCommentsList(videoId);
+      }
+    } else {
+      showToast(data.error || 'Gagal menambahkan komentar', 'error');
     }
   } catch (error) {
     console.error('Error adding comment:', error);
     showToast('Gagal menambahkan komentar', 'error');
+  } finally {
+    // Re-enable button and input
+    if (submitBtn) submitBtn.disabled = false;
+    if (input) {
+      input.disabled = false;
+      input.focus();
+    }
+  }
+}
+
+// Store comment timestamps in memory to preserve real-time timestamps
+const commentTimestamps = new Map();
+
+// Refresh comments list without closing modal
+async function refreshCommentsList(videoId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/feed/video/${videoId}/comments?page=1&per_page=50`);
+    const data = await response.json();
+    
+    if (data.success && data.comments) {
+      const commentsList = document.getElementById('commentsList');
+      if (commentsList) {
+        if (data.comments.length > 0) {
+          // Sort comments by created_at descending (newest first)
+          const sortedComments = [...data.comments].sort((a, b) => {
+            // Use stored timestamp if available, otherwise use server timestamp
+            const timeA = commentTimestamps.get(a.id) || (a.created_at ? new Date(a.created_at).getTime() : 0);
+            const timeB = commentTimestamps.get(b.id) || (b.created_at ? new Date(b.created_at).getTime() : 0);
+            return timeB - timeA; // Descending order
+          });
+          
+          commentsList.innerHTML = sortedComments.map(comment => {
+            // Check if we have a stored timestamp for this comment (from when it was created)
+            let timestamp = commentTimestamps.get(comment.id);
+            
+            if (!timestamp) {
+              // No stored timestamp, use server timestamp
+              timestamp = comment.created_at || new Date().toISOString();
+              
+              // Validate timestamp - only replace if invalid or in the future
+              const serverTime = new Date(timestamp);
+              const now = new Date();
+              
+              // Only replace timestamp if it's invalid or in the future (not if it's old)
+              // Old timestamps are valid and should be used as-is
+              if (isNaN(serverTime.getTime()) || serverTime > now) {
+                // Invalid or future timestamp, use current time as fallback
+                timestamp = new Date().toISOString();
+                console.warn('Invalid or future timestamp detected, using current time:', {
+                  comment_id: comment.id,
+                  server_timestamp: comment.created_at,
+                  using: timestamp
+                });
+              } else {
+                // Valid server timestamp, store it for future reference
+                commentTimestamps.set(comment.id, serverTime.getTime());
+              }
+            } else {
+              // Use stored timestamp (real-time from when comment was created)
+              timestamp = new Date(timestamp).toISOString();
+            }
+            
+            return `
+            <div class="comment-item">
+              <img src="${comment.user?.avatar_url || '/static/assets/image/default.jpg'}" alt="${comment.user?.username || 'User'}" class="comment-avatar" onerror="this.src='/static/assets/image/default.jpg'">
+              <div class="comment-content">
+                <div class="comment-header">
+                  <span class="comment-username">${comment.user?.username || 'User'}</span>
+                  <span class="comment-time" data-timestamp="${timestamp}">${formatTimeAgo(timestamp)}</span>
+                </div>
+                <div class="comment-text">${comment.comment || comment.text || ''}</div>
+              </div>
+            </div>
+          `;
+          }).join('');
+          
+          // Start auto-update timestamps
+          startCommentTimestampUpdater();
+        } else {
+          commentsList.innerHTML = '<div class="no-comments">Belum ada komentar. Jadilah yang pertama berkomentar!</div>';
+        }
+        
+        // Scroll to bottom to show new comment
+        commentsList.scrollTop = commentsList.scrollHeight;
+      }
+    }
+  } catch (error) {
+    console.error('Error refreshing comments:', error);
   }
 }
 

@@ -2271,7 +2271,7 @@
                 height: 100%;
             min-height: 50px;
                 width: 100%;
-            overflow: hidden;
+            overflow: visible; /* Changed from hidden to visible to ensure notification badge is visible */
             }
 
         .mobile-nav-item {
@@ -2336,6 +2336,30 @@
         /* Hide specific mobile nav items on mobile */
         .mobile-nav-item-hidden {
             display: none !important;
+        }
+
+        /* Ensure notification bell is always visible (not hidden) */
+        .mobile-nav-item.notification-bell-mobile.mobile-nav-item-hidden {
+            display: flex !important;
+        }
+
+        /* Force notification bell to be visible on mobile */
+        @media (max-width: 768px) {
+            .mobile-nav-item.notification-bell-mobile {
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            .notification-icon-mobile {
+                display: flex !important;
+                visibility: visible !important;
+            }
+            
+            .mobile-nav-item.notification-bell-mobile .mobile-nav-icon {
+                display: inline-block !important;
+                visibility: visible !important;
+            }
         }
 
         /* Hide specific AI Tools items on mobile */
@@ -2571,11 +2595,40 @@
         }
 
         /* Notification Bell Mobile Styling */
-        .notification-bell-mobile {
+        .mobile-nav-item.notification-bell-mobile {
             position: relative;
             cursor: pointer;
             pointer-events: auto;
             z-index: 10;
+            background: rgba(168, 85, 247, 0.05);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            touch-action: manipulation;
+            min-height: 44px;
+            min-width: 44px;
+            display: flex !important; /* Ensure it's always visible */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-nav-item.notification-bell-mobile::before {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(139, 92, 246, 0.15));
+        }
+
+        .mobile-nav-item.notification-bell-mobile:hover {
+            background: rgba(168, 85, 247, 0.15);
+            border-color: rgba(168, 85, 247, 0.4);
+            box-shadow: 
+                0 4px 12px rgba(168, 85, 247, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-nav-item.notification-bell-mobile.active {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(139, 92, 246, 0.15));
+            border-color: rgba(168, 85, 247, 0.5);
+            box-shadow: 
+                0 6px 16px rgba(168, 85, 247, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.15);
         }
 
         .notification-icon-mobile {
@@ -2583,49 +2636,43 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            pointer-events: auto;
-            cursor: pointer;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        .mobile-nav-item.notification-bell-mobile .mobile-nav-icon {
+            color: #a855f7;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-nav-item.notification-bell-mobile:hover .mobile-nav-icon,
+        .mobile-nav-item.notification-bell-mobile.active .mobile-nav-icon {
+            color: #c084fc;
+            transform: scale(1.15);
         }
 
         .notification-badge-mobile {
             position: absolute;
-            top: -5px;
-            right: -5px;
+            top: -2px;
+            right: -2px;
             background: linear-gradient(135deg, #ff6b6b, #ee5a24);
             color: white;
             font-size: 0.6rem;
-          font-weight: 700;
+            font-weight: 700;
             padding: 2px 5px;
-            border-radius: 8px;
-            border: 2px solid #1a1a2e;
+            border-radius: 10px;
             min-width: 16px;
-            text-align: center;
-            display: none;
-            animation: pulse 2s infinite;
-            pointer-events: none;
-        }
-
-        /* Ensure mobile nav item with notification bell is clickable */
-        .mobile-nav-item.notification-bell-mobile {
-            pointer-events: auto !important;
-            cursor: pointer !important;
-            touch-action: manipulation;
-            z-index: 10;
-            min-height: 44px;
-            min-width: 44px;
-        }
-
-        /* Ensure notification bell mobile has proper touch area */
-        .notification-bell-mobile {
-            position: relative;
-            cursor: pointer;
-            pointer-events: auto;
-            z-index: 10;
-            min-height: 44px;
-            min-width: 44px;
+            height: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 2px 6px rgba(255, 107, 107, 0.5);
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            line-height: 1;
+            z-index: 11;
+            pointer-events: none;
+            animation: pulse 2s infinite;
         }
 
         @keyframes adminGlow {
@@ -3161,6 +3208,10 @@
             }
             
             /* Ensure notification bell is visible in mobile nav */
+            .mobile-nav-item.notification-bell-mobile {
+                display: flex !important;
+            }
+            
             .notification-bell-mobile {
                 display: flex !important;
             }
@@ -3178,6 +3229,10 @@
             }
             
             /* Ensure notification bell is hidden in mobile nav on desktop */
+            .mobile-nav-item.notification-bell-mobile {
+                display: none !important;
+            }
+            
             .notification-bell-mobile {
                 display: none !important;
             }

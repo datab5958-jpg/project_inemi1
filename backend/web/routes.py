@@ -1788,6 +1788,88 @@ def reply_comment():
         return jsonify({'success': False, 'error': 'Failed to create reply'}), 500
 
 
+@web_pages.route('/api/notifications', methods=['GET'])
+def api_notifications():
+    """API endpoint untuk mendapatkan semua notifikasi user"""
+    try:
+        if 'user_id' not in session:
+            return jsonify({
+                'success': False,
+                'error': 'Not authenticated',
+                'notifications': []
+            }), 401
+        
+        user_id = session['user_id']
+        from models import Notification, User
+        
+        # Get query parameters
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        limit = request.args.get('limit', None, type=int)
+        
+        # Build query
+        query = Notification.query.filter_by(recipient_id=user_id)
+        
+        # Apply limit if provided (for dropdown)
+        if limit:
+            query = query.order_by(Notification.created_at.desc()).limit(limit)
+        else:
+            # Pagination
+            offset = (page - 1) * per_page
+            query = query.order_by(Notification.created_at.desc()).offset(offset).limit(per_page)
+        
+        notifications = query.all()
+        
+        # Format notifications
+        notifications_data = []
+        for notification in notifications:
+            sender = User.query.get(notification.sender_id) if notification.sender_id else None
+            
+            # Format avatar URL
+            avatar_url = sender.avatar_url if sender else None
+            if avatar_url and not avatar_url.startswith('http'):
+                avatar_url = f"/static/{avatar_url}"
+            
+            notifications_data.append({
+                'id': notification.id,
+                'type': notification.notification_type,
+                'content_type': notification.content_type,
+                'content_id': notification.content_id,
+                'text': notification.text,
+                'is_read': notification.is_read,
+                'created_at': notification.created_at.isoformat() if notification.created_at else None,
+                'sender': {
+                    'id': sender.id if sender else None,
+                    'username': sender.username if sender else 'Unknown',
+                    'avatar_url': avatar_url or '/static/assets/image/default.jpg'
+                }
+            })
+        
+        # Get unread count
+        unread_count = Notification.query.filter_by(
+            recipient_id=user_id,
+            is_read=False
+        ).count()
+        
+        return jsonify({
+            'success': True,
+            'notifications': notifications_data,
+            'unread_count': unread_count,
+            'page': page,
+            'per_page': per_page,
+            'total': Notification.query.filter_by(recipient_id=user_id).count()
+        })
+        
+    except Exception as e:
+        import traceback
+        print(f"Error fetching notifications: {e}")
+        print(traceback.format_exc())
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'notifications': []
+        }), 500
+
 @web_pages.route('/api/notifications/unread-count')
 def api_notifications_unread_count():
     """API endpoint untuk mendapatkan jumlah notifikasi yang belum dibaca"""
