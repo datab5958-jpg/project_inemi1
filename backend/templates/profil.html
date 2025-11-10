@@ -1002,6 +1002,8 @@
               <div class="badge" style="display:inline-block;background:linear-gradient(90deg,#fbbf24,#a21caf);color:#fff;font-weight:700;padding:0.3em 1.2em;border-radius:999px;font-size:1.05em;margin-bottom:0.5em;box-shadow:0 2px 12px #a21caf55;letter-spacing:0.04em;"><i class="bi bi-gem me-1"></i> Premium User</div>
             {% elif user.role == 'premier' %}
               <div class="badge" style="display:inline-block;background:linear-gradient(90deg,#fbbf24,#a21caf);color:#fff;font-weight:700;padding:0.3em 1.2em;border-radius:999px;font-size:1.05em;margin-bottom:0.5em;box-shadow:0 2px 12px #a21caf55;letter-spacing:0.04em;"><i class="bi bi-gem me-1"></i> Premier User</div>
+            {% elif user.role == 'admin' %}
+              <div class="badge" style="display:inline-block;background:linear-gradient(90deg,#f97316,#ef4444);color:#fff;font-weight:700;padding:0.3em 1.2em;border-radius:999px;font-size:1.05em;margin-bottom:0.5em;box-shadow:0 2px 12px #ef444455;letter-spacing:0.04em;"><i class="bi bi-shield-lock me-1"></i> Admin</div>
             {% else %}
               <div class="badge" style="display:inline-block;background:linear-gradient(90deg,#6366f1,#60a5fa);color:#fff;font-weight:700;padding:0.3em 1.2em;border-radius:999px;font-size:1.05em;margin-bottom:0.5em;box-shadow:0 2px 12px #6366f155;letter-spacing:0.04em;"><i class="bi bi-person me-1"></i> Free User</div>
               <!-- Credit token badge - only visible on mobile -->
