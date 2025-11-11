@@ -2388,81 +2388,155 @@ def post_musik(song_id):
 
 @web_pages.route('/post_image/<int:image_id>')
 def post_image(image_id):
-    # Fetch image data from database
-    image = Image.query.get_or_404(image_id)
-    
-    # Get user who posted the image
-    user = db.session.get(User, image.user_id)
-    
-    # Get likes count for this image
-    likes_count = Like.query.filter_by(content_type='image', content_id=str(image.id)).count()
-    
-    # Get comments for this image (only parent comments, not replies)
-    comments = Comment.query.filter_by(
-        content_type='image', 
-        content_id=str(image.id),
-        parent_id=None  # Only get parent comments
-    ).order_by(Comment.created_at.desc()).all()
-    
-    # Check if current user has liked this image
-    is_liked = False
-    if 'user_id' in session:
-        is_liked = Like.query.filter_by(
-            user_id=session['user_id'], 
+    try:
+        # Fetch image data from database
+        image = Image.query.get_or_404(image_id)
+        
+        # Get user who posted the image
+        user = db.session.get(User, image.user_id)
+        
+        # Get likes count for this image
+        likes_count = Like.query.filter_by(content_type='image', content_id=str(image.id)).count()
+        
+        # Get comments for this image (only parent comments, not replies)
+        comments = Comment.query.filter_by(
             content_type='image', 
-            content_id=str(image.id)
-        ).first() is not None
-    
-    return render_template('post_image.html', 
-                         image=image, 
-                         user=user, 
-                         likes_count=likes_count, 
-                         comments=comments, 
-                         is_liked=is_liked)
+            content_id=str(image.id),
+            parent_id=None  # Only get parent comments
+        ).order_by(Comment.created_at.desc()).all()
+        
+        # Check if current user has liked this image
+        is_liked = False
+        if 'user_id' in session:
+            is_liked = Like.query.filter_by(
+                user_id=session['user_id'], 
+                content_type='image', 
+                content_id=str(image.id)
+            ).first() is not None
+        
+        # Safely get generation_type (handle if column doesn't exist yet)
+        try:
+            generation_type = getattr(image, 'generation_type', None)
+        except (AttributeError, KeyError):
+            generation_type = None
+        
+        return render_template('post_image.html', 
+                             image=image, 
+                             user=user, 
+                             likes_count=likes_count, 
+                             comments=comments, 
+                             is_liked=is_liked)
+    except Exception as e:
+        print(f"Error in post_image: {e}")
+        import traceback
+        traceback.print_exc()
+        # Fallback: try to render without generation_type
+        try:
+            image = Image.query.get_or_404(image_id)
+            user = db.session.get(User, image.user_id)
+            likes_count = Like.query.filter_by(content_type='image', content_id=str(image.id)).count()
+            comments = Comment.query.filter_by(
+                content_type='image', 
+                content_id=str(image.id),
+                parent_id=None
+            ).order_by(Comment.created_at.desc()).all()
+            is_liked = False
+            if 'user_id' in session:
+                is_liked = Like.query.filter_by(
+                    user_id=session['user_id'], 
+                    content_type='image', 
+                    content_id=str(image.id)
+                ).first() is not None
+            return render_template('post_image.html', 
+                                 image=image, 
+                                 user=user, 
+                                 likes_count=likes_count, 
+                                 comments=comments, 
+                                 is_liked=is_liked)
+        except Exception as e2:
+            print(f"Fallback error: {e2}")
+            return f"Error loading image: {str(e)}", 500
 
 @web_pages.route('/post_video/<int:video_id>')
 def post_video(video_id):
-    print(f"=== DEBUG: post_video called for video_id: {video_id} ===")
-    
-    # Ambil data video dari database
-    video = Video.query.get_or_404(video_id)
-    print(f"Video found: {video.id} - {video.caption}")
-    
-    # Ambil user yang mengunggah video
-    user = db.session.get(User, video.user_id)
-    print(f"Video user: {user.username if user else 'Unknown'}")
-    
-    # Hitung jumlah like untuk video ini
-    likes_count = Like.query.filter_by(content_type='video', content_id=str(video.id)).count()
-    print(f"Likes count: {likes_count}")
-    
-    # Ambil komentar untuk video ini (only parent comments, not replies)
-    comments = Comment.query.filter_by(
-        content_type='video', 
-        content_id=str(video.id),
-        parent_id=None  # Only get parent comments
-    ).order_by(Comment.created_at.desc()).all()
-    
-    print(f"Comments found: {len(comments)}")
-    for comment in comments:
-        print(f"  - Comment {comment.id}: {comment.text[:50]}... by user {comment.user.username if comment.user else 'Unknown'}")
-    
-    # Cek apakah user saat ini sudah like video ini
-    is_liked = False
-    if 'user_id' in session:
-        is_liked = Like.query.filter_by(
-            user_id=session['user_id'], 
+    try:
+        print(f"=== DEBUG: post_video called for video_id: {video_id} ===")
+        
+        # Ambil data video dari database
+        video = Video.query.get_or_404(video_id)
+        print(f"Video found: {video.id} - {video.caption}")
+        
+        # Ambil user yang mengunggah video
+        user = db.session.get(User, video.user_id)
+        print(f"Video user: {user.username if user else 'Unknown'}")
+        
+        # Hitung jumlah like untuk video ini
+        likes_count = Like.query.filter_by(content_type='video', content_id=str(video.id)).count()
+        print(f"Likes count: {likes_count}")
+        
+        # Ambil komentar untuk video ini (only parent comments, not replies)
+        comments = Comment.query.filter_by(
             content_type='video', 
-            content_id=str(video.id)
-        ).first() is not None
-        print(f"Current user liked: {is_liked}")
-    
-    return render_template('post_video.html', 
-                         video=video, 
-                         user=user, 
-                         likes_count=likes_count, 
-                         comments=comments, 
-                         is_liked=is_liked)
+            content_id=str(video.id),
+            parent_id=None  # Only get parent comments
+        ).order_by(Comment.created_at.desc()).all()
+        
+        print(f"Comments found: {len(comments)}")
+        for comment in comments:
+            print(f"  - Comment {comment.id}: {comment.text[:50]}... by user {comment.user.username if comment.user else 'Unknown'}")
+        
+        # Cek apakah user saat ini sudah like video ini
+        is_liked = False
+        if 'user_id' in session:
+            is_liked = Like.query.filter_by(
+                user_id=session['user_id'], 
+                content_type='video', 
+                content_id=str(video.id)
+            ).first() is not None
+            print(f"Current user liked: {is_liked}")
+        
+        # Safely get generation_type (handle if column doesn't exist yet)
+        try:
+            generation_type = getattr(video, 'generation_type', None)
+        except (AttributeError, KeyError):
+            generation_type = None
+        
+        return render_template('post_video.html', 
+                             video=video, 
+                             user=user, 
+                             likes_count=likes_count, 
+                             comments=comments, 
+                             is_liked=is_liked)
+    except Exception as e:
+        print(f"Error in post_video: {e}")
+        import traceback
+        traceback.print_exc()
+        # Fallback: try to render without generation_type
+        try:
+            video = Video.query.get_or_404(video_id)
+            user = db.session.get(User, video.user_id)
+            likes_count = Like.query.filter_by(content_type='video', content_id=str(video.id)).count()
+            comments = Comment.query.filter_by(
+                content_type='video', 
+                content_id=str(video.id),
+                parent_id=None
+            ).order_by(Comment.created_at.desc()).all()
+            is_liked = False
+            if 'user_id' in session:
+                is_liked = Like.query.filter_by(
+                    user_id=session['user_id'], 
+                    content_type='video', 
+                    content_id=str(video.id)
+                ).first() is not None
+            return render_template('post_video.html', 
+                                 video=video, 
+                                 user=user, 
+                                 likes_count=likes_count, 
+                                 comments=comments, 
+                                 is_liked=is_liked)
+        except Exception as e2:
+            print(f"Fallback error: {e2}")
+            return f"Error loading video: {str(e)}", 500
 
 @web_pages.route('/post_video_iklan/<int:video_id>')
 def post_video_iklan(video_id):

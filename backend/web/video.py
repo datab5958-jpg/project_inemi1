@@ -272,7 +272,7 @@ def generate_video():
         return error_response, 500
 
     # Simpan ke database (hanya link, tidak download)
-    video = Video(user_id=user_id, video_url=video_url, caption=prompt)
+    video = Video(user_id=user_id, video_url=video_url, caption=prompt, generation_type='generate_video')
     db.session.add(video)
     db.session.commit()
 

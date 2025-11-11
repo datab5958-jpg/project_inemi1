@@ -8,6 +8,7 @@ db = SQLAlchemy()
 class Image(db.Model):
     """Model untuk tabel images yang sudah ada di database"""
     __tablename__ = 'images'
+    __table_args__ = {'extend_existing': True}  # Allow extending existing table
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -18,6 +19,7 @@ class Image(db.Model):
     is_favorite = db.Column(db.Boolean, default=False)
     whitelist_reason = db.Column(db.Text)  # Added missing column
     view_count = db.Column(db.Integer, default=0)
+    generation_type = db.Column(db.String(50), nullable=True)  # 'ai_generate', 'face_swap', 'generate_image', 'image_to_video', etc.
     
     # Relationship
     user = db.relationship('User', backref='images')
@@ -33,6 +35,7 @@ class Image(db.Model):
             'is_favorite': self.is_favorite,
             'whitelist_reason': self.whitelist_reason,
             'view_count': self.view_count,
+            'generation_type': getattr(self, 'generation_type', None),
             'user': {
                 'id': self.user.id if self.user else None,
                 'username': self.user.username if self.user else 'Anonymous',
@@ -43,6 +46,7 @@ class Image(db.Model):
 class Video(db.Model):
     """Model untuk tabel videos yang sudah ada di database"""
     __tablename__ = 'videos'
+    __table_args__ = {'extend_existing': True}  # Allow extending existing table
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -53,6 +57,7 @@ class Video(db.Model):
     is_favorite = db.Column(db.Boolean, default=False)
     whitelist_reason = db.Column(db.Text)
     view_count = db.Column(db.Integer, default=0)
+    generation_type = db.Column(db.String(50), nullable=True)  # 'generate_video', 'image_to_video', 'generate_video_avatar', etc.
     
     # Relationship
     user = db.relationship('User', backref='videos')
@@ -68,6 +73,7 @@ class Video(db.Model):
             'is_favorite': self.is_favorite,
             'whitelist_reason': self.whitelist_reason,
             'view_count': self.view_count,
+            'generation_type': getattr(self, 'generation_type', None),
             'user': {
                 'id': self.user.id if self.user else None,
                 'username': self.user.username if self.user else 'Anonymous',

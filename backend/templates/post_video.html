@@ -408,8 +408,30 @@
         <div class="username">{{ user.username }}</div>
         <small>
           Dibuat: {{ (video.created_at|utc_to_wib)|format_tanggal_id if video.created_at else 'Baru saja' }}
-          {% if video.updated_at and video.updated_at != video.created_at %}
-            <span style="color:#a5b4fc;">&nbsp;|&nbsp;Diedit: {{ (video.updated_at|utc_to_wib)|format_tanggal_id }}</span>
+          {% if video.updated_at and video.created_at %}
+            {% set created_str = (video.created_at|utc_to_wib)|format_tanggal_id if video.created_at else '' %}
+            {% set updated_str = (video.updated_at|utc_to_wib)|format_tanggal_id if video.updated_at else '' %}
+            {% if updated_str != created_str %}
+              <span style="color:#a5b4fc;">&nbsp;|&nbsp;Diedit: {{ updated_str }}</span>
+            {% endif %}
+          {% endif %}
+          {% set gen_type = video.generation_type if video.generation_type else (video|attr('generation_type') if video|attr('generation_type') else None) %}
+          {% if gen_type %}
+            <span style="color:#a5b4fc;">&nbsp;|&nbsp;
+              {% if gen_type == 'generate_video' %}
+                <i class="bi bi-play-circle"></i> Generate Video
+              {% elif gen_type == 'image_to_video' %}
+                <i class="bi bi-image"></i> Image to Video
+              {% elif gen_type == 'generate_video_avatar' %}
+                <i class="bi bi-person-video"></i> Generate Video Avatar
+              {% elif gen_type == 'face_swap_video' %}
+                <i class="bi bi-person-badge"></i> Face Swap Video
+              {% elif gen_type == 'generate_miniatur_video' %}
+                <i class="bi bi-box"></i> Generate Miniatur Video
+              {% else %}
+                <i class="bi bi-gear"></i> {{ gen_type }}
+              {% endif %}
+            </span>
           {% endif %}
         </small>
       </div>

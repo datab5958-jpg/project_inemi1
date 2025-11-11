@@ -261,7 +261,7 @@ def fusigaya():
                     
                     # Simpan ke database
                     try:
-                        image = Image(user_id=user_id, image_url=output_url, caption=prompt)
+                        image = Image(user_id=user_id, image_url=output_url, caption=prompt, generation_type='fusigaya')
                         db.session.add(image)
                         db.session.commit()
                         print(f'DEBUG IMAGE SAVED TO DB: {image.id}')

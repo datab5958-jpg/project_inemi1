@@ -1297,7 +1297,7 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                         all_image_urls = [image_url_result] if image_url_result else []
                     
                     # Save first image (primary)
-                    image = Image(user_id=user_id, image_url=image_url_result, caption=f"Edit: {prompt}")
+                    image = Image(user_id=user_id, image_url=image_url_result, caption=f"Edit: {prompt}", generation_type='ai_generate')
                     db.session.add(image)
                     db.session.commit()
                     
@@ -1531,7 +1531,8 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                     video = Video(
                         user_id=user_id,
                         video_url=video_url,
-                        caption=f"{prompt} (Image to Video)"
+                        caption=f"{prompt} (Image to Video)",
+                        generation_type='image_to_video'
                     )
                     db.session.add(video)
                     db.session.commit()
@@ -1754,7 +1755,8 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                     video = Video(
                         user_id=user_id,
                         video_url=video_url,
-                        caption=prompt
+                        caption=prompt,
+                        generation_type='generate_video'
                     )
                     db.session.add(video)
                     db.session.commit()
@@ -2033,7 +2035,8 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                     video = Video(
                         user_id=user_id,
                         video_url=output_video_url,
-                        caption=f"Face Swap: {prompt or 'Video Face Swap'}"
+                        caption=f"Video Face Swap: {prompt or 'Video Face Swap'}",
+                        generation_type='face_swap_video'
                     )
                     db.session.add(video)
                     db.session.commit()
@@ -2409,7 +2412,7 @@ Selalu jawab dalam bahasa Indonesia yang ramah dan informatif. Jika user bertany
                     all_image_urls = [image_url] if image_url else []
                 
                 # Save first image (primary)
-                image = Image(user_id=user_id, image_url=image_url, caption=prompt)
+                image = Image(user_id=user_id, image_url=image_url, caption=prompt, generation_type='ai_generate')
                 db.session.add(image)
                 db.session.flush()  # Get the ID
                 saved_images = [{
