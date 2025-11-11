@@ -408,13 +408,6 @@
         <div class="username">{{ user.username }}</div>
         <small>
           Dibuat: {{ (video.created_at|utc_to_wib)|format_tanggal_id if video.created_at else 'Baru saja' }}
-          {% if video.updated_at and video.created_at %}
-            {% set created_str = (video.created_at|utc_to_wib)|format_tanggal_id if video.created_at else '' %}
-            {% set updated_str = (video.updated_at|utc_to_wib)|format_tanggal_id if video.updated_at else '' %}
-            {% if updated_str != created_str %}
-              <span style="color:#a5b4fc;">&nbsp;|&nbsp;Diedit: {{ updated_str }}</span>
-            {% endif %}
-          {% endif %}
           {% set gen_type = video.generation_type if video.generation_type else (video|attr('generation_type') if video|attr('generation_type') else None) %}
           {% if gen_type %}
             <span style="color:#a5b4fc;">&nbsp;|&nbsp;

@@ -751,13 +751,6 @@
         <div class="username">{{ user.username }}</div>
         <small>
           Dibuat: {{ (image.created_at|utc_to_wib)|format_tanggal_id if image.created_at else 'Baru saja' }}
-          {% if image.updated_at and image.created_at %}
-            {% set created_str = (image.created_at|utc_to_wib)|format_tanggal_id if image.created_at else '' %}
-            {% set updated_str = (image.updated_at|utc_to_wib)|format_tanggal_id if image.updated_at else '' %}
-            {% if updated_str != created_str %}
-              <span style="color:#a5b4fc;">&nbsp;|&nbsp;Diedit: {{ updated_str }}</span>
-            {% endif %}
-          {% endif %}
           {% if image.generation_type %}
             <span style="color:#a5b4fc;">&nbsp;|&nbsp;
               {% set gen_type = image.generation_type %}
