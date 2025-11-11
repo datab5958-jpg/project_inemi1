@@ -176,7 +176,8 @@ def generate_miniatur():
                                 image = Image(
                                     user_id=user_id, 
                                     image_url=output_url, 
-                                    caption=caption
+                                    caption=caption,
+                                    generation_type='generate_miniatur'
                                 )
                                 db.session.add(image)
                                 db.session.commit()
@@ -655,6 +656,7 @@ def migrate_image_to_video():
                     is_favorite=img.is_favorite,
                     whitelist_reason=img.whitelist_reason,
                     view_count=img.view_count,
+                    generation_type='generate_miniatur_video',
                     created_at=img.created_at,
                     updated_at=img.updated_at
                 )

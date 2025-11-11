@@ -196,7 +196,7 @@ def generate_image_video():
         user.kredit -= 15
         db.session.commit()
         
-        video = Video(user_id=user_id, video_url=video_url, caption=prompt)
+        video = Video(user_id=user_id, video_url=video_url, caption=prompt, generation_type='image_to_video')
         db.session.add(video)
         db.session.commit()
 

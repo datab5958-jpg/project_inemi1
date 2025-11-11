@@ -202,7 +202,7 @@ def face_swap():
                             user = User.query.get(user_id)
                             if user and user.kredit >= 15:
                                 user.kredit -= 15
-                                image = Image(user_id=user_id, image_url=output_url, caption="Face Swap Result")
+                                image = Image(user_id=user_id, image_url=output_url, caption="Face Swap Result", generation_type='face_swap')
                                 db.session.add(image)
                                 db.session.commit()
                     except Exception as e:

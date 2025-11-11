@@ -177,7 +177,7 @@ def generate_photo():
     # Save to database jika sukses
     try:
         user.kredit -= required_credits
-        image = Image(user_id=user_id, image_url=image_url, caption=prompt)
+        image = Image(user_id=user_id, image_url=image_url, caption=prompt, generation_type='generate_image')
         db.session.add(image)
         db.session.commit()
         return jsonify({

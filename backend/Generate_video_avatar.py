@@ -543,7 +543,8 @@ def check_avatar_status(request_id):
                                     video_record = Video(
                                         user_id=user_id,
                                         video_url=local_video_url,
-                                        caption=caption
+                                        caption=caption,
+                                        generation_type='generate_video_avatar'
                                     )
                                     db.session.add(video_record)
                                     db.session.commit()
@@ -1079,7 +1080,8 @@ def generate_video_avatar():
                 video_record = Video(
                     user_id=user_id,
                     video_url=local_video_url,
-                    caption=caption
+                    caption=caption,
+                    generation_type='generate_video_avatar'
                 )
                 db.session.add(video_record)
                 db.session.commit()

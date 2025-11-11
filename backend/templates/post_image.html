@@ -751,8 +751,30 @@
         <div class="username">{{ user.username }}</div>
         <small>
           Dibuat: {{ (image.created_at|utc_to_wib)|format_tanggal_id if image.created_at else 'Baru saja' }}
-          {% if image.updated_at and image.updated_at != image.created_at %}
-            <span style="color:#a5b4fc;">&nbsp;|&nbsp;Diedit: {{ (image.updated_at|utc_to_wib)|format_tanggal_id }}</span>
+          {% if image.updated_at and image.created_at %}
+            {% set created_str = (image.created_at|utc_to_wib)|format_tanggal_id if image.created_at else '' %}
+            {% set updated_str = (image.updated_at|utc_to_wib)|format_tanggal_id if image.updated_at else '' %}
+            {% if updated_str != created_str %}
+              <span style="color:#a5b4fc;">&nbsp;|&nbsp;Diedit: {{ updated_str }}</span>
+            {% endif %}
+          {% endif %}
+          {% if image.generation_type %}
+            <span style="color:#a5b4fc;">&nbsp;|&nbsp;
+              {% set gen_type = image.generation_type %}
+              {% if gen_type == 'ai_generate' %}
+                <i class="bi bi-magic"></i> AI Generate
+              {% elif gen_type == 'face_swap' %}
+                <i class="bi bi-person-badge"></i> Face Swap
+              {% elif gen_type == 'generate_image' %}
+                <i class="bi bi-image"></i> Generate Image
+              {% elif gen_type == 'generate_miniatur' %}
+                <i class="bi bi-box"></i> Generate Miniatur
+              {% elif gen_type == 'fusigaya' %}
+                <i class="bi bi-palette"></i> Fusigaya
+              {% else %}
+                <i class="bi bi-gear"></i> {{ gen_type }}
+              {% endif %}
+            </span>
           {% endif %}
         </small>
       </div>
